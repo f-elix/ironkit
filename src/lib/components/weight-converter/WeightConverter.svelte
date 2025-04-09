@@ -9,6 +9,7 @@
 	import type { WeightUnit } from '$lib/types';
 	import Field from '$lib/components/ui/Field.svelte';
 	import Label from '$lib/components/ui/label/label.svelte';
+	import WidgetContainer from '$lib/components/ui/WidgetContainer.svelte';
 
 	let {
 		weight = 0,
@@ -40,29 +41,31 @@
 	);
 </script>
 
-<form bind:this={formEl} class="flex flex-col gap-6 rounded bg-muted/70 p-4 pt-6">
-	<div class="flex items-center justify-between gap-2">
-		<Field>
-			<WeightInput label="Weight" showClearButton bind:value={weight} />
-		</Field>
-		<Field>
-			<UnitSelector bind:value={unit} />
-		</Field>
-	</div>
-	<Field>
-		<div class="flex w-full items-center justify-between gap-2">
-			<span class="flex items-center gap-1">
-				<Label>Round to nearest increment</Label>
-				<HintBadge text="Kilos will be rounded to the nearest 2.5 and pounds to the nearest 5." />
-			</span>
-			<Switch bind:checked={round} />
+<WidgetContainer>
+	<form bind:this={formEl} class="flex flex-col gap-6">
+		<div class="flex items-center justify-between gap-2">
+			<Field>
+				<WeightInput label="Weight" showClearButton bind:value={weight} />
+			</Field>
+			<Field>
+				<UnitSelector bind:value={unit} />
+			</Field>
 		</div>
-	</Field>
-	<div class="mt-4 flex items-center justify-between gap-4">
-		<output for={outputIdList} class="flex items-center gap-2 rounded-md text-2xl">
-			<span>{result}</span>
-			<span>{altUnit}</span>
-		</output>
-		<CopyOnClick text={result.toString()} />
-	</div>
-</form>
+		<Field>
+			<div class="flex w-full items-center justify-between gap-2">
+				<span class="flex items-center gap-1">
+					<Label>Round to nearest increment</Label>
+					<HintBadge text="Kilos will be rounded to the nearest 2.5 and pounds to the nearest 5." />
+				</span>
+				<Switch bind:checked={round} />
+			</div>
+		</Field>
+		<div class="mt-4 flex items-center justify-between gap-4">
+			<output for={outputIdList} class="flex items-center gap-2 rounded-md text-2xl">
+				<span>{result}</span>
+				<span>{altUnit}</span>
+			</output>
+			<CopyOnClick text={result.toString()} />
+		</div>
+	</form>
+</WidgetContainer>
