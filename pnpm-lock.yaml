@@ -8,9 +8,9 @@ importers:
 
   .:
     dependencies:
-      '@lucide/svelte':
-        specifier: ^0.487.0
-        version: 0.487.0(svelte@5.25.10)
+      '@svelte-put/copy':
+        specifier: ^4.0.0
+        version: 4.0.0(svelte@5.25.10)
       mode-watcher:
         specifier: ^0.5.1
         version: 0.5.1(svelte@5.25.10)
@@ -21,6 +21,9 @@ importers:
       '@eslint/js':
         specifier: ^9.24.0
         version: 9.24.0
+      '@lucide/svelte':
+        specifier: ^0.487.0
+        version: 0.487.0(svelte@5.25.10)
       '@sveltejs/adapter-vercel':
         specifier: ^5.7.0
         version: 5.7.0(@sveltejs/kit@2.20.5(@sveltejs/vite-plugin-svelte@5.0.3(svelte@5.25.10)(vite@6.2.5(jiti@2.4.2)(lightningcss@1.29.2)(yaml@2.7.1)))(svelte@5.25.10)(vite@6.2.5(jiti@2.4.2)(lightningcss@1.29.2)(yaml@2.7.1)))(rollup@4.39.0)
@@ -729,6 +732,11 @@ packages:
     resolution: {integrity: sha512-yAkUOkIKZlK5dl7u6dg897doBgLXmUHhIINM2c+sND3DZwnrdQkkSiDh7N75Ll4mM4dxSkYfXqU9fW3lLkMFug==}
     cpu: [x64]
     os: [win32]
+
+  '@svelte-put/copy@4.0.0':
+    resolution: {integrity: sha512-lDaNu6ypvUt3a5nSsXdzToKozAZfD6pFbmhB1hI3YvgA30aiG/A2iF0gqW04RtGPhy+wQvCYNn6nSHzRO3wMQA==}
+    peerDependencies:
+      svelte: ^5.1.0
 
   '@sveltejs/acorn-typescript@1.0.5':
     resolution: {integrity: sha512-IwQk4yfwLdibDlrXVE04jTZYlLnwsTT2PIOQQGNLWfjavGifnk1JD1LcZjZaBTRcxZu2FfPfNLOE04DSu9lqtQ==}
@@ -2873,6 +2881,10 @@ snapshots:
 
   '@rollup/rollup-win32-x64-msvc@4.39.0':
     optional: true
+
+  '@svelte-put/copy@4.0.0(svelte@5.25.10)':
+    dependencies:
+      svelte: 5.25.10
 
   '@sveltejs/acorn-typescript@1.0.5(acorn@8.14.1)':
     dependencies:

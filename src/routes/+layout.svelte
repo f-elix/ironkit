@@ -10,4 +10,4 @@
 <ModeWatcher />
 <Head />
 <Header />
-{@render children()}
+<div class="p-6">{@render children()}</div>
