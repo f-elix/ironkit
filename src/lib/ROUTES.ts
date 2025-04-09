@@ -9,6 +9,7 @@
  * PAGES
  */
 export const PAGE__ROOT = `/`
+export const PAGE_weight_converter = `/weight-converter`
 
 /**
  * SERVERS
@@ -98,7 +99,7 @@ export const currentSp = () => {
 * ```
 */
 export type KIT_ROUTES = {
-  PAGES: { '_ROOT': never }
+  PAGES: { '_ROOT': never, 'weight_converter': never }
   SERVERS: Record<string, never>
   ACTIONS: Record<string, never>
   LINKS: Record<string, never>
