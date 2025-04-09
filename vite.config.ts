@@ -1,9 +1,10 @@
 import { svelteTesting } from '@testing-library/svelte/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
+import { kitRoutes } from 'vite-plugin-kit-routes';
 
 export default defineConfig({
-	plugins: [sveltekit()],
+	plugins: [sveltekit(), kitRoutes({ format: 'variables' })],
 	test: {
 		workspace: [
 			{
