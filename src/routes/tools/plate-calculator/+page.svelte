@@ -8,7 +8,6 @@
 	import Label from '$lib/components/ui/label/label.svelte';
 	import { fly } from 'svelte/transition';
 	import { expoOut } from 'svelte/easing';
-	import { onMount } from 'svelte';
 
 	let titleEl = $state<HTMLElement>();
 	let weight = $state(0);
@@ -25,12 +24,6 @@
 					.join(' ')
 			: ''
 	);
-
-	let input = $state<Maybe<HTMLInputElement>>(null);
-	onMount(() => {
-		input?.focus();
-		input?.select();
-	});
 </script>
 
 <div class="flex grow flex-col-reverse">
@@ -42,9 +35,7 @@
 		<div class="flex items-end gap-2">
 			{#if editableWeight}
 				<Field>
-					<WeightInput label="Weight" showClearButton bind:value={weight} bind:input>
-						Kg
-					</WeightInput>
+					<WeightInput label="Weight" showClearButton bind:value={weight}>Kg</WeightInput>
 				</Field>
 			{:else}
 				<h3 tabindex="-1" class="text-lg font-medium" bind:this={titleEl}>{weight}kg</h3>

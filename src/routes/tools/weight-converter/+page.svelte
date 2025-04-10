@@ -12,7 +12,6 @@
 	import CheckIcon from '@lucide/svelte/icons/check';
 	import { fly } from 'svelte/transition';
 	import { expoOut } from 'svelte/easing';
-	import { onMount } from 'svelte';
 
 	let weight = $state(0);
 	let unit = $state<WeightUnit>('kg');
@@ -36,12 +35,6 @@
 					.join(' ')
 			: ''
 	);
-
-	let input = $state<Maybe<HTMLInputElement>>(null);
-	onMount(() => {
-		input?.focus();
-		input?.select();
-	});
 </script>
 
 <div class="flex grow flex-col-reverse">
@@ -52,7 +45,7 @@
 	>
 		<div class="flex items-center justify-between gap-2">
 			<Field>
-				<WeightInput label="Weight" showClearButton bind:value={weight} bind:input />
+				<WeightInput label="Weight" showClearButton bind:value={weight} />
 			</Field>
 			<Field>
 				<UnitSelector bind:value={unit} />

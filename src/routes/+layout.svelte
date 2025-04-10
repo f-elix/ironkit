@@ -20,7 +20,7 @@
 </script>
 
 <Head />
-<div class="flex h-screen flex-col overflow-clip">
+<div class="flex h-svh flex-col overflow-clip">
 	<Header />
 	{@render children()}
 </div>
