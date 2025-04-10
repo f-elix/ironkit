@@ -27,6 +27,10 @@ const config: Config = {
 			}
 		},
 		extend: {
+			screens: {
+				touch: { raw: '(pointer: coarse)' },
+				pointer: { raw: '(hover: hover) and (pointer: fine)' }
+			},
 			colors: {
 				border: 'hsl(var(--border) / <alpha-value>)',
 				input: 'hsl(var(--input) / <alpha-value>)',

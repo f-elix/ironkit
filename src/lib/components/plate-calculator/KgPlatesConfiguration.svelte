@@ -67,7 +67,7 @@
 
 	let errorMessage = $derived.by(() => {
 		if (weight === 0 || !weight || isNaN(weight)) {
-			return 'No weight entered';
+			return 'Enter a weight';
 		} else if (weight > MAX_WEIGHT) {
 			return `Maximum weight is ${MAX_WEIGHT}kg`;
 		} else if (weight < actualBarWeight) {
@@ -78,7 +78,7 @@
 </script>
 
 <div
-	class="flex min-h-60 flex-col place-items-center items-center justify-center gap-6 overflow-hidden rounded-lg bg-muted p-4"
+	class="flex min-h-60 flex-col place-items-center items-center justify-center gap-6 overflow-hidden rounded-lg border p-4"
 >
 	{#if plateConfiguration.length > 0}
 		<div class="grid-stack mx-auto grid w-52">

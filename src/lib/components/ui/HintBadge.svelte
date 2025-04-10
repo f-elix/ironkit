@@ -26,7 +26,7 @@
 				{/snippet}
 			</Dialog.Trigger>
 			<Dialog.Content
-				class="max-w-72 border-none bg-secondary p-4 text-secondary-foreground [&_[data-dialog-close]:not(.close-btn)]:hidden"
+				class="max-w-72 rounded-sm border-none bg-accent p-4 text-secondary-foreground [&_[data-dialog-close]:not(.close-btn)]:hidden"
 			>
 				<div class="flex flex-col gap-8">
 					<p>{text}</p>
