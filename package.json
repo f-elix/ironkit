@@ -32,11 +32,13 @@
 		"eslint-plugin-svelte": "^3.5.1",
 		"globals": "^16.0.0",
 		"jsdom": "^26.0.0",
+		"mode-watcher": "^0.5.1",
 		"prettier": "^3.5.3",
 		"prettier-plugin-svelte": "^3.3.3",
 		"prettier-plugin-tailwindcss": "^0.6.10",
 		"svelte": "^5.25.10",
 		"svelte-check": "^4.1.5",
+		"svelte-sonner": "^0.3.28",
 		"tailwind-merge": "^3.2.0",
 		"tailwind-variants": "^1.0.0",
 		"tailwindcss": "^3.4.17",
@@ -55,7 +57,6 @@
 	},
 	"dependencies": {
 		"@svelte-put/copy": "^4.0.0",
-		"mode-watcher": "^0.5.1",
 		"powerlifting-formulas": "^0.2.3",
 		"runed": "^0.25.0"
 	}
