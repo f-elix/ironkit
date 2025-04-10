@@ -9,7 +9,8 @@
  * PAGES
  */
 export const PAGE__ROOT = `/`
-export const PAGE_w_weight_converter = `/w/weight-converter`
+export const PAGE_tools_plate_calculator = `/tools/plate-calculator`
+export const PAGE_tools_weight_converter = `/tools/weight-converter`
 
 /**
  * SERVERS
@@ -99,7 +100,7 @@ export const currentSp = () => {
 * ```
 */
 export type KIT_ROUTES = {
-  PAGES: { '_ROOT': never, 'w_weight_converter': never }
+  PAGES: { '_ROOT': never, 'tools_plate_calculator': never, 'tools_weight_converter': never }
   SERVERS: Record<string, never>
   ACTIONS: Record<string, never>
   LINKS: Record<string, never>

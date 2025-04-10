@@ -10,7 +10,7 @@
 	import Field from '$lib/components/ui/Field.svelte';
 	import Label from '$lib/components/ui/label/label.svelte';
 	import CheckIcon from '@lucide/svelte/icons/check';
-	import { fade, fly } from 'svelte/transition';
+	import { fly } from 'svelte/transition';
 	import { expoOut } from 'svelte/easing';
 
 	let weight = $state(0);
