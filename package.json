@@ -56,6 +56,7 @@
 	"dependencies": {
 		"@svelte-put/copy": "^4.0.0",
 		"mode-watcher": "^0.5.1",
+		"powerlifting-formulas": "^0.2.3",
 		"runed": "^0.25.0"
 	}
 }

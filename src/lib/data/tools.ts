@@ -1,7 +1,12 @@
 import type { Component } from 'svelte';
 import WeightIcon from '@lucide/svelte/icons/weight';
-import { PAGE_tools_plate_calculator, PAGE_tools_weight_converter } from '$lib/ROUTES';
+import {
+	PAGE_tools_coefficient_calculator,
+	PAGE_tools_plate_calculator,
+	PAGE_tools_weight_converter
+} from '$lib/ROUTES';
 import PlatesIcon from '$lib/components/svg/PlatesIcon.svelte';
+import CalculatorIcon from '@lucide/svelte/icons/calculator';
 
 export type Tool = {
 	href: string;
@@ -19,5 +24,10 @@ export const tools: Record<string, Tool> = {
 		href: PAGE_tools_plate_calculator,
 		title: 'Plate calculator',
 		Icon: PlatesIcon
+	},
+	coefficientCalculator: {
+		href: PAGE_tools_coefficient_calculator,
+		title: 'Coefficient calculator',
+		Icon: CalculatorIcon
 	}
 };
