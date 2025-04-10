@@ -1,6 +1,18 @@
 import { fontFamily } from 'tailwindcss/defaultTheme';
 import type { Config } from 'tailwindcss';
 import tailwindcssAnimate from 'tailwindcss-animate';
+import plugin from 'tailwindcss/plugin';
+
+const gridStack = plugin(({ addUtilities }) => {
+	addUtilities({
+		['.grid-stack']: {
+			'grid-template': '100% / 100%',
+			['> *']: {
+				'grid-area': '1 / 1'
+			}
+		}
+	});
+});
 
 const config: Config = {
 	darkMode: ['class'],
@@ -58,6 +70,15 @@ const config: Config = {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				'kg-plate': {
+					red: '#b13b46',
+					blue: '#204577',
+					yellow: '#d4ab05',
+					green: '#00990b',
+					white: '#e6e8e7',
+					black: '#060505',
+					silver: '#c8c9cb'
 				}
 			},
 			borderRadius: {
@@ -90,7 +111,7 @@ const config: Config = {
 			}
 		}
 	},
-	plugins: [tailwindcssAnimate]
+	plugins: [tailwindcssAnimate, gridStack]
 };
 
 export default config;

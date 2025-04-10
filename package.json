@@ -55,6 +55,7 @@
 	},
 	"dependencies": {
 		"@svelte-put/copy": "^4.0.0",
-		"mode-watcher": "^0.5.1"
+		"mode-watcher": "^0.5.1",
+		"runed": "^0.25.0"
 	}
 }

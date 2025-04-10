@@ -12,6 +12,7 @@
 	import CheckIcon from '@lucide/svelte/icons/check';
 	import { fly } from 'svelte/transition';
 	import { expoOut } from 'svelte/easing';
+	import { onMount } from 'svelte';
 
 	let weight = $state(0);
 	let unit = $state<WeightUnit>('kg');
@@ -35,14 +36,28 @@
 					.join(' ')
 			: ''
 	);
+
+	let input = $state<Maybe<HTMLInputElement>>(null);
+	onMount(() => {
+		input?.focus();
+		input?.select();
+	});
 </script>
 
 <div class="flex grow flex-col-reverse">
 	<form
 		bind:this={formEl}
-		class="flex flex-col gap-6 rounded-t-lg bg-muted/30 p-4 pt-8"
+		class="flex flex-col-reverse gap-6 rounded-t-lg bg-muted/30 p-4 pt-8"
 		in:fly|global={{ duration: 500, easing: expoOut, y: '100%' }}
 	>
+		<div class="flex items-center justify-between gap-2">
+			<Field>
+				<WeightInput label="Weight" showClearButton bind:value={weight} bind:input />
+			</Field>
+			<Field>
+				<UnitSelector bind:value={unit} />
+			</Field>
+		</div>
 		<Field>
 			<div class="flex w-full items-center justify-between gap-2">
 				<span class="flex items-center gap-1">
@@ -52,14 +67,6 @@
 				<Switch bind:checked={round} />
 			</div>
 		</Field>
-		<div class="flex items-center justify-between gap-2">
-			<Field>
-				<WeightInput label="Weight" showClearButton bind:value={weight} />
-			</Field>
-			<Field>
-				<UnitSelector bind:value={unit} />
-			</Field>
-		</div>
 	</form>
 	<div class="flex grow items-center justify-center p-4">
 		<CopyOnClick

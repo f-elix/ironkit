@@ -9,16 +9,16 @@
 		label,
 		showLabel = false,
 		showClearButton = false,
+		input = $bindable(null),
 		children
 	}: {
 		label: string;
 		showLabel?: boolean;
 		showClearButton?: boolean;
 		value?: number | null;
+		input?: Maybe<HTMLInputElement>;
 		children?: Snippet;
 	} = $props();
-
-	let input = $state<Maybe<HTMLInputElement>>(null);
 
 	const onClear = () => {
 		value = null;
