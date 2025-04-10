@@ -1,13 +1,26 @@
 <script lang="ts">
 	import '../app.css';
-	import { ModeWatcher } from 'mode-watcher';
 	import Header from '$lib/components/app/Header.svelte';
 	import Head from '$lib/components/app/Head.svelte';
+	import { onNavigate } from '$app/navigation';
 
 	let { children } = $props();
+
+	onNavigate((navigation) => {
+		if (!document.startViewTransition) {
+			return;
+		}
+		return new Promise((resolve) => {
+			document.startViewTransition(async () => {
+				resolve();
+				await navigation.complete;
+			});
+		});
+	});
 </script>
 
-<ModeWatcher />
 <Head />
-<Header />
-<div class="p-6">{@render children()}</div>
+<div class="flex h-screen flex-col overflow-clip">
+	<Header />
+	{@render children()}
+</div>

@@ -1,9 +1,17 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { copyToClipboard } from '@svelte-put/copy';
-	import ClipboardIcon from '@lucide/svelte/icons/clipboard';
-	import ClipboardCheckIcon from '@lucide/svelte/icons/clipboard-check';
+	import type { ComponentProps } from 'svelte';
+	import Button from '$lib/components/ui/button/button.svelte';
 
-	let { text }: { text: string } = $props();
+	let {
+		text,
+		children,
+		...rest
+	}: Omit<ComponentProps<typeof Button>, 'children'> & {
+		text: string;
+		children: Snippet<[{ copied: boolean }]>;
+	} = $props();
 
 	let copied = $state(false);
 
@@ -14,18 +22,8 @@
 			copied = false;
 		}, 3000);
 	};
-
-	const iconSize = 20;
 </script>
 
-<button
-	class="text-muted-foreground hover:text-foreground"
-	aria-label={copied ? 'Copy' : 'Copied'}
-	onclick={onClick}
->
-	{#if copied}
-		<ClipboardCheckIcon size={iconSize} />
-	{:else}
-		<ClipboardIcon size={iconSize} />
-	{/if}
-</button>
+<Button onclick={onClick} {...rest}>
+	{@render children?.({ copied })}
+</Button>
