@@ -1,11 +1,15 @@
 <script lang="ts">
+	import Logo from '$lib/components/svg/Logo.svelte';
 	import Button from '$lib/components/ui/button/button.svelte';
 	import { tools } from '$lib/data/tools';
 	import { viewTransitionName } from '$lib/ui/viewTransitionName';
 </script>
 
-<section class="flex flex-col items-center gap-1 p-4 text-center">
-	<h1 class="text-2xl font-bold">Ironkit</h1>
+<section class="flex flex-col items-center gap-1 p-4 pt-10 text-center">
+	<h1 class="w-40 text-2xl font-bold">
+		<Logo />
+		<span class="sr-only">Ironkit</span>
+	</h1>
 	<p class="text-muted-foreground">Tools for lifters.</p>
 </section>
 

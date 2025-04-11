@@ -1,0 +1,10 @@
+{
+	"short_name": "MeetPlanner",
+	"name": "MeetPlanner",
+	"description": "MeetPlanner is a tool for planning your powerlifting meets so you can focus on lifting.",
+	"start_url": "/",
+	"display": "standalone",
+	"background_color": "rgb(39 39 42)",
+	"theme_color": "rgb(242 242 242)",
+	"icons": []
+}
