@@ -1,10 +1,32 @@
 {
-	"short_name": "MeetPlanner",
-	"name": "MeetPlanner",
-	"description": "MeetPlanner is a tool for planning your powerlifting meets so you can focus on lifting.",
+	"short_name": "Ironkit",
+	"name": "Ironkit",
+	"description": "Tools for lifters.",
 	"start_url": "/",
 	"display": "standalone",
-	"background_color": "rgb(39 39 42)",
-	"theme_color": "rgb(242 242 242)",
-	"icons": []
+	"background_color": "hsl(224 71.4% 4.1%)",
+	"theme_color": "hsl(224 71.4% 4.1%)",
+	"icons": [
+		{
+			"src": "pwa-64x64.png",
+			"sizes": "64x64",
+			"type": "image/png"
+		},
+		{
+			"src": "pwa-192x192.png",
+			"sizes": "192x192",
+			"type": "image/png"
+		},
+		{
+			"src": "pwa-512x512.png",
+			"sizes": "512x512",
+			"type": "image/png"
+		},
+		{
+			"src": "maskable-icon-512x512.png",
+			"sizes": "512x512",
+			"type": "image/png",
+			"purpose": "maskable"
+		}
+	]
 }
