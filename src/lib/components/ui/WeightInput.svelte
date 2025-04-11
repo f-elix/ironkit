@@ -5,7 +5,7 @@
 	import Label from '$lib/components/ui/label/label.svelte';
 
 	let {
-		value = $bindable(0),
+		value = $bindable(),
 		label,
 		showLabel = false,
 		showClearButton = false,
@@ -24,13 +24,24 @@
 		value = null;
 		input?.focus();
 	};
+
+	const onFocus = () => {
+		input?.select();
+	};
 </script>
 
 <div class="flex flex-col gap-2">
 	<Label class={showLabel ? 'text-sm' : 'sr-only'}>{label}</Label>
 	<div class="flex items-center gap-2">
 		<div class="relative w-24">
-			<Input type="number" pattern="[0-9]*" step="1" bind:value bind:ref={input} />
+			<Input
+				type="number"
+				pattern="[0-9]*"
+				step="1"
+				bind:value
+				bind:ref={input}
+				onfocus={onFocus}
+			/>
 			{#if showClearButton}
 				<button
 					type="button"
