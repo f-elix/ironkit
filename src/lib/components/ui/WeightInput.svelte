@@ -45,7 +45,7 @@
 			{#if showClearButton}
 				<button
 					type="button"
-					class="pointer:hidden absolute right-2 top-1/2 -translate-y-1/2"
+					class="absolute right-2 top-1/2 -translate-y-1/2 pointer:hidden"
 					aria-label="Clear"
 					onclick={onClear}
 				>

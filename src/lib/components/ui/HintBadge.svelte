@@ -12,7 +12,7 @@
 </script>
 
 {#if text}
-	<span class="touch:inline-flex hidden items-center">
+	<span class="hidden items-center touch:inline-flex">
 		<Dialog.Root>
 			<Dialog.Trigger>
 				{#snippet child({ props })}
@@ -39,7 +39,7 @@
 			</Dialog.Content>
 		</Dialog.Root>
 	</span>
-	<span class="pointer:inline-flex hidden items-center">
+	<span class="hidden items-center pointer:inline-flex">
 		<Tooltip.Provider>
 			<Tooltip.Root delayDuration={100}>
 				<Tooltip.Trigger>
