@@ -24,28 +24,17 @@
 		value = null;
 		input?.focus();
 	};
-
-	const onFocus = () => {
-		input?.select();
-	};
 </script>
 
 <div class="flex flex-col gap-2">
 	<Label class={showLabel ? 'text-sm' : 'sr-only'}>{label}</Label>
 	<div class="flex items-center gap-2">
 		<div class="relative w-24">
-			<Input
-				type="number"
-				pattern="[0-9]*"
-				step="1"
-				bind:value
-				bind:ref={input}
-				onfocus={onFocus}
-			/>
+			<Input type="number" pattern="[0-9]*" step="1" bind:value bind:ref={input} placeholder="0" />
 			{#if showClearButton}
 				<button
 					type="button"
-					class="absolute right-2 top-1/2 -translate-y-1/2 pointer:hidden"
+					class="pointer:hidden absolute right-2 top-1/2 -translate-y-1/2"
 					aria-label="Clear"
 					onclick={onClear}
 				>

@@ -10,9 +10,9 @@
 	import { fly } from 'svelte/transition';
 	import { expoOut } from 'svelte/easing';
 
-	let bodyweight = $state(0);
+	let bodyweight = $state<Maybe<number>>();
 	let bodyweightUnit = $state<WeightUnit>(DEFAULT_WEIGHT_UNIT);
-	let total = $state(0);
+	let total = $state<Maybe<number>>();
 	let totalUnit = $state<WeightUnit>(DEFAULT_WEIGHT_UNIT);
 	let genderClass = $state<GenderClass>(DEFAULT_GENDER_CLASS);
 
@@ -60,40 +60,46 @@
 <div class="flex grow flex-col-reverse">
 	<form
 		bind:this={formEl}
-		class="flex flex-col gap-6 rounded-t-lg bg-muted/30 p-4 pt-8"
+		class="flex flex-col gap-6 rounded-t-lg bg-muted/30 p-4 pb-6 pt-4"
 		in:fly|global={{ duration: 500, easing: expoOut, y: '100%' }}
 	>
-		<div class="flex flex-col gap-6">
-			<div class="flex items-center justify-between gap-2">
-				<h3>Gender class</h3>
-				<RadioGroup.Root class="flex items-center gap-8" bind:value={genderClass}>
-					{#each GENDER_CLASSES as genderClassOption}
-						<Label class="flex items-center gap-2">
-							<RadioGroup.Item value={genderClassOption} />
-							<span class="capitalize">{genderClassOption}</span>
-						</Label>
-					{/each}
-				</RadioGroup.Root>
-			</div>
-			<div class="flex items-end justify-between gap-2">
-				<Field>
-					<WeightInput label="Bodyweight" showLabel bind:value={bodyweight} />
-				</Field>
-				<Field>
-					<UnitSelector bind:value={bodyweightUnit} />
-				</Field>
-			</div>
-			<div class="flex items-end justify-between gap-2">
-				<Field>
-					<WeightInput label="Total" showLabel bind:value={total} />
-				</Field>
-				<Field>
-					<UnitSelector bind:value={totalUnit} />
-				</Field>
-			</div>
+		<div class="flex items-end justify-between gap-2">
+			<Field>
+				<WeightInput label="Bodyweight" showLabel showClearButton bind:value={bodyweight} />
+			</Field>
+			<Field>
+				<UnitSelector bind:value={bodyweightUnit} />
+			</Field>
 		</div>
+		<div class="flex items-end justify-between gap-2">
+			<Field>
+				<WeightInput label="Total" showLabel showClearButton bind:value={total} />
+			</Field>
+			<Field>
+				<UnitSelector bind:value={totalUnit} />
+			</Field>
+		</div>
+		<fieldset>
+			<legend class="sr-only">Gender class</legend>
+			<RadioGroup.Root class="grid grid-cols-2 gap-4" bind:value={genderClass}>
+				{#each GENDER_CLASSES as genderClassOption}
+					<Label>
+						<RadioGroup.Item value={genderClassOption} class="peer sr-only" />
+						<div
+							class={[
+								'rounded border border-muted py-4 text-center capitalize',
+								'transition-colors duration-100 ease-linear',
+								'peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-secondary'
+							]}
+						>
+							{genderClassOption}
+						</div>
+					</Label>
+				{/each}
+			</RadioGroup.Root>
+		</fieldset>
 	</form>
-	<div class="flex grow items-center justify-center px-4">
+	<div class="mb-auto px-4">
 		<output
 			for={outputIdList}
 			class="flex w-full justify-between gap-2 rounded-sm border px-10 py-7"
