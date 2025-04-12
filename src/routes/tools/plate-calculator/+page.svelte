@@ -113,13 +113,7 @@
 						<div class="flex items-center justify-center gap-1">
 							{#each [20, 25] as weight}
 								<label>
-									<input
-										type="radio"
-										value={weight}
-										{onchange}
-										class="peer sr-only"
-										bind:group={barWeight}
-									/>
+									<input type="radio" value={weight} class="peer sr-only" bind:group={barWeight} />
 									<span
 										class="border border-muted-foreground/50 ring-ring ring-offset-2 peer-checked:border-primary peer-checked:bg-accent peer-focus-visible:ring-2 {buttonVariants(
 											{
