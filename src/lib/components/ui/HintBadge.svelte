@@ -1,9 +1,9 @@
 <script lang="ts">
-	import * as Dialog from '$lib/components/ui/dialog';
-	import * as Tooltip from '$lib/components/ui/tooltip';
+	import * as Dialog from '$lib/shadcn/dialog';
+	import * as Tooltip from '$lib/shadcn/tooltip';
 	import InfoIcon from '@lucide/svelte/icons/info';
 	import CircleHelpIcon from '@lucide/svelte/icons/circle-help';
-	import Button from '$lib/components/ui/button/button.svelte';
+	import { Button } from '$lib/shadcn/button';
 
 	let { type = 'info', text }: { type?: 'info' | 'help'; text: string } = $props();
 
@@ -12,7 +12,7 @@
 </script>
 
 {#if text}
-	<span class="touch:inline-flex hidden items-center">
+	<span class="hidden items-center touch:inline-flex">
 		<Dialog.Root>
 			<Dialog.Trigger>
 				{#snippet child({ props })}
@@ -39,7 +39,7 @@
 			</Dialog.Content>
 		</Dialog.Root>
 	</span>
-	<span class="pointer:inline-flex hidden items-center">
+	<span class="hidden items-center pointer:inline-flex">
 		<Tooltip.Provider>
 			<Tooltip.Root delayDuration={100}>
 				<Tooltip.Trigger>

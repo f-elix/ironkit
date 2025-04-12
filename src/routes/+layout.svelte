@@ -4,7 +4,7 @@
 	import { watchOffline } from '$lib/ui/watchOffline';
 	import { watchSWUpdate } from '$lib/ui/watchSWUpdate';
 	import { setupViewTransition } from '$lib/ui/setupViewTransition';
-	import { Toaster } from '$lib/components/ui/sonner';
+	import { Toaster } from '$lib/shadcn/sonner';
 
 	let { children } = $props();
 
