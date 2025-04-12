@@ -10,7 +10,7 @@
 		...rest
 	}: Omit<ComponentProps<typeof Button>, 'children'> & {
 		text: string;
-		children: Snippet<[{ copied: boolean }]>;
+		children?: Snippet<[{ copied: boolean }]>;
 	} = $props();
 
 	let copied = $state(false);
