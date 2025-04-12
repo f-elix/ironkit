@@ -12,19 +12,24 @@
 		kgPlateConfigurationWeight,
 		MAX_WEIGHT,
 		weightToKgPlatesConfiguration,
-		type BarWeight
+		type BarWeight,
+		type KgPlateConfiguration
 	} from '$lib/components/plate-calculator/plateCalculator';
 	import { buttonVariants } from '$lib/components/ui/button';
 
 	let weight = $state<Maybe<number>>();
 	let heavyCollars = $state(false);
 	let barWeight = $state<BarWeight>(20);
+	let allowNonStandardConfig = $state(false);
 
+	let userKgPlateConfiguration = $state<KgPlateConfiguration>([]);
 	let kgPlateConfiguration = $derived(
-		weightToKgPlatesConfiguration(weight, {
-			barWeight,
-			heavyCollars
-		})
+		allowNonStandardConfig
+			? userKgPlateConfiguration
+			: weightToKgPlatesConfiguration(weight, {
+					barWeight,
+					heavyCollars
+				})
 	);
 
 	let message = $derived.by(() => {
@@ -50,8 +55,7 @@
 		>
 			{#if kgPlateConfiguration?.length > 0}
 				<KgPlatesRepresentation {kgPlateConfiguration} {heavyCollars} />
-			{/if}
-			{#if message}
+			{:else if message}
 				<p class="px-4 text-center leading-5 text-muted-foreground">
 					{message}
 				</p>
@@ -66,6 +70,7 @@
 				value={weight}
 				unit="kg"
 				oninput={(e) => {
+					allowNonStandardConfig = false;
 					weight = e.currentTarget.valueAsNumber;
 				}}
 			/>
@@ -78,11 +83,21 @@
 				<KgPlatesConfiguration
 					{kgPlateConfiguration}
 					onConfigurationChange={(newConfig) => {
+						userKgPlateConfiguration = newConfig;
 						weight =
 							kgPlateConfigurationWeight(newConfig) +
 							getActualBarWeight({ barWeight, heavyCollars });
 					}}
 				/>
+				<div class="flex w-full items-center justify-between gap-3">
+					<span class="flex items-center gap-1">
+						<Label for="allow-non-standard-configuration">Allow non-standard configuration</Label>
+						<HintBadge
+							text="If enabled, you will be able to add plates in a non-standard way. If disabled, the plate configuration will always be valid, even if it means adding another plate than the one you selected."
+						/>
+					</span>
+					<Switch id="allow-non-standard-configuration" bind:checked={allowNonStandardConfig} />
+				</div>
 				<div class="flex w-full items-center justify-between gap-3">
 					<span class="flex items-center gap-1">
 						<Label for="heavy-collars">With competition collars</Label>
