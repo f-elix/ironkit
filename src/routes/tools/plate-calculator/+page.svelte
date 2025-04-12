@@ -2,60 +2,136 @@
 	import KgPlatesConfiguration from '$lib/components/plate-calculator/KgPlatesConfiguration.svelte';
 	import HintBadge from '$lib/components/ui/HintBadge.svelte';
 	import Switch from '$lib/components/ui/switch/switch.svelte';
-	import WeightInput from '$lib/components/ui/WeightInput.svelte';
-	import { Debounced } from 'runed';
-	import Field from '$lib/components/ui/Field.svelte';
 	import Label from '$lib/components/ui/label/label.svelte';
 	import { fly } from 'svelte/transition';
 	import { expoOut } from 'svelte/easing';
+	import LargeWeightInput from '$lib/components/ui/LargeWeightInput.svelte';
+	import KgPlatesRepresentation from '$lib/components/plate-calculator/KgPlatesRepresentation.svelte';
+	import {
+		getActualBarWeight,
+		kgPlateConfigurationWeight,
+		MAX_WEIGHT,
+		weightToKgPlatesConfiguration,
+		type BarWeight,
+		type KgPlateConfiguration
+	} from '$lib/components/plate-calculator/plateCalculator';
+	import { buttonVariants } from '$lib/components/ui/button';
 
-	let titleEl = $state<HTMLElement>();
-	let weight = $state(0);
+	let weight = $state<Maybe<number>>();
 	let heavyCollars = $state(false);
-	let editableWeight = $state(true);
+	let barWeight = $state<BarWeight>(20);
+	let allowNonStandardConfig = $state(false);
 
-	let debouncedWeight = new Debounced(() => weight, 200);
-
-	let formEl = $state<HTMLFormElement>();
-	let outputIdList = $derived(
-		formEl
-			? Array.from(formEl.elements)
-					.map((el) => el.id)
-					.join(' ')
-			: ''
+	let userKgPlateConfiguration = $state<KgPlateConfiguration>([]);
+	let kgPlateConfiguration = $derived(
+		allowNonStandardConfig
+			? userKgPlateConfiguration
+			: weightToKgPlatesConfiguration(weight, {
+					barWeight,
+					heavyCollars
+				})
 	);
+
+	let message = $derived.by(() => {
+		const actualBarWeight = getActualBarWeight({ barWeight: 20, heavyCollars });
+		if (weight === 0 || !weight || isNaN(weight)) {
+			return 'Enter a weight below or tap the plates to add them';
+		} else if (weight > MAX_WEIGHT) {
+			return `Maximum weight is ${MAX_WEIGHT}kg`;
+		} else if (weight < actualBarWeight) {
+			return `Minimum weight is ${actualBarWeight}kg`;
+		} else if (!kgPlateConfiguration?.length) {
+			return 'Invalid weight';
+		}
+		return null;
+	});
 </script>
 
-<div class="flex grow flex-col-reverse">
-	<form
-		bind:this={formEl}
-		class="flex flex-col-reverse gap-6 rounded-t-lg bg-muted/30 p-4 pt-8"
-		in:fly|global={{ duration: 500, easing: expoOut, y: '100%' }}
-	>
-		<div class="flex items-end gap-2">
-			{#if editableWeight}
-				<Field>
-					<WeightInput label="Weight" showClearButton bind:value={weight}>Kg</WeightInput>
-				</Field>
-			{:else}
-				<h3 tabindex="-1" class="text-lg font-medium" bind:this={titleEl}>{weight}kg</h3>
+<div class="flex grow flex-col">
+	<div class="w-full px-4 pb-2">
+		<output
+			for="weight"
+			class="sticky top-0 grid h-32 place-items-center rounded-lg border bg-secondary px-4"
+		>
+			{#if kgPlateConfiguration?.length > 0}
+				<KgPlatesRepresentation {kgPlateConfiguration} {heavyCollars} />
+			{:else if message}
+				<p class="px-4 text-center leading-5 text-muted-foreground">
+					{message}
+				</p>
 			{/if}
-		</div>
-		<Field>
-			<div class="flex w-full items-center justify-between gap-2">
-				<span class="flex items-center gap-1">
-					<Label>With competition collars</Label>
-					<HintBadge
-						text="Competition collars weight 2.5kg each (5kg total), so using them will alter the plate configuration."
-					/>
-				</span>
-				<Switch bind:checked={heavyCollars} />
-			</div>
-		</Field>
-	</form>
-	<div class="flex grow items-center justify-center p-4">
-		<output for={outputIdList} class="w-full">
-			<KgPlatesConfiguration weight={debouncedWeight.current} {heavyCollars} />
 		</output>
+	</div>
+	<div class="mt-auto flex flex-col gap-8">
+		<div class="self-center">
+			<LargeWeightInput
+				id="weight"
+				label="Weight"
+				value={weight}
+				unit="kg"
+				oninput={(e) => {
+					allowNonStandardConfig = false;
+					weight = e.currentTarget.valueAsNumber;
+				}}
+			/>
+		</div>
+		<div
+			class="rounded-t-lg bg-muted/30 px-4 pb-6 pt-4"
+			in:fly|global={{ duration: 500, easing: expoOut, y: '100%' }}
+		>
+			<div class="mx-auto flex w-80 flex-col gap-4">
+				<KgPlatesConfiguration
+					{kgPlateConfiguration}
+					onConfigurationChange={(newConfig) => {
+						userKgPlateConfiguration = newConfig;
+						weight =
+							kgPlateConfigurationWeight(newConfig) +
+							getActualBarWeight({ barWeight, heavyCollars });
+					}}
+				/>
+				<div class="flex w-full items-center justify-between gap-3">
+					<span class="flex items-center gap-1">
+						<Label for="allow-non-standard-configuration">Allow non-standard configuration</Label>
+						<HintBadge
+							text="If enabled, you will be able to add plates in a non-standard way. If disabled, the plate configuration will always be valid, even if it means adding another plate than the one you selected."
+						/>
+					</span>
+					<Switch id="allow-non-standard-configuration" bind:checked={allowNonStandardConfig} />
+				</div>
+				<div class="flex w-full items-center justify-between gap-3">
+					<span class="flex items-center gap-1">
+						<Label for="heavy-collars">With competition collars</Label>
+						<HintBadge
+							text="Competition collars weight 2.5kg each (5kg total), so using them will alter the plate configuration."
+						/>
+					</span>
+					<Switch id="heavy-collars" bind:checked={heavyCollars} />
+				</div>
+				<fieldset>
+					<div class="flex items-center justify-between gap-2">
+						<legend class="text-sm font-medium">Bar weight</legend>
+						<div class="flex items-center justify-center gap-1">
+							{#each [20, 25] as weight}
+								<label>
+									<input type="radio" value={weight} class="peer sr-only" bind:group={barWeight} />
+									<span
+										class="border border-muted-foreground/50 ring-ring ring-offset-2 peer-checked:border-primary peer-checked:bg-accent peer-focus-visible:ring-2 {buttonVariants(
+											{
+												variant: 'ghost',
+												size: 'sm',
+												class: 'h-8 w-10 cursor-pointer p-1 capitalize'
+											}
+										)}"
+									>
+										{weight}
+									</span>
+								</label>
+							{/each}
+							<div class="text-muted-foreground">Kg</div>
+						</div>
+					</div>
+				</fieldset>
+			</div>
+		</div>
 	</div>
 </div>

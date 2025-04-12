@@ -16,7 +16,7 @@
 		<Dialog.Root>
 			<Dialog.Trigger>
 				{#snippet child({ props })}
-					<button {...props} class="text-muted-foreground" aria-label={label}>
+					<button {...props} type="button" class="text-muted-foreground" aria-label={label}>
 						{#if type === 'info'}
 							<InfoIcon size={16} />
 						{:else}

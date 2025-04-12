@@ -15,6 +15,6 @@
 
 <Head />
 <Toaster closeButton richColors theme="dark" />
-<div class="mx-auto flex h-svh max-w-xl flex-col overflow-clip">
+<div class="mx-auto flex h-dvh max-w-xl flex-col overflow-y-auto">
 	{@render children()}
 </div>
