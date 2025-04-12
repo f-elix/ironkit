@@ -24,7 +24,8 @@
 		<button
 			type="button"
 			class="absolute right-2 top-1/2 -translate-y-1/2 pointer:hidden"
-			aria-label="Clear"
+			aria-label="Clear entry"
+			tabindex="-1"
 			onclick={onClear}
 		>
 			<XCircle size="16" />
