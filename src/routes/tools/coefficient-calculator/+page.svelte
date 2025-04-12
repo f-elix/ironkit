@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { calculateCoefficient } from '$lib/coefficients/calculateCoefficient';
 	import UnitSelector from '$lib/components/ui/UnitSelector.svelte';
-	import WeightInput from '$lib/components/ui/WeightInput.svelte';
+	import DefaultNumberInput from '$lib/components/ui/DefaultNumberInput.svelte';
 	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import { GENDER_CLASSES, DEFAULT_WEIGHT_UNIT, DEFAULT_GENDER_CLASS } from '$lib/constants';
 	import type { GenderClass, WeightUnit } from '$lib/types';
@@ -48,7 +48,7 @@
 
 <ToolLayout>
 	{#snippet output()}
-		<div class="flex w-full justify-between gap-2 rounded-sm border px-10 py-7">
+		<div class="flex justify-between gap-2 rounded-sm border px-10 py-7">
 			{@render coefficientOutput('DOTS', dots)}
 			{@render coefficientOutput('GL', gl)}
 			{@render coefficientOutput('Wilks', wilks)}
@@ -59,12 +59,12 @@
 			<div class="grid grid-cols-[1.5fr_1fr_auto] items-center gap-2">
 				<Label class="col-span-2 grid grid-cols-subgrid items-center gap-2">
 					Total
-					<WeightInput showClearButton bind:value={total} />
+					<DefaultNumberInput showClearButton bind:value={total} />
 				</Label>
 				<UnitSelector bind:value={totalUnit} />
 				<Label class="col-span-2 grid grid-cols-subgrid items-center gap-2">
 					Bodyweight
-					<WeightInput showClearButton bind:value={bodyweight} />
+					<DefaultNumberInput showClearButton bind:value={bodyweight} />
 				</Label>
 				<UnitSelector bind:value={bodyweightUnit} />
 			</div>
