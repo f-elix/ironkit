@@ -62,24 +62,22 @@
 			{/if}
 		</output>
 	</div>
-	<div class="mt-auto flex flex-col gap-8">
-		<div class="self-center">
-			<LargeWeightInput
-				id="weight"
-				label="Weight"
-				value={weight}
-				unit="kg"
-				oninput={(e) => {
-					allowNonStandardConfig = false;
-					weight = e.currentTarget.valueAsNumber;
-				}}
-			/>
-		</div>
+	<div class="mt-auto flex flex-col items-center gap-8">
+		<LargeWeightInput
+			id="weight"
+			label="Weight"
+			value={weight}
+			unit="kg"
+			oninput={(e) => {
+				allowNonStandardConfig = false;
+				weight = e.currentTarget.valueAsNumber;
+			}}
+		/>
 		<div
-			class="rounded-t-lg bg-muted/30 px-4 pb-6 pt-4"
+			class="self-stretch rounded-t-lg bg-muted/30 px-4 pb-6 pt-4"
 			in:fly|global={{ duration: 500, easing: expoOut, y: '100%' }}
 		>
-			<div class="mx-auto flex w-80 flex-col gap-4">
+			<div class="mx-auto flex max-w-80 flex-col gap-4">
 				<KgPlatesConfiguration
 					{kgPlateConfiguration}
 					onConfigurationChange={(newConfig) => {
