@@ -5,7 +5,3 @@
 	let weight = $state<Maybe<number>>();
 	let unit = $state<WeightUnit>('kg');
 </script>
-
-<div>
-	<LargeWeightInput label="Weight" id="weight" bind:value={weight} {unit} />
-</div>

@@ -8,9 +8,8 @@
 	import type { WeightUnit } from '$lib/types';
 	import Label from '$lib/components/ui/label/label.svelte';
 	import CheckIcon from '@lucide/svelte/icons/check';
-	import { fly } from 'svelte/transition';
-	import { expoOut } from 'svelte/easing';
 	import LargeWeightInput from '$lib/components/ui/LargeWeightInput.svelte';
+	import ToolLayout from '$lib/components/app/ToolLayout.svelte';
 
 	let weight = $state<Maybe<number>>();
 	let unit = $state<WeightUnit>('kg');
@@ -30,18 +29,18 @@
 	});
 </script>
 
-<div class="flex grow flex-col">
-	<div class="px-4 pb-2">
+<ToolLayout>
+	{#snippet output()}
 		<CopyOnClick
 			text={result.toString()}
 			class="sticky top-0 mx-auto flex h-auto flex-col items-center gap-2 px-10 py-7"
 			variant="outline"
 		>
 			{#snippet children({ copied })}
-				<output for="weight" class="flex items-center gap-2 rounded-md text-4xl">
+				<div class="flex items-center gap-2 rounded-md text-4xl">
 					<span>{result}</span>
 					<span>{altUnit}</span>
-				</output>
+				</div>
 				<span class="flex items-center gap-2 text-muted-foreground/70">
 					{#if copied}
 						Copied
@@ -52,30 +51,25 @@
 				</span>
 			{/snippet}
 		</CopyOnClick>
-	</div>
-	<div class="mt-auto flex flex-col items-center gap-8">
-		<LargeWeightInput label="Weight" id="weight" bind:value={weight} {unit} />
-		<div
-			class="self-stretch rounded-t-lg bg-muted/30 px-4 pb-6 pt-4"
-			in:fly|global={{ duration: 500, easing: expoOut, y: '100%' }}
-		>
-			<div class="mx-auto flex max-w-80 flex-col gap-4">
-				<div class="flex w-full items-center justify-between gap-2">
-					<span class="flex items-center gap-1">
-						<Label for="round">Round to nearest increment</Label>
-						<HintBadge
-							text="Kilos will be rounded to the nearest 2.5 and pounds to the nearest 5."
-						/>
-					</span>
-					<Switch id="round" bind:checked={round} />
-				</div>
-				<fieldset>
-					<div class="flex items-center justify-between gap-2">
-						<legend class="text-sm font-medium">Unit</legend>
-						<UnitSelector bind:value={unit} />
-					</div>
-				</fieldset>
+	{/snippet}
+	{#snippet input()}
+		<LargeWeightInput label="Weight" bind:value={weight} {unit} />
+	{/snippet}
+	{#snippet settings()}
+		<div class="mx-auto flex max-w-80 flex-col gap-4">
+			<div class="flex w-full items-center justify-between gap-2">
+				<span class="flex items-center gap-1">
+					<Label for="round-to-nearest">Round to nearest increment</Label>
+					<HintBadge text="Kilos will be rounded to the nearest 2.5 and pounds to the nearest 5." />
+				</span>
+				<Switch id="round-to-nearest" bind:checked={round} />
 			</div>
+			<fieldset>
+				<div class="flex items-center justify-between gap-2">
+					<legend class="text-sm font-medium">Unit</legend>
+					<UnitSelector bind:value={unit} />
+				</div>
+			</fieldset>
 		</div>
-	</div>
-</div>
+	{/snippet}
+</ToolLayout>
