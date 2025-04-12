@@ -35,6 +35,8 @@
 			return `Maximum weight is ${MAX_WEIGHT}kg`;
 		} else if (weight < actualBarWeight) {
 			return `Minimum weight is ${actualBarWeight}kg`;
+		} else if (!kgPlateConfiguration?.length) {
+			return 'Invalid weight';
 		}
 		return null;
 	});
