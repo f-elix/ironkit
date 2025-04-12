@@ -1,9 +1,9 @@
 <script lang="ts">
 	import ToolLayout from '$lib/components/app/ToolLayout.svelte';
-	import Label from '$lib/components/ui/label/label.svelte';
+	import { Label } from '$lib/shadcn/label';
 	import DefaultNumberInput from '$lib/components/ui/DefaultNumberInput.svelte';
 	import { calculateOneRepMax } from '$lib/components/1rm-calculator/oneRepMaxCalculator';
-	import Separator from '$lib/components/ui/separator/separator.svelte';
+	import { Separator } from '$lib/shadcn/separator';
 
 	const data = $state<{
 		weight: Maybe<number>;

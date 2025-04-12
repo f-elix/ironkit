@@ -2,10 +2,10 @@
 	import { calculateCoefficient } from '$lib/coefficients/calculateCoefficient';
 	import UnitSelector from '$lib/components/ui/UnitSelector.svelte';
 	import DefaultNumberInput from '$lib/components/ui/DefaultNumberInput.svelte';
-	import * as RadioGroup from '$lib/components/ui/radio-group';
+	import * as RadioGroup from '$lib/shadcn/radio-group';
 	import { GENDER_CLASSES, DEFAULT_WEIGHT_UNIT, DEFAULT_GENDER_CLASS } from '$lib/constants';
 	import type { GenderClass, WeightUnit } from '$lib/types';
-	import Label from '$lib/components/ui/label/label.svelte';
+	import { Label } from '$lib/shadcn/label';
 	import ToolLayout from '$lib/components/app/ToolLayout.svelte';
 
 	let bodyweight = $state<Maybe<number>>();

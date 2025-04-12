@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { WEIGHT_UNITS, DEFAULT_WEIGHT_UNIT } from '$lib/constants';
 	import type { WeightUnit } from '$lib/types';
-	import { buttonVariants } from '$lib/components/ui/button';
-	import { Label } from '$lib/components/ui/label';
+	import { buttonVariants } from '$lib/shadcn/button';
+	import { Label } from '$lib/shadcn/label';
 	import type { HTMLInputAttributes } from 'svelte/elements';
 
 	let {

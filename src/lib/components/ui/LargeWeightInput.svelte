@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Label from '$lib/components/ui/label/label.svelte';
+	import { Label } from '$lib/shadcn/label';
 	import type { WeightUnit } from '$lib/types';
 	import type { HTMLInputAttributes } from 'svelte/elements';
 	import XCircle from '@lucide/svelte/icons/circle-x';

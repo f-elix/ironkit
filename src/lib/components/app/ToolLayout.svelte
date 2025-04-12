@@ -25,7 +25,7 @@
 		<div
 			class={[
 				'self-stretch rounded-t-lg bg-muted/30 px-4 pb-6 pt-4',
-				'ease-out-expo duration-700 animate-in slide-in-from-bottom-full'
+				'duration-700 ease-out-expo animate-in slide-in-from-bottom-full'
 			]}
 		>
 			{@render settings?.()}

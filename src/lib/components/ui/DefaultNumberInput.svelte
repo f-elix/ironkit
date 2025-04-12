@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Input } from '$lib/components/ui/input';
+	import { Input } from '$lib/shadcn/input';
 	import XCircle from '@lucide/svelte/icons/circle-x';
 
 	let {

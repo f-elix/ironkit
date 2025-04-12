@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Button from '$lib/components/ui/button/button.svelte';
+	import Button from '$lib/shadcn/button/button.svelte';
 	import type { Snippet } from 'svelte';
 	import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
 	import { PAGE__ROOT } from '$lib/ROUTES';

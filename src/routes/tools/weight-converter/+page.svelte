@@ -1,12 +1,12 @@
 <script lang="ts">
 	import UnitSelector from '$lib/components/ui/UnitSelector.svelte';
 	import { getAltUnit, kgToLbs, lbsToKg } from '$lib/weight-units';
-	import { Switch } from '$lib/components/ui/switch';
+	import { Switch } from '$lib/shadcn/switch';
 	import CopyOnClick from '$lib/components/ui/CopyOnClick.svelte';
 	import HintBadge from '$lib/components/ui/HintBadge.svelte';
 	import { roundWeightToNearest } from '$lib/math/roundWeightToNearest';
 	import type { WeightUnit } from '$lib/types';
-	import Label from '$lib/components/ui/label/label.svelte';
+	import { Label } from '$lib/shadcn/label';
 	import CheckIcon from '@lucide/svelte/icons/check';
 	import LargeWeightInput from '$lib/components/ui/LargeWeightInput.svelte';
 	import ToolLayout from '$lib/components/app/ToolLayout.svelte';

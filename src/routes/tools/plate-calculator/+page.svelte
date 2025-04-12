@@ -1,8 +1,8 @@
 <script lang="ts">
 	import KgPlatesConfiguration from '$lib/components/plate-calculator/KgPlatesConfiguration.svelte';
 	import HintBadge from '$lib/components/ui/HintBadge.svelte';
-	import Switch from '$lib/components/ui/switch/switch.svelte';
-	import Label from '$lib/components/ui/label/label.svelte';
+	import { Switch } from '$lib/shadcn/switch';
+	import { Label } from '$lib/shadcn/label';
 	import LargeWeightInput from '$lib/components/ui/LargeWeightInput.svelte';
 	import KgPlatesRepresentation from '$lib/components/plate-calculator/KgPlatesRepresentation.svelte';
 	import {
@@ -13,7 +13,7 @@
 		type BarWeight,
 		type KgPlateConfiguration
 	} from '$lib/components/plate-calculator/plateCalculator';
-	import { buttonVariants } from '$lib/components/ui/button';
+	import { buttonVariants } from '$lib/shadcn/button';
 	import ToolLayout from '$lib/components/app/ToolLayout.svelte';
 
 	let weight = $state<Maybe<number>>();

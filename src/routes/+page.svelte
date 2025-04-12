@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Logo from '$lib/components/svg/Logo.svelte';
-	import Button from '$lib/components/ui/button/button.svelte';
+	import Button from '$lib/shadcn/button/button.svelte';
 	import { tools } from '$lib/data/tools';
 	import { viewTransitionName } from '$lib/ui/viewTransitionName';
 </script>

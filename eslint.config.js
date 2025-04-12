@@ -54,5 +54,8 @@ export default ts.config(
 				svelteConfig
 			}
 		}
+	},
+	{
+		ignores: ['src/lib/shadcn']
 	}
 );
