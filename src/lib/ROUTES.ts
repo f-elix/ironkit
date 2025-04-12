@@ -9,6 +9,7 @@
  * PAGES
  */
 export const PAGE__ROOT = `/`
+export const PAGE_tools_1rm_calculator = `/tools/1rm-calculator`
 export const PAGE_tools_coefficient_calculator = `/tools/coefficient-calculator`
 export const PAGE_tools_plate_calculator = `/tools/plate-calculator`
 export const PAGE_tools_weight_converter = `/tools/weight-converter`
@@ -101,7 +102,7 @@ export const currentSp = () => {
 * ```
 */
 export type KIT_ROUTES = {
-  PAGES: { '_ROOT': never, 'tools_coefficient_calculator': never, 'tools_plate_calculator': never, 'tools_weight_converter': never }
+  PAGES: { '_ROOT': never, 'tools_1rm_calculator': never, 'tools_coefficient_calculator': never, 'tools_plate_calculator': never, 'tools_weight_converter': never }
   SERVERS: Record<string, never>
   ACTIONS: Record<string, never>
   LINKS: Record<string, never>
