@@ -1,9 +1,6 @@
-import { useId } from 'bits-ui';
-
 export type BarWeight = 20 | 25;
 
 export type KgPlateConfigurationItem = {
-	id: string;
 	plate: number;
 	count: number;
 };
@@ -45,7 +42,7 @@ export const weightToKgPlatesConfiguration = (
 	}
 
 	if (weight === actualBarWeight) {
-		return [{ id: useId(), plate: 0, count: 0 }] as KgPlateConfiguration;
+		return [{ plate: 0, count: 0 }] as KgPlateConfiguration;
 	}
 
 	// Remove bar weight
@@ -72,7 +69,7 @@ export const weightToKgPlatesConfiguration = (
 			if (lastUsedPlate && lastUsedPlate.plate === currentPlate) {
 				lastUsedPlate.count++;
 			} else {
-				kgPlateConfiguration.push({ plate: currentPlate, id: useId(), count: 1 });
+				kgPlateConfiguration.push({ plate: currentPlate, count: 1 });
 			}
 			currentWeight -= currentPlate;
 		} else {

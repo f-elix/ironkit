@@ -12,11 +12,11 @@
 </script>
 
 {#if text}
-	<span class="hidden items-center touch:inline-flex">
+	<span class="touch:inline-flex hidden items-center">
 		<Dialog.Root>
 			<Dialog.Trigger>
 				{#snippet child({ props })}
-					<button {...props} class="text-muted-foreground" aria-label={label}>
+					<button {...props} type="button" class="text-muted-foreground" aria-label={label}>
 						{#if type === 'info'}
 							<InfoIcon size={16} />
 						{:else}
@@ -39,7 +39,7 @@
 			</Dialog.Content>
 		</Dialog.Root>
 	</span>
-	<span class="hidden items-center pointer:inline-flex">
+	<span class="pointer:inline-flex hidden items-center">
 		<Tooltip.Provider>
 			<Tooltip.Root delayDuration={100}>
 				<Tooltip.Trigger>

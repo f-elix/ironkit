@@ -3,7 +3,7 @@
 		ALL_PLATES,
 		type KgPlateConfiguration
 	} from '$lib/components/plate-calculator/plateCalculator';
-	import { useId } from 'bits-ui';
+	import MinusIcon from '@lucide/svelte/icons/minus';
 
 	let {
 		kgPlateConfiguration = [],
@@ -19,21 +19,29 @@
 			plateConfigurationItem.count++;
 		} else {
 			kgPlateConfiguration.push({
-				id: useId(),
 				plate,
 				count: 1
 			});
 		}
 		onConfigurationChange(kgPlateConfiguration);
 	};
+
+	const decreasePlateCount = (plate: number) => {
+		const plateConfigurationItem = kgPlateConfiguration?.find((p) => p.plate === plate);
+		if (plateConfigurationItem) {
+			plateConfigurationItem.count--;
+		}
+		onConfigurationChange(kgPlateConfiguration);
+	};
 </script>
 
-<div class="flex flex-wrap items-center gap-4 rounded-lg bg-muted/50 p-8">
+<div class="grid grid-flow-col grid-cols-3 grid-rows-3 gap-x-3 gap-y-4">
 	{#each ALL_PLATES as plate}
-		<span class="flex flex-col items-center gap-1">
+		{@const count = kgPlateConfiguration?.find((p) => p.plate === plate)?.count ?? 0}
+		<span class="flex items-center gap-1">
 			<button
 				class={[
-					'flex size-16 items-center justify-center rounded-full text-xs',
+					'flex size-12 items-center justify-center rounded-full text-xs',
 					plate === 25 && 'bg-kg-plate-red',
 					plate === 20 && 'bg-kg-plate-blue',
 					plate === 15 && 'bg-kg-plate-yellow text-kg-plate-black',
@@ -48,9 +56,18 @@
 			>
 				{plate}kg
 			</button>
-			<span class="text-base">
-				{kgPlateConfiguration?.find((p) => p.plate === plate)?.count ?? 0}x
+			<span class="text-base font-semibold">
+				{count}&times;
 			</span>
+			{#if count > 0}
+				<button
+					class="ml-1 rounded border border-current text-destructive"
+					aria-label="Remove one"
+					onclick={() => decreasePlateCount(plate)}
+				>
+					<MinusIcon class="size-4" />
+				</button>
+			{/if}
 		</span>
 	{/each}
 </div>

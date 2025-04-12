@@ -15,10 +15,6 @@
 		input?: Maybe<HTMLInputElement>;
 		unit: WeightUnit;
 	} = $props();
-
-	const onFocus = () => {
-		input?.select();
-	};
 </script>
 
 <div class="flex items-baseline gap-2">
@@ -29,7 +25,6 @@
 		step="1"
 		bind:value
 		bind:this={input}
-		onfocus={onFocus}
 		placeholder="0"
 		class={[
 			'w-32 border-b bg-transparent px-2 py-4 text-center text-xl font-medium placeholder:text-muted-foreground',
