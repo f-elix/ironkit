@@ -17,9 +17,9 @@
 	<ul class="flex flex-col gap-6 px-10">
 		{#each Object.values(tools) as { Icon, title, href }}
 			<li>
-				<Button variant="outline" size="lg" class="w-full" {href}>
+				<Button variant="secondary" size="lg" class="w-full px-4" {href}>
 					<span
-						class="flex items-center gap-2"
+						class="flex w-full items-center gap-2"
 						style="view-transition-name: {viewTransitionName(title)};"
 					>
 						<Icon class="size-4" />
