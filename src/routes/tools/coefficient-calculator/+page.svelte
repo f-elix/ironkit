@@ -57,11 +57,15 @@
 	{#snippet settings()}
 		<div class="flex flex-col gap-6">
 			<div class="grid grid-cols-[1.5fr_1fr_auto] items-center gap-2">
-				<Label>Total</Label>
-				<WeightInput showClearButton bind:value={total} />
+				<Label class="col-span-2 grid grid-cols-subgrid items-center gap-2">
+					Total
+					<WeightInput showClearButton bind:value={total} />
+				</Label>
 				<UnitSelector bind:value={totalUnit} />
-				<Label>Bodyweight</Label>
-				<WeightInput showClearButton bind:value={bodyweight} />
+				<Label class="col-span-2 grid grid-cols-subgrid items-center gap-2">
+					Bodyweight
+					<WeightInput showClearButton bind:value={bodyweight} />
+				</Label>
 				<UnitSelector bind:value={bodyweightUnit} />
 			</div>
 			<fieldset>

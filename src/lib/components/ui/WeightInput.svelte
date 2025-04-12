@@ -23,7 +23,11 @@
 	{#if showClearButton}
 		<button
 			type="button"
-			class="absolute right-2 top-1/2 -translate-y-1/2 pointer:hidden"
+			class={[
+				'absolute right-2 top-1/2 -translate-y-1/2',
+				'transition-colors duration-150 ease-linear',
+				!value && 'text-muted-foreground/50'
+			]}
 			aria-label="Clear entry"
 			tabindex="-1"
 			onclick={onClear}
