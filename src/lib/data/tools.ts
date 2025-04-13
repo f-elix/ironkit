@@ -3,12 +3,14 @@ import WeightConverterIcon from '@lucide/svelte/icons/weight';
 import {
 	PAGE_tools_1rm_calculator,
 	PAGE_tools_coefficient_calculator,
+	PAGE_tools_load_percentage_calculator,
 	PAGE_tools_plate_calculator,
 	PAGE_tools_weight_converter
 } from '$lib/ROUTES';
 import PlateCalculatorIcon from '$lib/components/svg/PlatesIcon.svelte';
 import CoefficientCalculatorIcon from '@lucide/svelte/icons/trophy';
 import OneRepMaxCalculatorIcon from '@lucide/svelte/icons/target';
+import LoadPercentageCalculatorIcon from '@lucide/svelte/icons/percent';
 
 export type Tool = {
 	href: string;
@@ -36,5 +38,10 @@ export const tools: Record<string, Tool> = {
 		href: PAGE_tools_1rm_calculator,
 		title: '1rm calculator',
 		Icon: OneRepMaxCalculatorIcon
+	},
+	loadPercentageCalculator: {
+		href: PAGE_tools_load_percentage_calculator,
+		title: 'Load percentage calculator',
+		Icon: LoadPercentageCalculatorIcon
 	}
 };

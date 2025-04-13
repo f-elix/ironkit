@@ -10,6 +10,7 @@
 	import CheckIcon from '@lucide/svelte/icons/check';
 	import LargeWeightInput from '$lib/components/ui/LargeWeightInput.svelte';
 	import ToolLayout from '$lib/components/app/ToolLayout.svelte';
+	import ResultCopyOnClick from '$lib/components/ui/ResultCopyOnClick.svelte';
 
 	let weight = $state<Maybe<number>>();
 	let unit = $state<WeightUnit>('kg');
@@ -31,26 +32,12 @@
 
 <ToolLayout>
 	{#snippet output()}
-		<CopyOnClick
-			text={result.toString()}
-			class="sticky top-0 mx-auto flex h-auto flex-col items-center gap-2 px-10 py-7"
-			variant="outline"
-		>
-			{#snippet children({ copied })}
-				<div class="flex items-center gap-2 rounded-md text-4xl">
-					<span>{result}</span>
-					<span>{altUnit}</span>
-				</div>
-				<span class="flex items-center gap-2 text-muted-foreground/70">
-					{#if copied}
-						Copied
-						<CheckIcon class="size-4" />
-					{:else}
-						Click to copy
-					{/if}
-				</span>
-			{/snippet}
-		</CopyOnClick>
+		<ResultCopyOnClick text={result.toString()}>
+			<span class="text-4xl">
+				{result}
+				{altUnit}
+			</span>
+		</ResultCopyOnClick>
 	{/snippet}
 	{#snippet input()}
 		<LargeWeightInput label="Weight" bind:value={weight} {unit} />
