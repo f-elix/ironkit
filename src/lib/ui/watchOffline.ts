@@ -3,8 +3,8 @@ import { toast } from 'svelte-sonner';
 export const watchOffline = () => {
 	window.addEventListener('offline', () => {
 		toast.dismiss();
-		toast.warning('Looks like you are offline.', {
-			// description: 'Changes will be saved locally. Connect to the internet to sync to the cloud.',
+		toast.info('Looks like you are offline.', {
+			description: 'No problem, you can still use the app.',
 			position: 'top-center',
 			duration: 7000
 		});
