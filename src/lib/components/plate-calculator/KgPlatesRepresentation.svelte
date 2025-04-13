@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { type KgPlateConfiguration } from '$lib/components/plate-calculator/plateCalculator';
+	import { type KgPlateConfiguration } from '$lib/plateCalculator';
 	import { flip } from 'svelte/animate';
 	import { expoOut } from 'svelte/easing';
 	import { fly } from 'svelte/transition';

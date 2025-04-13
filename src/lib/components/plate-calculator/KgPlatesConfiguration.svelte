@@ -1,8 +1,5 @@
 <script lang="ts">
-	import {
-		ALL_PLATES,
-		type KgPlateConfiguration
-	} from '$lib/components/plate-calculator/plateCalculator';
+	import { ALL_PLATES, type KgPlateConfiguration } from '$lib/plateCalculator';
 	import MinusIcon from '@lucide/svelte/icons/minus';
 
 	let {

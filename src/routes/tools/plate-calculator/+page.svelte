@@ -12,7 +12,7 @@
 		weightToKgPlatesConfiguration,
 		type BarWeight,
 		type KgPlateConfiguration
-	} from '$lib/components/plate-calculator/plateCalculator';
+	} from '$lib/plateCalculator';
 	import { buttonVariants } from '$lib/shadcn/button';
 	import ToolLayout from '$lib/components/app/ToolLayout.svelte';
 
