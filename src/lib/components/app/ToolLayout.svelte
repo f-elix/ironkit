@@ -24,7 +24,7 @@
 		{@render input?.()}
 		<div
 			class={[
-				'self-stretch rounded-t-lg bg-muted/30 px-4 pb-6 pt-4',
+				'self-stretch rounded-t-lg bg-muted/30 p-4 pt-6',
 				'duration-700 ease-out-expo animate-in slide-in-from-bottom-full'
 			]}
 		>
