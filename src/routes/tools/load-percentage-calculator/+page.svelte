@@ -11,7 +11,7 @@
 	import { roundWeightToNearest } from '$lib/math/roundWeightToNearest';
 
 	let unit = $state<WeightUnit>('kg');
-	let oneRepMax = $state<Maybe<number>>(300);
+	let oneRepMax = $state<Maybe<number>>();
 	let percentage = $state<number>(50);
 	let round = $state<boolean>(true);
 
