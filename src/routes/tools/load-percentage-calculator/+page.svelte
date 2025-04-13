@@ -12,7 +12,7 @@
 
 	let unit = $state<WeightUnit>('kg');
 	let oneRepMax = $state<Maybe<number>>();
-	let percentage = $state<number>(50);
+	let percentage = $state<number>(60);
 	let round = $state<boolean>(true);
 
 	let currentWeight = $derived.by(() => {
@@ -49,7 +49,10 @@
 	{/snippet}
 	{#snippet settings()}
 		<div class="mx-auto flex max-w-80 flex-col gap-4">
-			<Slider type="single" bind:value={percentage} min={50} max={100} step={2.5} />
+			<div class="flex flex-col gap-4">
+				<Label>Percentage</Label>
+				<Slider type="single" bind:value={percentage} min={30} max={110} step={2.5} />
+			</div>
 			<div class="mt-6 flex w-full items-center justify-between gap-2">
 				<span class="flex items-center gap-1">
 					<Label for="round-to-nearest">Round to nearest increment</Label>
