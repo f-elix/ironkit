@@ -16,6 +16,7 @@
 				page.error,
 				null,
 				2
-			)}</pre>
+			)}
+		</pre>
 	{/if}
 </div>
