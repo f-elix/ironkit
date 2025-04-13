@@ -20,7 +20,7 @@
 	<output for={outputIdList} class="px-4 pb-2">
 		{@render output?.()}
 	</output>
-	<form use:setup class="mt-auto flex flex-col items-center gap-8">
+	<form use:setup class="mt-auto flex flex-col items-center gap-8" novalidate>
 		{@render input?.()}
 		<div
 			class={[
