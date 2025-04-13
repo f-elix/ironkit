@@ -19,7 +19,8 @@
 				Copied
 				<CheckIcon class="size-4" />
 			{:else}
-				Click to copy
+				<span class="hidden pointer:inline">Click to copy</span>
+				<span class="hidden touch:inline">Tap to copy</span>
 			{/if}
 		</span>
 	{/snippet}
