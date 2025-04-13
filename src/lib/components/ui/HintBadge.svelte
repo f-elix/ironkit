@@ -4,14 +4,19 @@
 	import InfoIcon from '@lucide/svelte/icons/info';
 	import CircleHelpIcon from '@lucide/svelte/icons/circle-help';
 	import { Button } from '$lib/shadcn/button';
+	import type { Snippet } from 'svelte';
 
-	let { type = 'info', text }: { type?: 'info' | 'help'; text: string } = $props();
+	let {
+		type = 'info',
+		text,
+		children
+	}: { type?: 'info' | 'help'; text?: string; children?: Snippet } = $props();
 
 	const label = type === 'info' ? 'More information' : 'Help';
 	const iconSize = 16;
 </script>
 
-{#if text}
+{#if text || children}
 	<span class="hidden items-center touch:inline-flex">
 		<Dialog.Root>
 			<Dialog.Trigger>
@@ -29,7 +34,11 @@
 				class="max-w-72 rounded-sm border-none bg-accent p-4 text-secondary-foreground [&_[data-dialog-close]:not(.close-btn)]:hidden"
 			>
 				<div class="flex flex-col gap-8">
-					<p>{text}</p>
+					{#if text}
+						<p>{text}</p>
+					{:else}
+						{@render children?.()}
+					{/if}
 					<Dialog.Close>
 						{#snippet child({ props })}
 							<Button {...props} class="close-btn self-end" size="sm">OK</Button>
@@ -57,8 +66,15 @@
 						</button>
 					{/snippet}
 				</Tooltip.Trigger>
-				<Tooltip.Content sideOffset={8} class="max-w-80 border-muted p-3 text-sm shadow-lg">
-					{text}
+				<Tooltip.Content
+					sideOffset={8}
+					class="max-w-80 border-muted p-3 text-left text-sm shadow-lg"
+				>
+					{#if text}
+						<p>{text}</p>
+					{:else}
+						{@render children?.()}
+					{/if}
 				</Tooltip.Content>
 			</Tooltip.Root>
 		</Tooltip.Provider>

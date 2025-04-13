@@ -2,8 +2,8 @@
 	import ToolLayout from '$lib/components/app/ToolLayout.svelte';
 	import { Label } from '$lib/shadcn/label';
 	import DefaultNumberInput from '$lib/components/ui/DefaultNumberInput.svelte';
-	import { calculateOneRepMax } from '$lib/oneRepMaxCalculator';
-	import { Separator } from '$lib/shadcn/separator';
+	import { calculateOneRepMax, FORMULAS } from '$lib/oneRepMaxCalculator';
+	import HintBadge from '$lib/components/ui/HintBadge.svelte';
 
 	const data = $state<{
 		weight: Maybe<number>;
@@ -14,13 +14,11 @@
 	});
 
 	let oneRepMax = $derived(calculateOneRepMax(data.weight, data.reps));
-
-	const FORMULAS = ['epley', 'brzycki', 'lombardi', 'mcglothin', 'mayhew', 'wathan'] as const;
 </script>
 
-{#snippet formulaResult(label: string, value: number)}
+{#snippet mainResult(label: string, value: number)}
 	<div class="flex flex-col items-center gap-2 text-center text-xl leading-none">
-		<dt class="text-sm capitalize text-muted-foreground">
+		<dt class="text-sm capitalize">
 			{label}
 		</dt>
 		<dd class="font-bold">{value}</dd>
@@ -29,16 +27,34 @@
 
 <ToolLayout>
 	{#snippet output()}
-		<!-- Output all the one rep max values for each formula -->
-		<div class="rounded-sm border p-5">
+		<div class="flex flex-col gap-4">
+			<p class="text-sm text-muted-foreground">The following formulas are used:</p>
 			<dl class="grid grid-cols-3 gap-x-10 gap-y-5">
-				{#each FORMULAS as formula}
-					{@render formulaResult(formula, oneRepMax[formula])}
+				{#each Object.entries(FORMULAS) as [key, formula]}
+					<div class="flex flex-col items-center gap-2 text-center text-sm leading-none">
+						<dt class="flex items-center gap-1 text-base capitalize text-muted-foreground">
+							<span>{formula.label}</span>
+							<HintBadge>
+								<div class="flex flex-col gap-1">
+									<h2 class="text-base font-bold">{formula.label}</h2>
+									<p class="text-sm">{formula.description}</p>
+									<h3 class="text-base font-bold">Best for</h3>
+									<p class="text-sm">{formula.bestFor}</p>
+									<h3 class="text-base font-bold">Formula</h3>
+									<p class="text-sm">{formula.formula}</p>
+								</div>
+							</HintBadge>
+						</dt>
+						<dd>{oneRepMax[key as keyof typeof oneRepMax]}</dd>
+					</div>
 				{/each}
-				<Separator class="col-span-3" />
-				{@render formulaResult('Min', oneRepMax.min)}
-				{@render formulaResult('Average', oneRepMax.average)}
-				{@render formulaResult('Max', oneRepMax.max)}
+			</dl>
+		</div>
+		<div class="mt-6 rounded-sm border bg-muted p-4 first-line:rounded-sm">
+			<dl class="grid grid-cols-3 gap-x-10 gap-y-5">
+				{@render mainResult('Min', oneRepMax.min)}
+				{@render mainResult('Average', oneRepMax.average)}
+				{@render mainResult('Max', oneRepMax.max)}
 			</dl>
 		</div>
 	{/snippet}
@@ -53,8 +69,8 @@
 
 {#snippet inputWrapper(label: string, value: keyof typeof data)}
 	<div class="flex items-center gap-2 pt-4">
-		<Label class="relative flex w-20 flex-col">
-			<span class="absolute bottom-full left-0 text-sm font-normal text-muted-foreground">
+		<Label class="relative flex w-20 flex-col gap-2">
+			<span class="absolute bottom-full left-0 text-sm font-normal">
 				{label}
 			</span>
 			<DefaultNumberInput bind:value={data[value]} showClearButton />
