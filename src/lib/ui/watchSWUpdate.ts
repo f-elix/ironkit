@@ -1,3 +1,4 @@
+import { dev } from '$app/environment';
 import { toast } from 'svelte-sonner';
 
 const showNotification = (newSW: ServiceWorker) => {
@@ -15,6 +16,9 @@ const showNotification = (newSW: ServiceWorker) => {
 };
 
 export const watchSWUpdate = async () => {
+	if (dev) {
+		return;
+	}
 	const registration = await navigator.serviceWorker.ready;
 	registration.addEventListener('updatefound', () => {
 		const newSW = registration.installing;
