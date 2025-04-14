@@ -4,7 +4,12 @@ import { observablePersistIndexedDB } from '@legendapp/state/persist-plugins/ind
 import { syncObservable } from '@legendapp/state/sync';
 import { shouldNeverHappen } from '$lib/shouldNeverHappen';
 
-export const TABLE_NAMES = ['weightConverter', 'coefficientCalculator', 'plateCalculator'] as const;
+export const TABLE_NAMES = [
+	'weightConverter',
+	'coefficientCalculator',
+	'plateCalculator',
+	'loadPercentageCalculator'
+] as const;
 
 export type TableName = (typeof TABLE_NAMES)[number];
 
