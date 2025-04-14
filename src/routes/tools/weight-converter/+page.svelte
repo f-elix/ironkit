@@ -4,15 +4,18 @@
 	import { Switch } from '$lib/shadcn/switch';
 	import HintBadge from '$lib/components/ui/HintBadge.svelte';
 	import { roundWeightToNearest } from '$lib/math/roundWeightToNearest';
-	import type { WeightUnit } from '$lib/types';
 	import { Label } from '$lib/shadcn/label';
 	import LargeWeightInput from '$lib/components/ui/LargeWeightInput.svelte';
 	import ToolLayout from '$lib/components/app/ToolLayout.svelte';
 	import ResultCopyOnClick from '$lib/components/ui/ResultCopyOnClick.svelte';
+	import { use$ } from 'legend-svelte';
+	import { weightConverter$ } from '$lib/db/weightConverter$';
+
+	let weightConverter = use$(weightConverter$);
+	let unit = $derived(weightConverter.current.unit);
+	let round = $derived(weightConverter.current.round);
 
 	let weight = $state<Maybe<number>>();
-	let unit = $state<WeightUnit>('kg');
-	let round = $state(false);
 
 	let altUnit = $derived(getAltUnit(unit));
 	let result = $derived.by(() => {
@@ -47,12 +50,15 @@
 					<Label for="round-to-nearest">Round to nearest increment</Label>
 					<HintBadge text="Kilos will be rounded to the nearest 2.5 and pounds to the nearest 5." />
 				</span>
-				<Switch id="round-to-nearest" bind:checked={round} />
+				<Switch
+					id="round-to-nearest"
+					bind:checked={() => round, (v) => weightConverter$.round.set(v)}
+				/>
 			</div>
 			<fieldset>
 				<div class="flex items-center justify-between gap-2">
 					<legend class="text-sm font-medium">Unit</legend>
-					<UnitSelector bind:value={unit} />
+					<UnitSelector bind:value={() => unit, (v) => weightConverter$.unit.set(v)} />
 				</div>
 			</fieldset>
 		</div>
