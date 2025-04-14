@@ -13,6 +13,9 @@ const config = {
 				config.exclude.push('../src/lib/shadcn/**/*', '../src/lib/ROUTES.ts');
 				return config;
 			}
+		},
+		alias: {
+			'legend-svelte': './src/legend-svelte/index.ts'
 		}
 	}
 };

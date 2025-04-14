@@ -59,6 +59,7 @@
 		]
 	},
 	"dependencies": {
+		"@legendapp/state": "3.0.0-beta.30",
 		"@svelte-put/copy": "^4.0.0",
 		"powerlifting-formulas": "^0.2.3",
 		"runed": "^0.25.0"

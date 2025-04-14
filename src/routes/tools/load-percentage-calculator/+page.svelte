@@ -2,18 +2,21 @@
 	import ToolLayout from '$lib/components/app/ToolLayout.svelte';
 	import LargeWeightInput from '$lib/components/ui/LargeWeightInput.svelte';
 	import ResultCopyOnClick from '$lib/components/ui/ResultCopyOnClick.svelte';
-	import type { WeightUnit } from '$lib/types';
 	import { Label } from '$lib/shadcn/label';
 	import { Switch } from '$lib/shadcn/switch';
 	import HintBadge from '$lib/components/ui/HintBadge.svelte';
 	import { Slider } from '$lib/shadcn/slider';
 	import UnitSelector from '$lib/components/ui/UnitSelector.svelte';
 	import { roundWeightToNearest } from '$lib/math/roundWeightToNearest';
+	import { loadPercentageCalculator$ } from '$lib/db/loadPercentageCalculator$';
+	import { use$ } from 'legend-svelte';
 
-	let unit = $state<WeightUnit>('kg');
+	const loadPercentageCalculator = use$(loadPercentageCalculator$);
+	let unit = $derived(loadPercentageCalculator.current.unit);
+	let round = $derived(loadPercentageCalculator.current.round);
+
 	let oneRepMax = $state<Maybe<number>>();
 	let percentage = $state<number>(60);
-	let round = $state<boolean>(true);
 
 	let currentWeight = $derived.by(() => {
 		if (!oneRepMax) {
@@ -58,12 +61,15 @@
 					<Label for="round-to-nearest">Round to nearest increment</Label>
 					<HintBadge text="Kilos will be rounded to the nearest 2.5 and pounds to the nearest 5." />
 				</span>
-				<Switch id="round-to-nearest" bind:checked={round} />
+				<Switch
+					id="round-to-nearest"
+					bind:checked={() => round, (v) => loadPercentageCalculator$.round.set(v)}
+				/>
 			</div>
 			<fieldset>
 				<div class="flex items-center justify-between gap-2">
 					<legend class="text-sm font-medium">Unit</legend>
-					<UnitSelector bind:value={unit} />
+					<UnitSelector bind:value={() => unit, (v) => loadPercentageCalculator$.unit.set(v)} />
 				</div>
 			</fieldset>
 		</div>

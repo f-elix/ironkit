@@ -10,16 +10,29 @@
 		kgPlateConfigurationWeight,
 		MAX_WEIGHT,
 		weightToKgPlatesConfiguration,
-		type BarWeight,
 		type KgPlateConfiguration
 	} from '$lib/plateCalculator';
 	import { buttonVariants } from '$lib/shadcn/button';
 	import ToolLayout from '$lib/components/app/ToolLayout.svelte';
+	import type { BarWeight } from '$lib/types';
+	import { plateCalculator$ } from '$lib/db/plateCalculator$';
+	import { use$ } from 'legend-svelte';
+
+	const plateCalculator = use$(plateCalculator$);
+	let heavyCollars = $derived(plateCalculator.current.heavyCollars);
+	let barWeight = $derived(plateCalculator.current.barWeight);
+	let allowNonStandardConfig = $derived(plateCalculator.current.allowNonStandardConfig);
+
+	const barWeightGroup = $state({
+		set current(v: BarWeight) {
+			plateCalculator$.barWeight.set(v);
+		},
+		get current() {
+			return barWeight;
+		}
+	});
 
 	let weight = $state<Maybe<number>>();
-	let heavyCollars = $state(false);
-	let barWeight = $state<BarWeight>(20);
-	let allowNonStandardConfig = $state(false);
 
 	let userKgPlateConfiguration = $state<KgPlateConfiguration>([]);
 	let kgPlateConfiguration = $derived(
@@ -87,7 +100,12 @@
 						text="If enabled, you will be able to add plates in a non-standard way. If disabled, the plate configuration will always be valid, even if it means adding another plate than the one you selected."
 					/>
 				</span>
-				<Switch id="allow-non-standard-configuration" bind:checked={allowNonStandardConfig} />
+				<Switch
+					id="allow-non-standard-configuration"
+					bind:checked={
+						() => allowNonStandardConfig, (v) => plateCalculator$.allowNonStandardConfig.set(v)
+					}
+				/>
 			</div>
 			<div class="flex w-full items-center justify-between gap-3">
 				<span class="flex items-center gap-1">
@@ -96,7 +114,10 @@
 						text="Competition collars weight 2.5kg each (5kg total), so using them will alter the plate configuration."
 					/>
 				</span>
-				<Switch id="heavy-collars" bind:checked={heavyCollars} />
+				<Switch
+					id="heavy-collars"
+					bind:checked={() => heavyCollars, (v) => plateCalculator$.heavyCollars.set(v)}
+				/>
 			</div>
 			<fieldset>
 				<div class="flex items-center justify-between gap-2">
@@ -104,7 +125,12 @@
 					<div class="flex items-center justify-center gap-1">
 						{#each [20, 25] as weight}
 							<label>
-								<input type="radio" value={weight} class="peer sr-only" bind:group={barWeight} />
+								<input
+									type="radio"
+									value={weight}
+									class="peer sr-only"
+									bind:group={barWeightGroup.current}
+								/>
 								<span
 									class="border border-muted-foreground/50 ring-ring ring-offset-2 peer-checked:border-primary peer-checked:bg-accent peer-focus-visible:ring-2 {buttonVariants(
 										{
