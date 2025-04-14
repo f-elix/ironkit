@@ -11,7 +11,7 @@
 	import { use$ } from 'legend-svelte';
 	import { weightConverter$ } from '$lib/db/weightConverter$';
 
-	let weightConverter = use$(weightConverter$);
+	const weightConverter = use$(weightConverter$);
 	let unit = $derived(weightConverter.current.unit);
 	let round = $derived(weightConverter.current.round);
 

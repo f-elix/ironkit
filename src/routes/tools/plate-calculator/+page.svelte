@@ -18,7 +18,7 @@
 	import { plateCalculator$ } from '$lib/db/plateCalculator$';
 	import { use$ } from 'legend-svelte';
 
-	let plateCalculator = use$(plateCalculator$);
+	const plateCalculator = use$(plateCalculator$);
 	let heavyCollars = $derived(plateCalculator.current.heavyCollars);
 	let barWeight = $derived(plateCalculator.current.barWeight);
 	let allowNonStandardConfig = $derived(plateCalculator.current.allowNonStandardConfig);

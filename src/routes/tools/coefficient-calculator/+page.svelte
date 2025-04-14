@@ -9,12 +9,13 @@
 	import { coefficientCalculator$ } from '$lib/db/coefficientCalculator$';
 	import { use$ } from 'legend-svelte';
 
-	let bodyweight = $state<Maybe<number>>();
-	let coefficientCalculator = use$(coefficientCalculator$);
+	const coefficientCalculator = use$(coefficientCalculator$);
 	let bodyweightUnit = $derived(coefficientCalculator.current.bodyweightUnit);
 	let total = $state<Maybe<number>>();
 	let totalUnit = $derived(coefficientCalculator.current.totalUnit);
 	let genderClass = $derived(coefficientCalculator.current.genderClass);
+
+	let bodyweight = $state<Maybe<number>>();
 
 	let wilks = $derived(
 		calculateCoefficient({
