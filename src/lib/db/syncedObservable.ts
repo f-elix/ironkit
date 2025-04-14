@@ -4,7 +4,7 @@ import { observablePersistIndexedDB } from '@legendapp/state/persist-plugins/ind
 import { syncObservable } from '@legendapp/state/sync';
 import { shouldNeverHappen } from '$lib/shouldNeverHappen';
 
-export const TABLE_NAMES = ['weightConverter', 'coefficientCalculator'] as const;
+export const TABLE_NAMES = ['weightConverter', 'coefficientCalculator', 'plateCalculator'] as const;
 
 export type TableName = (typeof TABLE_NAMES)[number];
 
@@ -13,7 +13,7 @@ export const persistOptions = configureSynced({
 		plugin: observablePersistIndexedDB({
 			databaseName: 'ironkit-db',
 			version: 1,
-			tableNames: ['weightConverter', 'coefficientCalculator']
+			tableNames: [...TABLE_NAMES]
 		})
 	}
 });

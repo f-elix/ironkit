@@ -1,4 +1,4 @@
-export type BarWeight = 20 | 25;
+import type { BarWeight } from '$lib/types';
 
 export type KgPlateConfigurationItem = {
 	plate: number;

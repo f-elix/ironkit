@@ -5,3 +5,5 @@ export type WeightUnit = (typeof WEIGHT_UNITS)[number];
 export type GenderClass = (typeof GENDER_CLASSES)[number];
 
 export type CoefficientType = (typeof COEFFICIENT_TYPES)[number];
+
+export type BarWeight = 20 | 25;
