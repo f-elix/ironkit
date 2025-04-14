@@ -13,7 +13,7 @@
 	}: { type?: 'info' | 'help'; text?: string; children?: Snippet } = $props();
 
 	const label = type === 'info' ? 'More information' : 'Help';
-	const iconSize = 16;
+	const iconSize = '1em';
 </script>
 
 {#if text || children}
@@ -23,9 +23,9 @@
 				{#snippet child({ props })}
 					<button {...props} type="button" class="text-muted-foreground" aria-label={label}>
 						{#if type === 'info'}
-							<InfoIcon size={16} />
+							<InfoIcon size={iconSize} />
 						{:else}
-							<CircleHelpIcon size={16} />
+							<CircleHelpIcon size={iconSize} />
 						{/if}
 					</button>
 				{/snippet}

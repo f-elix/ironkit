@@ -32,8 +32,8 @@
 			<dl class="grid grid-cols-3 gap-x-10 gap-y-5">
 				{#each Object.entries(FORMULAS) as [key, formula]}
 					<div class="flex flex-col items-center gap-2 text-center text-sm leading-none">
-						<dt class="flex items-center gap-1 text-base capitalize text-muted-foreground">
-							<span>{formula.label}</span>
+						<dt class="flex items-center gap-1">
+							<span class="text-sm capitalize text-muted-foreground">{formula.label}</span>
 							<HintBadge>
 								<div class="flex flex-col gap-1">
 									<h2 class="text-base font-bold">{formula.label}</h2>
