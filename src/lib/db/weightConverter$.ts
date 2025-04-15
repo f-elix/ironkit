@@ -1,6 +1,6 @@
 import { DEFAULT_WEIGHT_UNIT } from '$lib/constants';
+import { syncedObservable } from '$lib/db/syncedObservable';
 import type { WeightUnit } from '$lib/types';
-import { syncedObservable } from './syncedObservable';
 
 export type WeightConverter = {
 	unit: WeightUnit;
