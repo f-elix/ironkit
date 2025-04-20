@@ -34,6 +34,10 @@ self.addEventListener('fetch', (event) => {
 		return;
 	}
 
+	if (event.request.url.includes('/api/sync')) {
+		return;
+	}
+
 	const respond = async () => {
 		const url = new URL(event.request.url);
 		const cache = await caches.open(CACHE);

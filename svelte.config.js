@@ -15,7 +15,7 @@ const config = {
 			}
 		},
 		alias: {
-			'legend-svelte': './src/legend-svelte/index.ts'
+			$triplit: 'triplit'
 		}
 	}
 };

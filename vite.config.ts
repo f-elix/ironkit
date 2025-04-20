@@ -11,6 +11,7 @@ export default defineConfig({
 			post_update_run: 'npm exec prettier ./src/lib/ROUTES.ts -- -w'
 		})
 	],
+	server: { fs: { allow: ['./triplit'] } },
 	test: {
 		workspace: [
 			{

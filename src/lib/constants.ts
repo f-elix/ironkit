@@ -1,5 +1,7 @@
 export const APP_TITLE = 'Ironkit';
 
+export const ANON_USER_ID = 'anon' as const;
+
 export const LIFT_TYPES = ['squat', 'bench', 'deadlift'] as const;
 
 export const WEIGHT_UNITS = ['kg', 'lbs'] as const;

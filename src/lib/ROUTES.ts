@@ -19,6 +19,8 @@ export const PAGE_tools_weight_converter = `/tools/weight-converter`;
 /**
  * SERVERS
  */
+export const SERVER_GET_api_sync = `/api/sync`;
+export const SERVER_POST_api_sync = `/api/sync`;
 
 /**
  * ACTIONS
@@ -110,7 +112,7 @@ export type KIT_ROUTES = {
 		tools_training_log: never;
 		tools_weight_converter: never;
 	};
-	SERVERS: Record<string, never>;
+	SERVERS: { GET_api_sync: never; POST_api_sync: never };
 	ACTIONS: Record<string, never>;
 	LINKS: Record<string, never>;
 	Params: Record<string, never>;

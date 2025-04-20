@@ -3,18 +3,20 @@
 	import UnitSelector from '$lib/components/ui/UnitSelector.svelte';
 	import DefaultNumberInput from '$lib/components/ui/DefaultNumberInput.svelte';
 	import * as RadioGroup from '$lib/shadcn/radio-group';
-	import { GENDER_CLASSES } from '$lib/constants';
+	import { DEFAULT_WEIGHT_UNIT, DEFAULT_GENDER_CLASS, GENDER_CLASSES } from '$lib/constants';
 	import { Label } from '$lib/shadcn/label';
 	import ToolLayout from '$lib/components/app/ToolLayout.svelte';
-	import { coefficientCalculator$ } from '$lib/db/coefficientCalculator$';
-	import { use$ } from 'legend-svelte';
+	import { useQuery } from '@triplit/svelte';
+	import { triplit } from '$lib/db/triplit';
+	import type { GenderClass } from '$lib/types';
 
-	const coefficientCalculator = use$(coefficientCalculator$);
-	let bodyweightUnit = $derived(coefficientCalculator.current.bodyweightUnit);
+	const query = useQuery(triplit, triplit.query('coefficientCalculator'));
+	let coefficientCalculator = $derived(query.results?.[0]);
+	let bodyweightUnit = $derived(coefficientCalculator?.bodyweightUnit ?? DEFAULT_WEIGHT_UNIT);
+	let totalUnit = $derived(coefficientCalculator?.totalUnit ?? DEFAULT_WEIGHT_UNIT);
+	let genderClass = $derived(coefficientCalculator?.genderClass ?? DEFAULT_GENDER_CLASS);
+
 	let total = $state<Maybe<number>>();
-	let totalUnit = $derived(coefficientCalculator.current.totalUnit);
-	let genderClass = $derived(coefficientCalculator.current.genderClass);
-
 	let bodyweight = $state<Maybe<number>>();
 
 	let wilks = $derived(
@@ -65,21 +67,39 @@
 					<DefaultNumberInput showClearButton bind:value={total} />
 				</Label>
 				<UnitSelector
-					bind:value={() => totalUnit, (v) => coefficientCalculator$.totalUnit.set(v)}
+					value={totalUnit}
+					onValueChange={(v) => {
+						triplit.insert('coefficientCalculator', {
+							...coefficientCalculator,
+							totalUnit: v
+						});
+					}}
 				/>
 				<Label class="col-span-2 grid grid-cols-subgrid items-center gap-2">
 					Bodyweight
 					<DefaultNumberInput showClearButton bind:value={bodyweight} />
 				</Label>
 				<UnitSelector
-					bind:value={() => bodyweightUnit, (v) => coefficientCalculator$.bodyweightUnit.set(v)}
+					value={bodyweightUnit}
+					onValueChange={(v) => {
+						triplit.insert('coefficientCalculator', {
+							...coefficientCalculator,
+							bodyweightUnit: v
+						});
+					}}
 				/>
 			</div>
 			<fieldset>
 				<legend class="sr-only">Gender class</legend>
 				<RadioGroup.Root
 					class="grid grid-cols-2 gap-4"
-					bind:value={() => genderClass, (v) => coefficientCalculator$.genderClass.set(v)}
+					value={genderClass}
+					onValueChange={(v) => {
+						triplit.insert('coefficientCalculator', {
+							...coefficientCalculator,
+							genderClass: v as GenderClass
+						});
+					}}
 				>
 					{#each GENDER_CLASSES as genderClassOption}
 						<Label>
@@ -88,6 +108,7 @@
 								class={[
 									'rounded border border-muted py-4 text-center capitalize',
 									'transition-colors duration-100 ease-linear',
+									'cursor-pointer hover:bg-muted',
 									'peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-secondary'
 								]}
 							>

@@ -14,18 +14,21 @@
 	} from '$lib/plateCalculator';
 	import { buttonVariants } from '$lib/shadcn/button';
 	import ToolLayout from '$lib/components/app/ToolLayout.svelte';
-	import type { BarWeight } from '$lib/types';
-	import { plateCalculator$ } from '$lib/db/plateCalculator$';
-	import { use$ } from 'legend-svelte';
+	import { useQuery } from '@triplit/svelte';
+	import { triplit } from '$lib/db/triplit';
 
-	const plateCalculator = use$(plateCalculator$);
-	let heavyCollars = $derived(plateCalculator.current.heavyCollars);
-	let barWeight = $derived(plateCalculator.current.barWeight);
-	let allowNonStandardConfig = $derived(plateCalculator.current.allowNonStandardConfig);
+	const query = useQuery(triplit, triplit.query('plateCalculator'));
+	let plateCalculator = $derived(query.results?.[0]);
+	let heavyCollars = $derived(plateCalculator?.heavyCollars ?? false);
+	let barWeight = $derived(plateCalculator?.barWeight ?? 20);
+	let allowNonStandardConfig = $derived(plateCalculator?.allowNonStandardConfig ?? false);
 
 	const barWeightGroup = $state({
-		set current(v: BarWeight) {
-			plateCalculator$.barWeight.set(v);
+		set current(v) {
+			triplit.insert('plateCalculator', {
+				...plateCalculator,
+				barWeight: v
+			});
 		},
 		get current() {
 			return barWeight;
@@ -102,9 +105,13 @@
 				</span>
 				<Switch
 					id="allow-non-standard-configuration"
-					bind:checked={
-						() => allowNonStandardConfig, (v) => plateCalculator$.allowNonStandardConfig.set(v)
-					}
+					checked={allowNonStandardConfig}
+					onCheckedChange={(v) => {
+						triplit.insert('plateCalculator', {
+							...plateCalculator,
+							allowNonStandardConfig: v
+						});
+					}}
 				/>
 			</div>
 			<div class="flex w-full items-center justify-between gap-3">
@@ -116,7 +123,13 @@
 				</span>
 				<Switch
 					id="heavy-collars"
-					bind:checked={() => heavyCollars, (v) => plateCalculator$.heavyCollars.set(v)}
+					checked={heavyCollars}
+					onCheckedChange={(v) => {
+						triplit.insert('plateCalculator', {
+							...plateCalculator,
+							heavyCollars: v
+						});
+					}}
 				/>
 			</div>
 			<fieldset>

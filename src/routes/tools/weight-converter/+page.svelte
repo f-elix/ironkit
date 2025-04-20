@@ -8,12 +8,15 @@
 	import LargeWeightInput from '$lib/components/ui/LargeWeightInput.svelte';
 	import ToolLayout from '$lib/components/app/ToolLayout.svelte';
 	import ResultCopyOnClick from '$lib/components/ui/ResultCopyOnClick.svelte';
-	import { use$ } from 'legend-svelte';
-	import { weightConverter$ } from '$lib/db/weightConverter$';
+	import { DEFAULT_WEIGHT_UNIT } from '$lib/constants';
+	import { triplit } from '$lib/db/triplit';
+	import { useQuery } from '@triplit/svelte';
 
-	const weightConverter = use$(weightConverter$);
-	let unit = $derived(weightConverter.current.unit);
-	let round = $derived(weightConverter.current.round);
+	const query = useQuery(triplit, triplit.query('weightConverter'));
+
+	let weightConverter = $derived(query.results?.[0]);
+	let unit = $derived(weightConverter?.unit ?? DEFAULT_WEIGHT_UNIT);
+	let round = $derived(weightConverter?.round ?? false);
 
 	let weight = $state<Maybe<number>>();
 
@@ -52,13 +55,27 @@
 				</span>
 				<Switch
 					id="round-to-nearest"
-					bind:checked={() => round, (v) => weightConverter$.round.set(v)}
+					checked={round}
+					onCheckedChange={(v) => {
+						triplit.insert('weightConverter', {
+							...weightConverter,
+							round: v
+						});
+					}}
 				/>
 			</div>
 			<fieldset>
 				<div class="flex items-center justify-between gap-2">
 					<legend class="text-sm font-medium">Unit</legend>
-					<UnitSelector bind:value={() => unit, (v) => weightConverter$.unit.set(v)} />
+					<UnitSelector
+						value={unit}
+						onValueChange={(v) => {
+							triplit.insert('weightConverter', {
+								...weightConverter,
+								unit: v
+							});
+						}}
+					/>
 				</div>
 			</fieldset>
 		</div>

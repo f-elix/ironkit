@@ -8,12 +8,14 @@
 	import { Slider } from '$lib/shadcn/slider';
 	import UnitSelector from '$lib/components/ui/UnitSelector.svelte';
 	import { roundWeightToNearest } from '$lib/math/roundWeightToNearest';
-	import { loadPercentageCalculator$ } from '$lib/db/loadPercentageCalculator$';
-	import { use$ } from 'legend-svelte';
+	import { triplit } from '$lib/db/triplit';
+	import { useQuery } from '@triplit/svelte';
+	import { DEFAULT_WEIGHT_UNIT } from '$lib/constants';
 
-	const loadPercentageCalculator = use$(loadPercentageCalculator$);
-	let unit = $derived(loadPercentageCalculator.current.unit);
-	let round = $derived(loadPercentageCalculator.current.round);
+	const query = useQuery(triplit, triplit.query('loadPercentageCalculator'));
+	let loadPercentageCalculator = $derived(query.results?.[0]);
+	let unit = $derived(loadPercentageCalculator?.unit ?? DEFAULT_WEIGHT_UNIT);
+	let round = $derived(loadPercentageCalculator?.round ?? false);
 
 	let oneRepMax = $state<Maybe<number>>();
 	let percentage = $state<number>(60);
@@ -63,13 +65,27 @@
 				</span>
 				<Switch
 					id="round-to-nearest"
-					bind:checked={() => round, (v) => loadPercentageCalculator$.round.set(v)}
+					checked={round}
+					onCheckedChange={(v) => {
+						triplit.insert('loadPercentageCalculator', {
+							...loadPercentageCalculator,
+							round: v
+						});
+					}}
 				/>
 			</div>
 			<fieldset>
 				<div class="flex items-center justify-between gap-2">
 					<legend class="text-sm font-medium">Unit</legend>
-					<UnitSelector bind:value={() => unit, (v) => loadPercentageCalculator$.unit.set(v)} />
+					<UnitSelector
+						value={unit}
+						onValueChange={(v) => {
+							triplit.insert('loadPercentageCalculator', {
+								...loadPercentageCalculator,
+								unit: v
+							});
+						}}
+					/>
 				</div>
 			</fieldset>
 		</div>
