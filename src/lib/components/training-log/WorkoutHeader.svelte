@@ -16,7 +16,7 @@
 	let notes = $derived(workout.notes);
 </script>
 
-<header class="flex flex-col gap-3 rounded-sm border p-3">
+<header class="flex flex-col gap-4 rounded-sm border p-4">
 	<div class="flex items-center justify-between gap-4">
 		<h1 class="font-semibold">{title}</h1>
 		<time class="text-sm text-muted-foreground" datetime={date.toISOString()}>
@@ -24,10 +24,10 @@
 		</time>
 	</div>
 	<div class="flex items-end justify-between gap-4">
-		<p class={['self-start text-sm', !notes && 'text-muted-foreground']}>{notes || 'No notes'}</p>
+		<p class={['text-sm', !notes && 'text-muted-foreground']}>{notes || 'No notes'}</p>
 		<WorkoutInfoDialog {workout}>
 			{#snippet trigger({ props })}
-				<Button {...props} size="icon" variant="ghost">
+				<Button {...props} size="icon" variant="secondary">
 					<PencilIcon />
 				</Button>
 			{/snippet}
