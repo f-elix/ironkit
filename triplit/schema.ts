@@ -3,6 +3,7 @@ import {
 	ANON_USER_ID,
 	DEFAULT_GENDER_CLASS,
 	DEFAULT_WEIGHT_UNIT,
+	DEFAULT_WORKOUT_TITLE,
 	GENDER_CLASSES,
 	WEIGHT_UNITS
 } from '$lib/constants';
@@ -80,9 +81,9 @@ export const schema = S.Collections({
 	workouts: {
 		schema: S.Schema({
 			...baseOwnedCollectionSchema(),
-			title: S.Optional(S.String()),
-			date: S.Date(),
-			note: S.Optional(S.String())
+			title: S.String({ default: DEFAULT_WORKOUT_TITLE }),
+			date: S.Date({ default: S.Default.now() }),
+			notes: S.Optional(S.String())
 		}),
 		relationships: {
 			performanceBlocks: S.RelationMany('performanceBlocks', {
