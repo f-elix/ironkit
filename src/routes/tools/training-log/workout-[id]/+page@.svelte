@@ -8,12 +8,6 @@
 	const query = useQuery(triplit, triplit.query('workouts').Where('id', '=', workoutId));
 
 	let workout = $derived(query.results?.[0]);
-	let title = $derived(workout?.title);
-	$inspect(title);
-
-	const updateTitle = async () => {
-		await triplit.update('workouts', workoutId, { title });
-	};
 </script>
 
 {#if workout}
