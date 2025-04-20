@@ -38,7 +38,6 @@
 				)
 			: today(TIMEZONE)
 	);
-	console.log(date);
 
 	const onSave = async (e: Event) => {
 		e.preventDefault();
