@@ -5,12 +5,14 @@
 	import { watchSWUpdate } from '$lib/ui/watchSWUpdate';
 	import { setupViewTransition } from '$lib/ui/setupViewTransition';
 	import { Toaster } from '$lib/shadcn/sonner';
+	import { loadDb } from '$lib/db/loadDb';
 
 	let { children } = $props();
 
 	setupViewTransition();
 	watchOffline();
 	watchSWUpdate();
+	loadDb();
 </script>
 
 <Head />
