@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { Button } from '$lib/shadcn/button';
 	import { triplit } from '$lib/db/triplit';
 	import { useQuery } from '@triplit/svelte';
+	import ExercisesCombobox from '$lib/components/training-log/ExercisesCombobox.svelte';
 
 	let { workoutId }: { workoutId: string } = $props();
 
@@ -11,13 +11,6 @@
 	);
 
 	let performanceBlocks = $derived(query.results ?? []);
-
-	const addPerformanceBlock = () => {
-		triplit.insert('performanceBlocks', {
-			workoutId,
-			order: performanceBlocks.length
-		});
-	};
 </script>
 
 <div class="mt-6 flex flex-col gap-4">
@@ -28,5 +21,6 @@
 			</li>
 		{/each}
 	</ul>
-	<Button variant="secondary" size="lg" onclick={addPerformanceBlock}>Add exercise</Button>
+	<!-- <ExerciseSelectionDialog /> -->
+	<ExercisesCombobox />
 </div>

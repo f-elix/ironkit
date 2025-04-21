@@ -2,13 +2,13 @@
 	import { calculateCoefficient } from '$lib/coefficients/calculateCoefficient';
 	import UnitSelector from '$lib/components/ui/UnitSelector.svelte';
 	import DefaultNumberInput from '$lib/components/ui/DefaultNumberInput.svelte';
-	import * as RadioGroup from '$lib/shadcn/radio-group';
 	import { DEFAULT_WEIGHT_UNIT, DEFAULT_GENDER_CLASS, GENDER_CLASSES } from '$lib/constants';
 	import { Label } from '$lib/shadcn/label';
 	import ToolLayout from '$lib/components/app/ToolLayout.svelte';
 	import { useQuery } from '@triplit/svelte';
 	import { triplit } from '$lib/db/triplit';
 	import type { GenderClass } from '$lib/types';
+	import LargeRadioButtons from '$lib/components/ui/LargeRadioButtons.svelte';
 
 	const query = useQuery(triplit, triplit.query('coefficientCalculator'));
 	let coefficientCalculator = $derived(query.results?.[0]);
@@ -89,35 +89,20 @@
 					}}
 				/>
 			</div>
-			<fieldset>
-				<legend class="sr-only">Gender class</legend>
-				<RadioGroup.Root
-					class="grid grid-cols-2 gap-4"
-					value={genderClass}
-					onValueChange={(v) => {
-						triplit.insert('coefficientCalculator', {
-							...coefficientCalculator,
-							genderClass: v as GenderClass
-						});
-					}}
-				>
-					{#each GENDER_CLASSES as genderClassOption}
-						<Label>
-							<RadioGroup.Item value={genderClassOption} class="peer sr-only" />
-							<div
-								class={[
-									'rounded border border-muted py-4 text-center capitalize',
-									'transition-colors duration-100 ease-linear',
-									'cursor-pointer hover:bg-muted',
-									'peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-secondary'
-								]}
-							>
-								{genderClassOption}
-							</div>
-						</Label>
-					{/each}
-				</RadioGroup.Root>
-			</fieldset>
+			<LargeRadioButtons
+				label="Gender class"
+				items={GENDER_CLASSES.map((genderClass) => ({
+					value: genderClass,
+					label: genderClass
+				}))}
+				value={genderClass}
+				onValueChange={(v) => {
+					triplit.insert('coefficientCalculator', {
+						...coefficientCalculator,
+						genderClass: v as GenderClass
+					});
+				}}
+			/>
 		</div>
 	{/snippet}
 </ToolLayout>
