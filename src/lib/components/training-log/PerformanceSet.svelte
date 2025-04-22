@@ -2,6 +2,9 @@
 	import type { PerformanceSet } from '$lib/db/types';
 
 	let { set }: { set: PerformanceSet } = $props();
+
+	let weight = $state(set.weight);
+	let unit = $state(set.unit);
 </script>
 
 <div class="flex flex-col gap-2">

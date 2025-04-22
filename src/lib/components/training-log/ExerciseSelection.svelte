@@ -7,8 +7,21 @@
 	import Button from '$lib/shadcn/button/button.svelte';
 	import CirclePlus from '@lucide/svelte/icons/circle-plus';
 	import { addExerciseToWorkout } from '$lib/training-log/addExerciseToWorkout';
+	import type { PerformanceGroup, Performance, PerformanceSet } from '$lib/db/types';
 
-	let { workoutId, lastOrder }: { workoutId: string; lastOrder: number } = $props();
+	let {
+		workoutId,
+		lastOrder,
+		onExerciseAdded
+	}: {
+		workoutId: string;
+		lastOrder: number;
+		onExerciseAdded?: (data: {
+			performanceGroup: PerformanceGroup;
+			performance: Performance;
+			performanceSet: PerformanceSet;
+		}) => void;
+	} = $props();
 
 	const exercisesQuery = useQuery(triplit, triplit.query('exercises'));
 
@@ -17,8 +30,9 @@
 	let open = $state(false);
 
 	const onExerciseSelected = async (exerciseId: string) => {
-		await addExerciseToWorkout(workoutId, exerciseId, lastOrder + 1);
+		const result = await addExerciseToWorkout(workoutId, exerciseId, lastOrder + 1);
 		open = false;
+		onExerciseAdded?.(result);
 	};
 </script>
 

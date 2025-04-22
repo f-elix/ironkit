@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { WorkoutWithRelations } from '$lib/db/types';
-	import PerformanceSet from '$lib/components/training-log/PerformanceSet.svelte';
+	import PerformanceNote from '$lib/components/training-log/PerformanceNote.svelte';
+	import PerformanceSets from '$lib/components/training-log/PerformanceSets.svelte';
 
 	type Performance = WorkoutWithRelations['performanceGroups'][number]['performances'][number];
 
@@ -9,13 +10,8 @@
 	let exercise = $derived(performance.exercise?.name);
 </script>
 
-<div class="flex flex-col gap-2">
+<div class="flex flex-col gap-4">
 	<h3 class="font-semibold">{exercise}</h3>
-	<ul class="flex flex-col gap-2">
-		{#each performance.sets as set (set.id)}
-			<li class="flex flex-col gap-2">
-				<PerformanceSet {set} />
-			</li>
-		{/each}
-	</ul>
+	<PerformanceNote {performance} />
+	<PerformanceSets {performance} />
 </div>
