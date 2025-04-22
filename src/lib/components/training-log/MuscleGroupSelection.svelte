@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Check from '@lucide/svelte/icons/check';
-	import { muscleGroups } from '$lib/db/muscleGroups';
+	import { muscleGroups } from '$lib/data/muscleGroups';
 	import { Badge } from '$lib/shadcn/badge';
 	import X from '@lucide/svelte/icons/x';
 	import { Combobox } from 'bits-ui';
@@ -11,13 +11,14 @@
 	import { expoOut } from 'svelte/easing';
 	import { flip } from 'svelte/animate';
 
+	let { value = $bindable() }: { value?: string[] } = $props();
+
 	const items = muscleGroups.map((muscleGroup) => ({
 		value: muscleGroup.id,
 		label: muscleGroup.name
 	}));
 
 	let searchValue = $state('');
-	let selectedMuscleGroups = $state<string[]>([]);
 
 	const filteredItems = $derived(
 		searchValue === ''
@@ -35,7 +36,10 @@
 				searchValue = '';
 			}
 		}}
-		bind:value={selectedMuscleGroups}
+		onValueChange={() => {
+			searchValue = '';
+		}}
+		bind:value
 	>
 		<div class="relative">
 			<Combobox.Input
@@ -43,6 +47,7 @@
 				class="border-border-input placeholder:text-foreground-alt/50 inline-flex h-10 w-full truncate rounded-sm border bg-background px-2 text-base transition-colors focus:outline-none focus:ring-2 focus:ring-foreground focus:ring-offset-2 focus:ring-offset-background sm:text-sm"
 				placeholder="Search muscle groups"
 				aria-label="Search muscle groups"
+				clearOnDeselect
 			/>
 			<Combobox.Trigger class="absolute end-3 top-1/2 size-6 -translate-y-1/2">
 				<ChevronDown class="size-6 text-muted-foreground" />
@@ -84,10 +89,10 @@
 			</Combobox.Content>
 		</Combobox.Portal>
 	</Combobox.Root>
-	<div class="flex flex-wrap gap-2">
-		{#each selectedMuscleGroups as muscleGroup (muscleGroup)}
+	<ul class="flex flex-wrap gap-2">
+		{#each value ?? [] as muscleGroup (muscleGroup)}
 			{@const label = muscleGroups.find((mg) => mg.id === muscleGroup)?.name}
-			<div
+			<li
 				transition:scale={{ duration: 250, easing: expoOut }}
 				animate:flip={{ duration: 250, easing: expoOut }}
 			>
@@ -97,14 +102,14 @@
 						type="button"
 						class="-mr-2 ml-2 grid size-6 place-items-center rounded-full bg-foreground"
 						onclick={() => {
-							selectedMuscleGroups = selectedMuscleGroups.filter((mg) => mg !== muscleGroup);
+							value = value?.filter((mg) => mg !== muscleGroup);
 						}}
 						aria-label="Remove muscle group"
 					>
 						<X class="size-4 text-background" />
 					</button>
 				</Badge>
-			</div>
+			</li>
 		{/each}
-	</div>
+	</ul>
 </fieldset>

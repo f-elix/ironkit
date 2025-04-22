@@ -1,10 +1,5 @@
 <script lang="ts">
-	import { triplit } from '$lib/db/triplit';
-	import Button from '$lib/shadcn/button/button.svelte';
-	import { userId } from '$lib/db/userId';
-	import { goto } from '$app/navigation';
 	import { PAGE_tools_training_log_workout_id } from '$lib/ROUTES';
-	import PlusIcon from '@lucide/svelte/icons/circle-plus';
 	import { DEFAULT_WORKOUT_TITLE } from '$lib/constants';
 	import { formatDate } from '$lib/ui/formatDate';
 	import AddWorkout from '$lib/components/training-log/AddWorkout.svelte';
@@ -12,13 +7,6 @@
 	let { data } = $props();
 
 	let workouts = $derived(data.workouts);
-
-	const addWorkout = async () => {
-		const workout = await triplit.insert('workouts', {
-			userId: userId()
-		});
-		goto(PAGE_tools_training_log_workout_id({ id: workout.id }));
-	};
 </script>
 
 <div class="grow px-4 pb-4">

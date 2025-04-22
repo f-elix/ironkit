@@ -8,20 +8,30 @@
 	import * as Select from '$lib/shadcn/select';
 	import Label from '$lib/shadcn/label/label.svelte';
 	import MuscleGroupSelection from '$lib/components/training-log/MuscleGroupSelection.svelte';
+	import { triplit } from '$lib/db/triplit';
+	import type { Exercise } from '$lib/db/types';
 
-	let { title }: { title: string } = $props();
+	let { name, onCreated }: { name?: string; onCreated?: (exercise: Exercise) => void } = $props();
 
 	let open = $state(false);
-
-	const onSave = () => {
-		open = false;
-	};
 
 	const executionTypes = ['reps', 'time'] as const;
 	const loadTypes = ['weighted', 'bodyweight', 'assisted'] as const;
 
 	let executionType = $state<(typeof executionTypes)[number]>('reps');
 	let loadType = $state<(typeof loadTypes)[number]>('weighted');
+	let muscleGroups = $state<string[]>([]);
+
+	const onSave = async () => {
+		const exercise = await triplit.insert('exercises', {
+			name: name ?? '',
+			executionType: executionType,
+			loadType: loadType,
+			muscleGroups: muscleGroups
+		});
+		onCreated?.(exercise);
+		open = false;
+	};
 </script>
 
 <Dialog.Root bind:open>
@@ -34,8 +44,8 @@
 			>
 				<span>
 					Create new exercise
-					{#if title}
-						"<span class="font-normal">{title}</span>"
+					{#if name}
+						"<span class="font-normal">{name}</span>"
 					{/if}
 				</span>
 				<PlusIcon />
@@ -50,7 +60,7 @@
 				<Input
 					type="text"
 					placeholder="Exercise name"
-					bind:value={() => capitalize(title), (v) => (title = v)}
+					bind:value={() => capitalize(name ?? ''), (v) => (name = v)}
 				/>
 			</label>
 			<LargeRadioButtons
@@ -81,7 +91,7 @@
 					</Select.Content>
 				</Select.Root>
 			</Label>
-			<MuscleGroupSelection />
+			<MuscleGroupSelection bind:value={muscleGroups} />
 			<Button type="submit">Create</Button>
 		</form>
 	</Dialog.Content>

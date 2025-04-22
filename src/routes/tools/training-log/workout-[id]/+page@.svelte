@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import PerformanceBlocks from '$lib/components/training-log/PerformanceBlocks.svelte';
+	import PerformanceGroups from '$lib/components/training-log/PerformanceGroups.svelte';
 	import WorkoutHeader from '$lib/components/training-log/WorkoutHeader.svelte';
 	import { triplit } from '$lib/db/triplit';
 	import { useQuery } from '@triplit/svelte';
@@ -14,6 +14,6 @@
 {#if workout}
 	<div class="grow p-4">
 		<WorkoutHeader {workout} />
-		<PerformanceBlocks {workoutId} />
+		<PerformanceGroups {workoutId} />
 	</div>
 {/if}

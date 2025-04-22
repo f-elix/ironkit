@@ -86,23 +86,23 @@ export const schema = S.Collections({
 			notes: S.Optional(S.String())
 		}),
 		relationships: {
-			performanceBlocks: S.RelationMany('performanceBlocks', {
+			performanceGroups: S.RelationMany('performanceGroups', {
 				where: [['workoutId', '=', '$id']]
 			})
 		},
 		permissions: authenticatedOnly()
 	},
-	performanceBlocks: {
+	performanceGroups: {
 		schema: S.Schema({
 			...baseOwnedCollectionSchema(),
 			workoutId: S.String(),
 			label: S.Optional(S.String()),
-			order: S.Number()
+			workoutOrder: S.Number()
 		}),
 		relationships: {
 			workout: S.RelationById('workouts', '$workoutId'),
 			performances: S.RelationMany('performances', {
-				where: [['performanceBlockId', '=', '$id']]
+				where: [['performanceGroupId', '=', '$id']]
 			})
 		},
 		permissions: authenticatedOnly()
@@ -110,15 +110,16 @@ export const schema = S.Collections({
 	performances: {
 		schema: S.Schema({
 			...baseOwnedCollectionSchema(),
-			performanceBlockId: S.String(),
+			performanceGroupId: S.String(),
 			exerciseId: S.String(),
-			date: S.Date(),
+			workoutId: S.String(),
 			note: S.Optional(S.String()),
-			order: S.Number()
+			groupOrder: S.Number()
 		}),
 		relationships: {
-			performanceBlock: S.RelationById('performanceBlocks', '$performanceBlockId'),
+			performanceGroup: S.RelationById('performanceGroups', '$performanceGroupId'),
 			exercise: S.RelationById('exercises', '$exerciseId'),
+			workout: S.RelationById('workouts', '$workoutId'),
 			sets: S.RelationMany('performanceSets', {
 				where: [['performanceId', '=', '$id']]
 			})
@@ -134,7 +135,7 @@ export const schema = S.Collections({
 			reps: S.Optional(S.Number()),
 			durationSeconds: S.Optional(S.Number()),
 			note: S.Optional(S.String()),
-			order: S.Number()
+			performanceOrder: S.Number()
 		}),
 		relationships: {
 			performance: S.RelationById('performances', '$performanceId')
