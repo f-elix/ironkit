@@ -114,7 +114,8 @@ export const schema = S.Collections({
 			exerciseId: S.String(),
 			workoutId: S.String(),
 			groupOrder: S.Number(),
-			note: S.Optional(S.String())
+			note: S.Optional(S.String()),
+			weightUnit: S.String({ enum: WEIGHT_UNITS, default: 'lbs' })
 		}),
 		relationships: {
 			performanceGroup: S.RelationById('performanceGroups', '$performanceGroupId'),
@@ -131,7 +132,6 @@ export const schema = S.Collections({
 			...baseOwnedCollectionSchema(),
 			performanceId: S.String(),
 			weight: S.Number({ default: 0 }),
-			unit: S.String({ enum: WEIGHT_UNITS, default: 'lbs' }),
 			reps: S.Optional(S.Number()),
 			durationSeconds: S.Optional(S.Number()),
 			note: S.Optional(S.String()),

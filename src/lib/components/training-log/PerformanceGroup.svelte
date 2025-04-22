@@ -6,9 +6,9 @@
 	import * as Card from '$lib/shadcn/card';
 	import Trash from '@lucide/svelte/icons/trash';
 
-	type Group = WorkoutWithRelations['performanceGroups'][number];
+	type PerformanceGroup = WorkoutWithRelations['performanceGroups'][number];
 
-	let { performanceGroup }: { performanceGroup: Group } = $props();
+	let { performanceGroup }: { performanceGroup: PerformanceGroup } = $props();
 
 	let label = $derived(performanceGroup.label);
 	let performances = $derived(performanceGroup.performances);
@@ -18,8 +18,8 @@
 	};
 </script>
 
-<Card.Root>
-	<Card.Header class="flex w-full items-center justify-between">
+<Card.Root class="bg-muted/30">
+	<Card.Header class="flex w-full items-center justify-between p-4">
 		{#if label}
 			<Card.Title>{label}</Card.Title>
 		{/if}
@@ -33,7 +33,7 @@
 			<Trash />
 		</Button>
 	</Card.Header>
-	<Card.Content>
+	<Card.Content class="p-4">
 		<ul class="flex flex-col gap-2">
 			{#each performances as performance (performance.id)}
 				<li class="flex flex-col gap-2">
@@ -42,7 +42,4 @@
 			{/each}
 		</ul>
 	</Card.Content>
-	<Card.Footer>
-		<!-- TODO: Add footer -->
-	</Card.Footer>
 </Card.Root>

@@ -1,12 +1,55 @@
 <script lang="ts">
-	import type { PerformanceSet } from '$lib/db/types';
+	import { triplit } from '$lib/db/triplit';
+	import type { Exercise, PerformanceSet } from '$lib/db/types';
+	import Input from '$lib/shadcn/input/input.svelte';
+	import Label from '$lib/shadcn/label/label.svelte';
+	import type { WeightUnit } from '$lib/types';
 
-	let { set }: { set: PerformanceSet } = $props();
+	let {
+		set,
+		unit,
+		exercise
+	}: { set: PerformanceSet; unit: WeightUnit; exercise: Maybe<Exercise> } = $props();
 
+	let executionType = $state(exercise?.executionType ?? 'reps');
 	let weight = $state(set.weight);
-	let unit = $state(set.unit);
+	let reps = $state(set.reps);
+	let durationSeconds = $state(set.durationSeconds);
+
+	const onWeightChange = (event: Event) => {
+		const value = (event.target as HTMLInputElement).valueAsNumber;
+		triplit.update('performanceSets', set.id, { weight: value });
+	};
+
+	const onRepsChange = (event: Event) => {
+		const value = (event.target as HTMLInputElement).valueAsNumber;
+		triplit.update('performanceSets', set.id, { reps: value });
+	};
+
+	const onTimeChange = (event: Event) => {
+		const value = (event.target as HTMLInputElement).valueAsNumber;
+		triplit.update('performanceSets', set.id, { durationSeconds: value });
+	};
 </script>
 
-<div class="flex flex-col gap-2">
-	<p class="text-sm text-muted-foreground">{set.weight} {set.unit}</p>
+<div class="flex items-center gap-2">
+	{#if executionType === 'reps'}
+		<Label class="flex items-center gap-2">
+			<span class="sr-only">Reps</span>
+			<Input type="number" value={reps} oninput={onRepsChange} class="w-20" />
+		</Label>
+	{/if}
+	{#if executionType === 'time'}
+		<Label class="flex items-center gap-2">
+			<span class="sr-only">Time</span>
+			<Input type="number" value={durationSeconds} oninput={onTimeChange} class="w-20" />
+			<span>sec.</span>
+		</Label>
+	{/if}
+	<div aria-hidden="true">&times;</div>
+	<Label class="flex items-center gap-2">
+		<span class="sr-only">Weight</span>
+		<Input type="number" value={weight} oninput={onWeightChange} class="w-20" />
+		<span>{unit}</span>
+	</Label>
 </div>

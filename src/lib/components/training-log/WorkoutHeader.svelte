@@ -21,29 +21,30 @@
 <header class="flex flex-col gap-2">
 	<Button
 		href={PAGE_tools_training_log}
-		variant="link"
+		variant="outline"
 		size="icon"
-		class="self-end"
 		aria-label="Back to training log"
 	>
 		<XIcon />
 	</Button>
-	<div class="flex flex-col gap-4 rounded-sm border p-4">
+	<div class="flex flex-col gap-4">
 		<div class="flex items-center justify-between gap-4">
 			<h1 class="font-semibold">{title}</h1>
-			<time class="text-sm text-muted-foreground" datetime={date.toISOString()}>
+			<time class="ml-auto text-sm text-muted-foreground" datetime={date.toISOString()}>
 				{formatDate(date)}
 			</time>
-		</div>
-		<div class="flex items-end justify-between gap-4">
-			<p class={['text-sm', !notes && 'text-muted-foreground']}>{notes || 'No notes'}</p>
 			<WorkoutInfoDialog {workout}>
 				{#snippet trigger({ props })}
-					<Button {...props} size="icon" variant="secondary">
+					<Button {...props} size="icon" variant="ghost">
 						<PencilIcon />
 					</Button>
 				{/snippet}
 			</WorkoutInfoDialog>
 		</div>
+		{#if notes}
+			<div class="flex items-end justify-between gap-4">
+				<p class="text-sm">{notes}</p>
+			</div>
+		{/if}
 	</div>
 </header>

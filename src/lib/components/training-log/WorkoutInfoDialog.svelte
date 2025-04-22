@@ -12,6 +12,7 @@
 	import { userId } from '$lib/db/userId';
 	import { goto } from '$app/navigation';
 	import { PAGE_tools_training_log_workout_id } from '$lib/ROUTES';
+	import Label from '$lib/shadcn/label/label.svelte';
 
 	let {
 		trigger,
@@ -44,14 +45,14 @@
 		if (workout) {
 			triplit.update('workouts', workout.id, {
 				title,
-				notes,
+				notes: notes?.trim() ?? null,
 				date: date.toDate(TIMEZONE)
 			});
 		} else {
 			const newWorkout = await triplit.insert('workouts', {
 				userId: userId(),
 				title,
-				notes,
+				notes: notes?.trim() ?? null,
 				date: date.toDate(TIMEZONE)
 			});
 			goto(PAGE_tools_training_log_workout_id({ id: newWorkout.id }));
@@ -69,9 +70,18 @@
 	<Dialog.Content class="w-[90vw] max-w-2xl">
 		<Dialog.Title class="text-left">{dialogTitle}</Dialog.Title>
 		<form class="flex flex-col gap-4" onsubmit={onSave}>
-			<Input type="text" placeholder="Workout name" bind:value={title} />
-			<DatePicker bind:value={date} />
-			<Textarea placeholder="Workout notes" bind:value={notes} rows={5} />
+			<Label class="flex flex-col gap-2">
+				Name
+				<Input type="text" placeholder="Workout name" bind:value={title} />
+			</Label>
+			<Label class="flex flex-col gap-2">
+				Date
+				<DatePicker bind:value={date} />
+			</Label>
+			<Label class="flex flex-col gap-2">
+				Notes
+				<Textarea placeholder="Workout notes" bind:value={notes} rows={5} class="font-normal" />
+			</Label>
 			<Dialog.Footer>
 				<Button type="submit">{buttonText}</Button>
 			</Dialog.Footer>
