@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { triplit } from '$lib/db/triplit';
 	import { useQuery } from '@triplit/svelte';
-	import ExercisesCombobox from '$lib/components/training-log/ExercisesCombobox.svelte';
+	import ExerciseSelection from '$lib/components/training-log/ExerciseSelection.svelte';
 
 	let { workoutId }: { workoutId: string } = $props();
 
@@ -22,5 +22,5 @@
 		{/each}
 	</ul>
 	<!-- <ExerciseSelectionDialog /> -->
-	<ExercisesCombobox />
+	<ExerciseSelection />
 </div>

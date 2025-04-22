@@ -7,6 +7,7 @@
 	import LargeRadioButtons from '$lib/components/ui/LargeRadioButtons.svelte';
 	import * as Select from '$lib/shadcn/select';
 	import Label from '$lib/shadcn/label/label.svelte';
+	import MuscleGroupSelection from '$lib/components/training-log/MuscleGroupSelection.svelte';
 
 	let { title }: { title: string } = $props();
 
@@ -27,11 +28,16 @@
 	<Dialog.Trigger>
 		{#snippet child({ props })}
 			<Button
-				variant="outline"
+				variant="secondary"
 				class="w-full flex-col items-center justify-center py-12 text-base font-semibold [&_svg]:size-6"
 				{...props}
 			>
-				<span>Create new exercise "<span class="font-normal">{title}</span>"</span>
+				<span>
+					Create new exercise
+					{#if title}
+						"<span class="font-normal">{title}</span>"
+					{/if}
+				</span>
 				<PlusIcon />
 			</Button>
 		{/snippet}
@@ -58,7 +64,7 @@
 					executionType = v;
 				}}
 			/>
-			<Label class="flex items-center gap-6">
+			<Label class="flex flex-col items-start gap-2">
 				<span class="whitespace-nowrap">Load type</span>
 				<Select.Root type="single" bind:value={loadType}>
 					<Select.Trigger class="capitalize">
@@ -75,7 +81,7 @@
 					</Select.Content>
 				</Select.Root>
 			</Label>
-			<!-- @TODO Add muscle group selection/creation -->
+			<MuscleGroupSelection />
 			<Button type="submit">Create</Button>
 		</form>
 	</Dialog.Content>

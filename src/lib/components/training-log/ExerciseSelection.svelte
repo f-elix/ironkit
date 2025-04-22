@@ -6,11 +6,10 @@
 	import { useQuery } from '@triplit/svelte';
 	import ExerciseCreationDialog from '$lib/components/training-log/ExerciseCreationDialog.svelte';
 
-	let value = $state('');
-
-	const query = useQuery(triplit, triplit.query('exercises').Where('name', 'like', `%${value}%`));
+	const query = useQuery(triplit, triplit.query('exercises'));
 
 	let exercises = $derived(query.results ?? []);
+	let value = $state('');
 </script>
 
 <Command.Root>

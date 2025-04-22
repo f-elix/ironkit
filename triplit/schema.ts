@@ -141,26 +141,14 @@ export const schema = S.Collections({
 		},
 		permissions: authenticatedOnly()
 	},
-	muscleGroups: {
-		schema: S.Schema({
-			...baseOwnedCollectionSchema(),
-			name: S.String()
-		}),
-		permissions: authenticatedOnly()
-	},
 	exercises: {
 		schema: S.Schema({
 			...baseOwnedCollectionSchema(),
-			muscleGroupIds: S.String(),
 			name: S.String(),
 			executionType: S.String({ enum: ['reps', 'time'] }),
-			loadType: S.String({ enum: ['weighted', 'bodyweight', 'assisted'] })
+			loadType: S.String({ enum: ['weighted', 'bodyweight', 'assisted'] }),
+			muscleGroups: S.Set(S.String(), { default: S.Default.Set.empty() })
 		}),
-		relationships: {
-			muscleGroups: S.RelationMany('muscleGroups', {
-				where: [['id', 'in', '$muscleGroupIds']]
-			})
-		},
 		permissions: authenticatedOnly()
 	}
 });
