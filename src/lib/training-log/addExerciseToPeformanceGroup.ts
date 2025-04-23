@@ -16,7 +16,13 @@ export const addExerciseToPeformanceGroup = async (
 			workoutId: performanceGroup.workoutId
 		});
 
-		return performance;
+		const performanceSet = await tx.insert('performanceSets', {
+			userId: userId(),
+			performanceId: performance.id,
+			performanceOrder: 0
+		});
+
+		return { performance, performanceSet };
 	});
 	return result;
 };
