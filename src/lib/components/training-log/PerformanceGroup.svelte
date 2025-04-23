@@ -11,6 +11,8 @@
 	import { addExerciseToPeformanceGroup } from '$lib/training-log/addExerciseToPeformanceGroup';
 	import Label from '$lib/shadcn/label/label.svelte';
 	import Input from '$lib/shadcn/input/input.svelte';
+	import Check from '@lucide/svelte/icons/check';
+	import { Accordion } from 'bits-ui';
 
 	type PerformanceGroup = WorkoutWithRelations['performanceGroups'][number];
 
@@ -57,23 +59,24 @@
 </script>
 
 <Card.Root class="bg-muted/30">
-	{#if performances.length > 1}
-		<Card.Header class="p-4 pb-0">
-			<Label>
-				<Input
-					type="text"
-					placeholder="Group title"
-					value={label}
-					oninput={(e) => {
-						triplit.update('performanceGroups', performanceGroup.id, {
-							label: e.currentTarget.value
-						});
-					}}
-				/>
-			</Label>
-		</Card.Header>
-	{/if}
-	<Card.Content class="p-4">
+	<Card.Content class="flex flex-col gap-4 p-4">
+		{#if performances.length > 1}
+			<div class="flex flex-row items-center justify-between gap-2">
+				<Label class="grow">
+					<span class="sr-only">Group title</span>
+					<Input
+						type="text"
+						placeholder="Group title"
+						value={label}
+						oninput={(e) => {
+							triplit.update('performanceGroups', performanceGroup.id, {
+								label: e.currentTarget.value
+							});
+						}}
+					/>
+				</Label>
+			</div>
+		{/if}
 		<ul class="flex flex-col gap-4 divide-y divide-border">
 			{#each performances as performance (performance.id)}
 				<li class="flex flex-col gap-2 pt-4 first:pt-0">
@@ -81,18 +84,28 @@
 				</li>
 			{/each}
 		</ul>
-		<Separator class="my-5" />
-		<ExerciseSelection {onExerciseAdded}>
-			{#snippet trigger()}
-				<Dialog.Trigger>
-					{#snippet child({ props })}
-						<Button variant="outline" class="w-full" {...props}>
-							<Plus />
-							Add exercise to group
-						</Button>
-					{/snippet}
-				</Dialog.Trigger>
-			{/snippet}
-		</ExerciseSelection>
+		<Separator />
+		<div class="grid gap-2">
+			<ExerciseSelection {onExerciseAdded}>
+				{#snippet trigger()}
+					<Dialog.Trigger>
+						{#snippet child({ props })}
+							<Button variant="secondary" class="w-full" {...props}>
+								<Plus />
+								Add exercise to group
+							</Button>
+						{/snippet}
+					</Dialog.Trigger>
+				{/snippet}
+			</ExerciseSelection>
+			<Accordion.Trigger class="w-full">
+				{#snippet child({ props })}
+					<Button aria-label="Show exercise summary" {...props}>
+						<Check />
+						Done
+					</Button>
+				{/snippet}
+			</Accordion.Trigger>
+		</div>
 	</Card.Content>
 </Card.Root>

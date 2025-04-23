@@ -20,7 +20,7 @@
 
 <div class="flex flex-col gap-2">
 	<div class="flex flex-col">
-		<div class="flex items-center justify-between gap-4">
+		<div class="flex items-center justify-between gap-2">
 			<h3 class="mr-auto text-xl font-semibold">{exercise}</h3>
 			<UnitSelector
 				value={unit}

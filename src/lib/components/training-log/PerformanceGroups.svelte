@@ -19,8 +19,8 @@
 			.query('performanceGroups')
 			.Where('workoutId', '=', workoutId)
 			.Order('workoutOrder', 'ASC')
-			.Include('performances', (rel) => {
-				return rel('performances')
+			.Include('performances', (performancesRel) => {
+				return performancesRel('performances')
 					.Order('groupOrder', 'ASC')
 					.Include('exercise')
 					.Include('sets', (setsRel) => {

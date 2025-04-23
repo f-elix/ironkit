@@ -18,6 +18,9 @@ const config: Config = {
 	darkMode: ['class'],
 	content: ['./src/**/*.{html,js,svelte,ts}'],
 	safelist: ['dark'],
+	future: {
+		hoverOnlyWhenSupported: true
+	},
 	theme: {
 		container: {
 			center: true,

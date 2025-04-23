@@ -2,11 +2,14 @@
 	import PerformanceSet from '$lib/components/training-log/PerformanceSet.svelte';
 	import type { WorkoutWithRelations } from '$lib/db/types';
 	import Button from '$lib/shadcn/button/button.svelte';
-	import Plus from '@lucide/svelte/icons/plus';
+	import Plus from '@lucide/svelte/icons/circle-plus';
 	import Minus from '@lucide/svelte/icons/circle-minus';
 	import { triplit } from '$lib/db/triplit';
 	import Label from '$lib/shadcn/label/label.svelte';
 	import Textarea from '$lib/shadcn/textarea/textarea.svelte';
+	import { slide } from 'svelte/transition';
+	import { expoOut } from 'svelte/easing';
+	import { flip } from 'svelte/animate';
 
 	type Performance = WorkoutWithRelations['performanceGroups'][number]['performances'][number];
 
@@ -16,37 +19,71 @@
 	let unit = $derived(performance.weightUnit);
 	let exercise = $derived(performance.exercise);
 
-	const addSet = () => {
-		const lastSet = sets.at(-1);
-		const performanceOrder = lastSet?.performanceOrder ?? 0;
+	const addSet = (currentOrder: number, nextOrder: Maybe<number>) => {
+		const performanceOrder = nextOrder
+			? (nextOrder - currentOrder) / 2 + currentOrder
+			: currentOrder + 1;
 		triplit.insert('performanceSets', {
 			performanceId: performance.id,
-			performanceOrder: performanceOrder + 1
+			performanceOrder
 		});
 	};
 
 	const deleteSet = (setId: string) => {
 		triplit.delete('performanceSets', setId);
 	};
+
+	/**
+	 * Custom flip animation that only triggers when appending a set because
+	 * the default flip animation doesn't play well with the slide transition.
+	 */
+	const customFlip = (
+		node: HTMLElement,
+		fromTo: Parameters<typeof flip>[1],
+		params: Parameters<typeof flip>[2] & { index: number }
+	) => {
+		const appending = fromTo.from.top < fromTo.to.top;
+		if (appending) {
+			return {};
+		}
+		return flip(node, fromTo, params);
+	};
 </script>
 
 <div class="flex flex-col gap-2">
 	<ul class="flex flex-col gap-2">
-		{#each sets as set (set.id)}
-			<li class="flex flex-col gap-2">
+		{#each sets as set, i (set.id)}
+			<li
+				class="flex flex-col gap-2"
+				transition:slide={{ duration: 500, easing: expoOut }}
+				animate:customFlip={{ duration: 500, easing: expoOut, index: i }}
+			>
 				<div class="flex items-center justify-between gap-2">
 					<PerformanceSet {set} {unit} {exercise} />
 					<div class="flex items-center">
+						{#if sets.length > 1}
+							<Button
+								size="icon"
+								variant="ghost"
+								class="w-8 text-destructive"
+								onclick={() => {
+									deleteSet(set.id);
+								}}
+								aria-label="Delete set"
+							>
+								<Minus />
+							</Button>
+						{/if}
 						<Button
 							size="icon"
 							variant="ghost"
-							class="ml-auto text-destructive"
+							class="w-8"
 							onclick={() => {
-								deleteSet(set.id);
+								addSet(set.performanceOrder, sets[i + 1]?.performanceOrder);
 							}}
-							aria-label="Delete set"
+							aria-label="Add a set below"
 						>
-							<Minus />
+							<Plus />
 						</Button>
 					</div>
 				</div>
@@ -67,8 +104,8 @@
 			</li>
 		{/each}
 	</ul>
-	<Button size="sm" variant="secondary" class="w-full" onclick={addSet}>
+	<!-- <Button size="sm" variant="secondary" class="w-full" onclick={addSet}>
 		<Plus />
 		Add set
-	</Button>
+	</Button> -->
 </div>

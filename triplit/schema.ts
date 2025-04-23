@@ -131,7 +131,7 @@ export const schema = S.Collections({
 		schema: S.Schema({
 			...baseOwnedCollectionSchema(),
 			performanceId: S.String(),
-			weight: S.Number({ default: 0 }),
+			weight: S.Optional(S.Number()),
 			reps: S.Optional(S.Number()),
 			durationSeconds: S.Optional(S.Number()),
 			note: S.Optional(S.String()),
