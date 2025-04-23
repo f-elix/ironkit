@@ -8,7 +8,7 @@
 	{#snippet trigger({ props })}
 		<Button {...props} size="lg">
 			<PlusIcon />
-			Log workout
+			New workout
 		</Button>
 	{/snippet}
 </WorkoutInfoDialog>
