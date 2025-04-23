@@ -1,0 +1,25 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Service Worker Implementation
+
+The [src/service-worker.ts](mdc:src/service-worker.ts) implements a Progressive Web App (PWA) service worker with the following features:
+
+## Caching Strategy
+- Caches all static assets (build files, static files, prerendered pages)
+- Uses a network-first strategy for dynamic content
+- Falls back to cached content when offline
+- Cache versioning using build version
+
+## Request Handling
+- Only handles GET requests
+- Excludes API sync endpoints from caching
+- Caches successful (200) responses for non-extension URLs
+- Implements skip waiting for immediate service worker updates
+
+## Cache Management
+- Automatically cleans up old caches during activation
+- Creates new cache version on each deployment
+- Efficiently manages static assets and dynamic content
