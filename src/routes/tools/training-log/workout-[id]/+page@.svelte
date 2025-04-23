@@ -21,11 +21,7 @@
 			<PerformanceGroups {workoutId} />
 		</div>
 		<div class="mt-auto flex w-full flex-col p-4">
-			<Button
-				href={PAGE_tools_training_log}
-				size="lg"
-				class="bg-emerald-500 text-lg font-semibold [&_svg]:size-5"
-			>
+			<Button href={PAGE_tools_training_log} size="lg" class="bg-emerald-500">
 				Finish workout
 				<Check />
 			</Button>
