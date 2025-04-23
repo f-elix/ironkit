@@ -12,7 +12,7 @@
 
 <div class="flex w-full flex-col items-start gap-4 py-2 text-left">
 	{#if label}
-		<p>{label}</p>
+		<p class="font-semibold text-muted-foreground">{label}</p>
 	{/if}
 	{#each performances as performance (performance.id)}
 		{@const exercise = performance.exercise}
