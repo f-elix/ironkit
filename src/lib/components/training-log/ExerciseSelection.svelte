@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as Command from '$lib/shadcn/command';
-	import * as Popover from '$lib/shadcn/popover';
+	import * as Dialog from '$lib/shadcn/dialog';
 	import { triplit } from '$lib/db/triplit';
 	import { useQuery } from '@triplit/svelte';
 	import ExerciseCreationDialog from '$lib/components/training-log/ExerciseCreationDialog.svelte';
@@ -37,8 +37,8 @@
 </script>
 
 {#if exercises.length}
-	<Popover.Root bind:open>
-		<Popover.Trigger>
+	<Dialog.Root bind:open>
+		<Dialog.Trigger>
 			{#snippet child({ props })}
 				<Button
 					variant="default"
@@ -51,8 +51,8 @@
 					<CirclePlus />
 				</Button>
 			{/snippet}
-		</Popover.Trigger>
-		<Popover.Content class="w-[calc(100vw-2rem)]" sideOffset={6}>
+		</Dialog.Trigger>
+		<Dialog.Content class="w-[90vw]">
 			<Command.Root>
 				<Command.Input placeholder="Search exercises" bind:value />
 				<Command.List>
@@ -84,8 +84,8 @@
 					</Command.Group>
 				</Command.List>
 			</Command.Root>
-		</Popover.Content>
-	</Popover.Root>
+		</Dialog.Content>
+	</Dialog.Root>
 {:else}
 	<div class="flex flex-col gap-2">
 		<p class="text-center font-medium text-muted-foreground">
