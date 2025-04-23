@@ -18,13 +18,14 @@
 		{@const exercise = performance.exercise}
 		{@const sets = performance.sets?.filter((set) => !!set.weight) ?? []}
 		{@const weightUnit = performance.weightUnit}
+		{@const note = performance.note}
 		<div class="flex flex-col gap-4">
 			<div>
 				<p class="text-lg font-semibold">
 					{exercise?.name}
 				</p>
-				{#if performance.note}
-					<p class="whitespace-normal text-sm text-muted-foreground">{performance.note}</p>
+				{#if note}
+					<p class="whitespace-normal text-sm text-muted-foreground">{note}</p>
 				{/if}
 			</div>
 			{#if sets.length}
