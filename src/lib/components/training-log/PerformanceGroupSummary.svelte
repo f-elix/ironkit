@@ -35,7 +35,7 @@
 						{@const duration = set.durationSeconds ?? 0}
 						{@const note = set.note}
 						<li class="grid grid-cols-2 items-baseline gap-2">
-							<Badge class="flex items-center justify-center gap-2 text-base">
+							<Badge class="flex items-center justify-center gap-2 text-sm">
 								<span>
 									{#if exercise?.executionType === 'reps'}
 										{reps}
