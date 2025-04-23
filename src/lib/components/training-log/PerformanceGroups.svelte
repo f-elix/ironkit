@@ -6,6 +6,10 @@
 	import { Accordion } from 'bits-ui';
 	import { buttonVariants } from '$lib/shadcn/button';
 	import PerformanceGroupSummary from '$lib/components/training-log/PerformanceGroupSummary.svelte';
+	import Button from '$lib/shadcn/button/button.svelte';
+	import CirclePlus from '@lucide/svelte/icons/circle-plus';
+	import * as Dialog from '$lib/shadcn/dialog';
+	import { addExerciseToWorkout } from '$lib/training-log/addExerciseToWorkout';
 
 	let { workoutId }: { workoutId: string } = $props();
 
@@ -28,6 +32,11 @@
 	let performanceGroups = $derived(query.results ?? []);
 	let lastOrder = $derived(performanceGroups?.at(-1)?.workoutOrder ?? 0);
 	let selectedPerformanceGroupId = $state<string>();
+
+	const onExerciseAdded = async (exerciseId: string) => {
+		const result = await addExerciseToWorkout(workoutId, exerciseId, lastOrder + 1);
+		selectedPerformanceGroupId = result.performanceGroup.id;
+	};
 </script>
 
 <div class="mt-4 flex flex-col gap-4">
@@ -57,11 +66,22 @@
 			</Accordion.Item>
 		{/each}
 	</Accordion.Root>
-	<ExerciseSelection
-		{workoutId}
-		{lastOrder}
-		onExerciseAdded={(data) => {
-			selectedPerformanceGroupId = data.performanceGroup.id;
-		}}
-	/>
+	<ExerciseSelection {onExerciseAdded}>
+		{#snippet trigger()}
+			<Dialog.Trigger>
+				{#snippet child({ props })}
+					<Button
+						variant="default"
+						size="lg"
+						class="w-full justify-center text-lg [&_svg]:size-5"
+						{...props}
+						role="combobox"
+					>
+						Add exercise
+						<CirclePlus />
+					</Button>
+				{/snippet}
+			</Dialog.Trigger>
+		{/snippet}
+	</ExerciseSelection>
 </div>

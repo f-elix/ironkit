@@ -4,23 +4,14 @@
 	import { triplit } from '$lib/db/triplit';
 	import { useQuery } from '@triplit/svelte';
 	import ExerciseCreationDialog from '$lib/components/training-log/ExerciseCreationDialog.svelte';
-	import Button from '$lib/shadcn/button/button.svelte';
-	import CirclePlus from '@lucide/svelte/icons/circle-plus';
-	import { addExerciseToWorkout } from '$lib/training-log/addExerciseToWorkout';
-	import type { PerformanceGroup, Performance, PerformanceSet } from '$lib/db/types';
+	import type { Snippet } from 'svelte';
 
 	let {
-		workoutId,
-		lastOrder,
-		onExerciseAdded
+		onExerciseAdded,
+		trigger
 	}: {
-		workoutId: string;
-		lastOrder: number;
-		onExerciseAdded?: (data: {
-			performanceGroup: PerformanceGroup;
-			performance: Performance;
-			performanceSet: PerformanceSet;
-		}) => void;
+		onExerciseAdded?: (exerciseId: string) => Promise<void> | void;
+		trigger?: Snippet;
 	} = $props();
 
 	const exercisesQuery = useQuery(triplit, triplit.query('exercises'));
@@ -30,28 +21,14 @@
 	let open = $state(false);
 
 	const onExerciseSelected = async (exerciseId: string) => {
-		const result = await addExerciseToWorkout(workoutId, exerciseId, lastOrder + 1);
+		await onExerciseAdded?.(exerciseId);
 		open = false;
-		onExerciseAdded?.(result);
 	};
 </script>
 
 {#if exercises.length}
 	<Dialog.Root bind:open>
-		<Dialog.Trigger>
-			{#snippet child({ props })}
-				<Button
-					variant="default"
-					class="w-full justify-center"
-					{...props}
-					role="combobox"
-					aria-expanded={open}
-				>
-					Add exercise
-					<CirclePlus />
-				</Button>
-			{/snippet}
-		</Dialog.Trigger>
+		{@render trigger?.()}
 		<Dialog.Content class="w-[90vw]">
 			<Command.Root>
 				<Command.Input placeholder="Search exercises" bind:value />

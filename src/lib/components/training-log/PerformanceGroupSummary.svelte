@@ -21,7 +21,7 @@
 		{@const note = performance.note}
 		<div class="flex flex-col gap-4">
 			<div>
-				<p class="text-lg font-semibold">
+				<p class="text-base font-semibold">
 					{exercise?.name}
 				</p>
 				{#if note}

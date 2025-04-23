@@ -16,7 +16,7 @@
 <div class="flex flex-col gap-2">
 	<div class="flex flex-col">
 		<div class="flex items-center justify-between gap-4">
-			<h3 class="font-semibold">{exercise}</h3>
+			<h3 class="text-xl font-semibold">{exercise}</h3>
 			<UnitSelector
 				value={unit}
 				onValueChange={(unit) => {
