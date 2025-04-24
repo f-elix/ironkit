@@ -32,7 +32,7 @@
 			</div>
 		</div>
 	{:else}
-		<div class="px-4">
+		<div class="grow px-4">
 			<div
 				class="flex h-full flex-col items-center justify-center gap-2 rounded-md border border-dashed p-4"
 			>
