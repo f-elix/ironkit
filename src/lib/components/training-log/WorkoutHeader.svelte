@@ -6,6 +6,7 @@
 	import { Button } from '$lib/shadcn/button';
 	import XIcon from '@lucide/svelte/icons/x';
 	import { PAGE_tools_training_log } from '$lib/ROUTES';
+	import WorkoutMenu from '$lib/components/training-log/WorkoutMenu.svelte';
 
 	const {
 		workout
@@ -19,14 +20,17 @@
 </script>
 
 <header class="flex flex-col gap-2">
-	<Button
-		href={PAGE_tools_training_log}
-		variant="outline"
-		size="icon"
-		aria-label="Back to training log"
-	>
-		<XIcon />
-	</Button>
+	<div class="flex items-center justify-between gap-4">
+		<Button
+			href={PAGE_tools_training_log}
+			variant="outline"
+			size="icon"
+			aria-label="Back to training log"
+		>
+			<XIcon />
+		</Button>
+		<WorkoutMenu {workout} />
+	</div>
 	<div class="flex flex-col gap-4">
 		<div class="flex items-center justify-between gap-4">
 			<h1 class="text-2xl font-semibold">{title}</h1>

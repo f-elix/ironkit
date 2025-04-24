@@ -1,0 +1,46 @@
+<script lang="ts">
+	import type { Workout } from '$lib/db/types';
+	import { Button, buttonVariants } from '$lib/shadcn/button';
+	import * as Dialog from '$lib/shadcn/dialog';
+	import { PAGE_tools_training_log } from '$lib/ROUTES';
+	import { triplit } from '$lib/db/triplit';
+	import { goto } from '$app/navigation';
+
+	let { workout, open = $bindable() }: { workout: Workout; open: boolean } = $props();
+
+	const onDelete = async () => {
+		const workoutId = workout.id;
+		const performanceGroups = await triplit.fetch(
+			triplit
+				.query('performanceGroups')
+				.Where('workoutId', '=', workoutId)
+				.Include('performances', (rel) => rel('performances').Include('sets'))
+		);
+		await triplit.transact(async (tx) => {
+			await tx.delete('workouts', workoutId);
+			for (const performanceGroup of performanceGroups) {
+				for (const performance of performanceGroup.performances) {
+					for (const set of performance.sets) {
+						await tx.delete('performanceSets', set.id);
+					}
+					await tx.delete('performances', performance.id);
+				}
+				await tx.delete('performanceGroups', performanceGroup.id);
+			}
+		});
+		goto(PAGE_tools_training_log);
+	};
+</script>
+
+<Dialog.Root bind:open>
+	<Dialog.Content class="w-[90vw] max-w-2xl">
+		<Dialog.Title>Delete workout</Dialog.Title>
+		<Dialog.Description>
+			Are you sure you want to delete this workout? This action cannot be undone.
+		</Dialog.Description>
+		<Dialog.Footer class="flex flex-row justify-end gap-2">
+			<Dialog.Close class={buttonVariants({ variant: 'secondary' })}>Cancel</Dialog.Close>
+			<Button variant="destructive" onclick={onDelete}>Delete</Button>
+		</Dialog.Footer>
+	</Dialog.Content>
+</Dialog.Root>
