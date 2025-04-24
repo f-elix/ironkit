@@ -48,6 +48,7 @@
 				notes: notes?.trim() ?? null,
 				date: date.toDate(TIMEZONE)
 			});
+			open = false;
 		} else {
 			const newWorkout = await triplit.insert('workouts', {
 				userId: userId(),
@@ -57,7 +58,6 @@
 			});
 			goto(PAGE_tools_training_log_workout_id({ id: newWorkout.id }));
 		}
-		open = false;
 	};
 </script>
 

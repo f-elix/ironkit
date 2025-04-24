@@ -29,7 +29,7 @@
 	</Button>
 	<div class="flex flex-col gap-4">
 		<div class="flex items-center justify-between gap-4">
-			<h1 class="font-semibold">{title}</h1>
+			<h1 class="text-2xl font-semibold">{title}</h1>
 			<time class="ml-auto text-sm text-muted-foreground" datetime={date.toISOString()}>
 				{formatDate(date)}
 			</time>

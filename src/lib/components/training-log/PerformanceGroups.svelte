@@ -40,41 +40,47 @@
 	};
 </script>
 
-<div class="mt-4 flex flex-col gap-4">
-	<Accordion.Root type="single" class="flex flex-col gap-4" bind:value={selectedPerformanceGroupId}>
-		{#each performanceGroups as performanceGroup (performanceGroup.id)}
-			<Accordion.Item value={performanceGroup.id}>
-				{#if selectedPerformanceGroupId !== performanceGroup.id}
-					<Accordion.Trigger
-						class={buttonVariants({
-							variant: 'secondary',
-							class: 'h-auto w-full'
-						})}
-					>
-						<PerformanceGroupSummary {performanceGroup} />
-					</Accordion.Trigger>
-				{/if}
-				<Accordion.Content forceMount>
-					{#snippet child({ props, open })}
-						{#if open}
-							<!-- Forcemount so that `displayNote` inside the group is reset -->
-							<div {...props}>
-								<PerformanceGroup {performanceGroup} />
-							</div>
-						{/if}
-					{/snippet}
-				</Accordion.Content>
-			</Accordion.Item>
-		{/each}
-	</Accordion.Root>
+<div class="flex grow flex-col gap-4">
+	{#if performanceGroups.length}
+		<Accordion.Root
+			type="single"
+			class="flex flex-col gap-4"
+			bind:value={selectedPerformanceGroupId}
+		>
+			{#each performanceGroups as performanceGroup (performanceGroup.id)}
+				<Accordion.Item value={performanceGroup.id}>
+					{#if selectedPerformanceGroupId !== performanceGroup.id}
+						<Accordion.Trigger
+							class={buttonVariants({
+								variant: 'secondary',
+								class: 'h-auto w-full'
+							})}
+						>
+							<PerformanceGroupSummary {performanceGroup} />
+						</Accordion.Trigger>
+					{/if}
+					<Accordion.Content forceMount>
+						{#snippet child({ props, open })}
+							{#if open}
+								<!-- Forcemount so that `displayNote` inside the group is reset -->
+								<div {...props}>
+									<PerformanceGroup {performanceGroup} />
+								</div>
+							{/if}
+						{/snippet}
+					</Accordion.Content>
+				</Accordion.Item>
+			{/each}
+		</Accordion.Root>
+	{/if}
 	<ExerciseSelection {onExerciseAdded}>
 		{#snippet trigger()}
 			<Dialog.Trigger>
 				{#snippet child({ props })}
 					<Button
-						variant="default"
+						variant="outline"
 						size="lg"
-						class="w-full justify-center text-lg [&_svg]:size-5"
+						class="w-full justify-center bg-muted/50 py-8"
 						{...props}
 						role="combobox"
 					>

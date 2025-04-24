@@ -1,5 +1,5 @@
 <script lang="ts">
-	import PlusIcon from '@lucide/svelte/icons/square-plus';
+	import PlusIcon from '@lucide/svelte/icons/file-plus';
 	import { Button } from '$lib/shadcn/button';
 	import * as Dialog from '$lib/shadcn/dialog';
 	import Input from '$lib/shadcn/input/input.svelte';
@@ -11,7 +11,10 @@
 	import { triplit } from '$lib/db/triplit';
 	import type { Exercise } from '$lib/db/types';
 
-	let { name, onCreated }: { name?: string; onCreated?: (exercise: Exercise) => void } = $props();
+	let {
+		name,
+		onExerciseCreated
+	}: { name?: string; onExerciseCreated?: (exercise: Exercise) => void } = $props();
 
 	let open = $state(false);
 
@@ -29,7 +32,7 @@
 			loadType: loadType,
 			muscleGroups: muscleGroups
 		});
-		onCreated?.(exercise);
+		onExerciseCreated?.(exercise);
 		open = false;
 	};
 </script>
@@ -38,12 +41,13 @@
 	<Dialog.Trigger>
 		{#snippet child({ props })}
 			<Button
-				variant="secondary"
-				class="w-full flex-col items-center justify-center py-12 text-base font-semibold [&_svg]:size-6"
+				variant="outline"
+				size="lg"
+				class="w-full items-center justify-center bg-muted/50 py-8 text-base ring-inset"
 				{...props}
 			>
 				<span>
-					Create new exercise
+					Create exercise
 					{#if name}
 						"<span class="font-normal">{name}</span>"
 					{/if}

@@ -16,7 +16,7 @@
 
 {#if workout}
 	<div class="flex grow flex-col">
-		<div class="p-4">
+		<div class="flex grow flex-col gap-4 p-4 pb-0">
 			<WorkoutHeader {workout} />
 			<PerformanceGroups {workoutId} />
 		</div>

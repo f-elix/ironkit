@@ -53,7 +53,7 @@
 					<Command.Group class="px-0 pt-0">
 						<Command.Separator class="mb-3 mt-2" />
 						<ExerciseCreationDialog
-							onCreated={(newExercise) => {
+							onExerciseCreated={(newExercise) => {
 								onExerciseSelected(newExercise.id);
 								open = false;
 							}}
@@ -64,10 +64,18 @@
 		</Dialog.Content>
 	</Dialog.Root>
 {:else}
-	<div class="flex flex-col gap-2">
-		<p class="text-center font-medium text-muted-foreground">
-			Create your first exercise to get started.
+	<div
+		class="flex grow flex-col items-center justify-center gap-2 rounded-sm border border-dashed p-4"
+	>
+		<h2 class="text-center text-2xl font-bold">No exercises yet</h2>
+		<p class="text-center font-medium leading-5 text-muted-foreground">
+			Create your first<br />exercise to get started.
 		</p>
-		<ExerciseCreationDialog />
+		<div class="h-6"></div>
+		<ExerciseCreationDialog
+			onExerciseCreated={(newExercise) => {
+				onExerciseSelected(newExercise.id);
+			}}
+		/>
 	</div>
 {/if}
