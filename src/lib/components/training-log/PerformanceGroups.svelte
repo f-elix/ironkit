@@ -25,7 +25,8 @@
 					.Include('exercise')
 					.Include('sets', (setsRel) => {
 						return setsRel('sets').Order('performanceOrder', 'ASC');
-					});
+					})
+					.Include('workout');
 			})
 	);
 

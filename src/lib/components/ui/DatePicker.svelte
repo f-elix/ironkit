@@ -11,9 +11,11 @@
 	});
 
 	let { value = $bindable() }: { value: DateValue } = $props();
+
+	let open = $state(false);
 </script>
 
-<Popover.Root>
+<Popover.Root bind:open>
 	<Popover.Trigger>
 		{#snippet child({ props })}
 			<Button
@@ -27,6 +29,13 @@
 		{/snippet}
 	</Popover.Trigger>
 	<Popover.Content class="w-auto p-0">
-		<Calendar type="single" bind:value initialFocus />
+		<Calendar
+			type="single"
+			bind:value
+			initialFocus
+			onValueChange={() => {
+				open = false;
+			}}
+		/>
 	</Popover.Content>
 </Popover.Root>

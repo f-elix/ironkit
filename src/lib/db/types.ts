@@ -17,7 +17,14 @@ export type WorkoutWithRelations = QueryResult<
 			performanceGroups: {
 				_extends: 'performanceGroups';
 				include: {
-					performances: { _extends: 'performances'; include: { exercise: true; sets: true } };
+					performances: {
+						_extends: 'performances';
+						include: {
+							exercise: true;
+							sets: true;
+							workout: true;
+						};
+					};
 				};
 			};
 		};
