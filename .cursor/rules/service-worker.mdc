@@ -15,7 +15,6 @@ The [src/service-worker.ts](mdc:src/service-worker.ts) implements a Progressive 
 
 ## Request Handling
 - Only handles GET requests
-- Excludes API sync endpoints from caching
 - Caches successful (200) responses for non-extension URLs
 - Implements skip waiting for immediate service worker updates
 

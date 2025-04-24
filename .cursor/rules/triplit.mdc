@@ -1,0 +1,111 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Triplit Integration Guide
+
+Triplit is an open-source real-time database with client-server sync capabilities.
+
+## Core Features
+
+- Real-time synchronization with incremental updates
+- Local caching with client-side database
+- Optimistic updates for responsive UX
+- Offline-mode support with automatic reconnection
+- Schema-based data modeling with TypeScript support
+- Row-level authorization
+- CRDT-powered collaboration features
+
+## Schema System
+
+### Schema Definition
+- Schemas are defined using the `Schema` (S) object from `@triplit/client`
+- Every collection requires an `id` field using `S.Id()`
+- Available data types:
+  - `S.String()` - String values
+  - `S.Boolean()` - Boolean values
+  - `S.Number()` - Numeric values
+  - `S.Date()` - Date objects
+  - `S.Set()` - Set of values
+  - `S.Record()` - Nested object structures
+  - `S.Optional()` - Makes a field optional
+  - `S.Id()` - Unique identifiers
+
+### Relations
+Three types of relations:
+1. `S.RelationMany` - One-to-many relationships
+2. `S.RelationOne` - One-to-one relationships
+3. `S.RelationById` - Direct foreign key relationships
+
+Relations are queried using the `Include()` method.
+
+### Schema Updates
+Best practices for schema updates:
+1. Always make new fields optional initially
+2. Backfill data before making fields required
+3. Use transactions for data migrations
+4. Test schema changes in development first
+5. Use `triplit schema push` for production updates
+
+## Client Operations
+
+### Basic Operations
+- `insert()` - Add new records
+- `update()` - Modify existing records
+- `delete()` - Remove records
+- `query()` - Read and filter data
+- `subscribe()` - Real-time data subscriptions
+- `transact()` - Batch operations
+
+### Query Features
+- `Where()` - Filter conditions
+- `Include()` - Load related data
+- `Select()` - Choose specific fields
+- `Order()` - Sort results
+- `Limit()` - Pagination control
+
+## Development Workflow
+
+### Local Development
+1. Use `triplit dev` for local development server
+2. Configure `.env` with server URL and tokens
+3. Use `--storage=sqlite` for persistent development data
+4. Implement schema in `triplit/schema.ts`
+5. Configure client in `triplit/client.ts`
+
+### Production Deployment
+1. Set up Triplit Server or use Triplit Cloud
+2. Configure environment variables
+3. Push schema using `triplit schema push`
+4. Implement proper error handling
+5. Set up authentication if needed
+
+## Best Practices
+
+### Data Modeling
+1. Use schemas for type safety
+2. Make fields optional when uncertain
+3. Use relations for complex data structures
+4. Implement proper indexing
+5. Consider offline capabilities
+
+### Performance
+1. Use optimistic updates
+2. Implement proper caching
+3. Use background subscriptions when needed
+4. Monitor sync status
+5. Handle offline scenarios
+
+### Security
+1. Implement proper authentication
+2. Use row-level permissions
+3. Validate data on server-side
+4. Secure API tokens
+5. Monitor access patterns
+
+## Integration Points
+- React/Vue/Svelte/Solid integrations available
+- HTTP API for server-side operations
+- Web Worker support for performance
+- Authentication providers (Clerk, Supabase)
