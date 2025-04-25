@@ -13,6 +13,7 @@
 	import { goto } from '$app/navigation';
 	import { PAGE_tools_training_log_workout_id } from '$lib/ROUTES';
 	import Label from '$lib/shadcn/label/label.svelte';
+	import PreviousWorkoutSelection from '$lib/components/training-log/PreviousWorkoutSelection.svelte';
 
 	let {
 		trigger,
@@ -28,7 +29,8 @@
 
 	let open = $state(false);
 
-	let title = $state(workout?.title);
+	let templateWorkout = $state<Maybe<Workout>>(null);
+	let title = $derived(workout?.title ?? templateWorkout?.title);
 	let notes = $state(workout?.notes);
 	let date = $state(
 		workoutDate
@@ -49,15 +51,52 @@
 				date: date.toDate(TIMEZONE)
 			});
 			open = false;
-		} else {
-			const newWorkout = await triplit.insert('workouts', {
+			return;
+		}
+
+		const newWorkout = await triplit.transact(async (tx) => {
+			const newWorkout = await tx.insert('workouts', {
 				userId: userId(),
 				title,
 				notes: notes?.trim() ?? null,
 				date: date.toDate(TIMEZONE)
 			});
-			goto(PAGE_tools_training_log_workout_id({ id: newWorkout.id }));
-		}
+			if (templateWorkout) {
+				const peformanceGroups = await tx.fetch(
+					triplit
+						.query('performanceGroups')
+						.Where('workoutId', '=', templateWorkout.id)
+						.Include('performances', (rel) => {
+							return rel('performances').Include('sets');
+						})
+				);
+				for (const templatePerformanceGroup of peformanceGroups) {
+					const newGroup = await tx.insert('performanceGroups', {
+						userId: templatePerformanceGroup.userId,
+						workoutId: newWorkout.id,
+						workoutOrder: templatePerformanceGroup.workoutOrder
+					});
+					for (const templatePerformance of templatePerformanceGroup.performances) {
+						const newPerformance = await tx.insert('performances', {
+							userId: templatePerformance.userId,
+							performanceGroupId: newGroup.id,
+							exerciseId: templatePerformance.exerciseId,
+							groupOrder: templatePerformance.groupOrder,
+							workoutId: newWorkout.id
+						});
+						for (const templateSet of templatePerformance.sets) {
+							await tx.insert('performanceSets', {
+								userId: templateSet.userId,
+								performanceId: newPerformance.id,
+								performanceOrder: templateSet.performanceOrder
+							});
+						}
+					}
+				}
+			}
+			return newWorkout;
+		});
+		goto(PAGE_tools_training_log_workout_id({ id: newWorkout.id }));
 	};
 </script>
 
@@ -70,6 +109,9 @@
 	<Dialog.Content class="w-[90vw] max-w-2xl">
 		<Dialog.Title class="text-left">{dialogTitle}</Dialog.Title>
 		<form class="flex flex-col gap-4" onsubmit={onSave}>
+			{#if !workout}
+				<PreviousWorkoutSelection bind:selectedWorkout={templateWorkout} />
+			{/if}
 			<Label class="flex flex-col gap-2">
 				Name
 				<Input type="text" placeholder="Workout name" bind:value={title} />
