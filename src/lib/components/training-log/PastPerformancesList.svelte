@@ -5,6 +5,7 @@
 	import { ScrollArea } from '$lib/shadcn/scroll-area';
 	import type { Workout } from '$lib/db/types';
 	import { exists } from '@triplit/client';
+	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 
 	let { exerciseId, currentWorkout }: { exerciseId: string; currentWorkout: Maybe<Workout> } =
 		$props();
@@ -91,12 +92,11 @@
 		</ul>
 	</ScrollArea>
 {:else}
-	<div
-		class="mb-7 flex grow flex-col items-center justify-center gap-2 rounded-sm border border-dashed p-4"
-	>
-		<h2 class="text-center text-2xl font-bold">No history yet</h2>
-		<p class="text-center font-medium leading-5 text-muted-foreground">
-			Log this exercise in a workout to start tracking your progress.
-		</p>
+	<div class="my-7">
+		<EmptyState title="No history yet">
+			{#snippet description()}
+				Log this exercise in a workout to start tracking your progress.
+			{/snippet}
+		</EmptyState>
 	</div>
 {/if}

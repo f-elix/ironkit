@@ -5,6 +5,7 @@
 	import { useQuery } from '@triplit/svelte';
 	import ExerciseCreationDialog from '$lib/components/training-log/ExerciseCreationDialog.svelte';
 	import type { Snippet } from 'svelte';
+	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 
 	let {
 		onExerciseAdded,
@@ -64,18 +65,16 @@
 		</Dialog.Content>
 	</Dialog.Root>
 {:else}
-	<div
-		class="flex grow flex-col items-center justify-center gap-2 rounded-sm border border-dashed p-4"
-	>
-		<h2 class="text-center text-2xl font-bold">No exercises yet</h2>
-		<p class="text-center font-medium leading-5 text-muted-foreground">
+	<EmptyState title="No exercises yet">
+		{#snippet description()}
 			Create your first<br />exercise to get started.
-		</p>
-		<div class="h-6"></div>
-		<ExerciseCreationDialog
-			onExerciseCreated={(newExercise) => {
-				onExerciseSelected(newExercise.id);
-			}}
-		/>
-	</div>
+		{/snippet}
+		{#snippet button()}
+			<ExerciseCreationDialog
+				onExerciseCreated={(newExercise) => {
+					onExerciseSelected(newExercise.id);
+				}}
+			/>
+		{/snippet}
+	</EmptyState>
 {/if}
