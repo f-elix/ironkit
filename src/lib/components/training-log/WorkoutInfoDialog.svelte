@@ -22,8 +22,8 @@
 		trigger: Snippet<[{ props: Record<string, unknown> }]>;
 	} = $props();
 
-	const dialogTitle = workout ? 'Edit workout' : 'Create new workout';
-	const buttonText = workout ? 'Save changes' : 'Create workout';
+	const dialogTitle = workout ? 'Edit workout' : 'Create workout';
+	const buttonText = workout ? 'Save changes' : 'Create';
 	const workoutDate = workout?.date;
 
 	let open = $state(false);
