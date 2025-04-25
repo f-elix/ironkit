@@ -27,35 +27,38 @@
 
 <ToolLayout>
 	{#snippet output()}
-		<div class="flex flex-col gap-4">
-			<p class="text-sm text-muted-foreground">The following formulas are used:</p>
-			<dl class="grid grid-cols-3 gap-x-10 gap-y-5">
-				{#each Object.entries(FORMULAS) as [key, formula]}
-					<div class="flex flex-col items-center gap-2 text-center text-sm leading-none">
-						<dt class="flex items-center gap-1">
-							<span class="text-sm capitalize text-muted-foreground">{formula.label}</span>
-							<HintBadge>
-								<div class="flex flex-col gap-1">
-									<h2 class="text-base font-bold">{formula.label}</h2>
-									<p class="text-sm">{formula.description}</p>
-									<h3 class="text-base font-bold">Best for</h3>
-									<p class="text-sm">{formula.bestFor}</p>
-									<h3 class="text-base font-bold">Formula</h3>
-									<p class="text-sm">{formula.formula}</p>
-								</div>
-							</HintBadge>
-						</dt>
-						<dd>{oneRepMax[key as keyof typeof oneRepMax]}</dd>
-					</div>
-				{/each}
-			</dl>
-		</div>
-		<div class="mt-6 rounded-sm border bg-muted p-4 first-line:rounded-sm">
-			<dl class="grid grid-cols-3 gap-x-10 gap-y-5">
-				{@render mainResult('Min', oneRepMax.min)}
-				{@render mainResult('Average', oneRepMax.average)}
-				{@render mainResult('Max', oneRepMax.max)}
-			</dl>
+		<!-- We use position: absolute here so that the mobile keyboard can cover it. Otherwise, the inputs disappear when the keyboard is open -->
+		<div class="absolute inset-x-4">
+			<div class="flex flex-col gap-4">
+				<p class="text-sm text-muted-foreground">The following formulas are used:</p>
+				<dl class="grid grid-cols-3 gap-x-10 gap-y-5">
+					{#each Object.entries(FORMULAS) as [key, formula]}
+						<div class="flex flex-col items-center gap-2 text-center text-sm leading-none">
+							<dt class="flex items-center gap-1">
+								<span class="text-sm capitalize text-muted-foreground">{formula.label}</span>
+								<HintBadge>
+									<div class="flex flex-col gap-1">
+										<h2 class="text-base font-bold">{formula.label}</h2>
+										<p class="text-sm">{formula.description}</p>
+										<h3 class="text-base font-bold">Best for</h3>
+										<p class="text-sm">{formula.bestFor}</p>
+										<h3 class="text-base font-bold">Formula</h3>
+										<p class="text-sm">{formula.formula}</p>
+									</div>
+								</HintBadge>
+							</dt>
+							<dd>{oneRepMax[key as keyof typeof oneRepMax]}</dd>
+						</div>
+					{/each}
+				</dl>
+			</div>
+			<div class="mt-6 rounded-sm border bg-muted p-4 first-line:rounded-sm">
+				<dl class="grid grid-cols-3 gap-x-10 gap-y-5">
+					{@render mainResult('Min', oneRepMax.min)}
+					{@render mainResult('Average', oneRepMax.average)}
+					{@render mainResult('Max', oneRepMax.max)}
+				</dl>
+			</div>
 		</div>
 	{/snippet}
 	{#snippet settings()}

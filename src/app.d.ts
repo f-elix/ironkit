@@ -10,7 +10,9 @@ declare global {
 		interface PageData {
 			tool?: Tool;
 		}
-		// interface PageState {}
+		interface PageState {
+			toolHref?: string;
+		}
 		// interface Platform {}
 	}
 }

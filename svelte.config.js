@@ -15,7 +15,8 @@ const config = {
 			}
 		},
 		alias: {
-			$triplit: 'triplit'
+			$triplit: 'triplit',
+			$routes: 'src/routes'
 		}
 	}
 };
