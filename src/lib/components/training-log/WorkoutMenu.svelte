@@ -24,7 +24,7 @@
 	</DropdownMenu.Trigger>
 	<DropdownMenu.Content>
 		<DropdownMenu.Group>
-			<DropdownMenu.Item class="text-destructive" onclick={onDeleteWorkout}>
+			<DropdownMenu.Item class="text-destructive" onSelect={onDeleteWorkout}>
 				<TrashIcon />
 				Delete workout
 			</DropdownMenu.Item>
