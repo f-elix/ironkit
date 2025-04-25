@@ -5,8 +5,6 @@
 	import * as Tabs from '$lib/shadcn/tabs';
 	import History from '@lucide/svelte/icons/history';
 	import PastPerformancesList from '$lib/components/training-log/PastPerformancesList.svelte';
-	import { today } from '@internationalized/date';
-	import { TIMEZONE } from '$lib/constants';
 
 	type Performance = WorkoutWithRelations['performanceGroups'][number]['performances'][number];
 
@@ -14,14 +12,13 @@
 
 	const tabItems = [
 		{
-			label: 'Up to workout',
+			label: 'Up to this workout',
 			value: 'upToWorkout',
-			upToDate: performance.workout?.date
+			currentWorkout: performance.workout
 		},
 		{
 			label: 'All time',
-			value: 'allTime',
-			upToDate: today(TIMEZONE).toDate(TIMEZONE)
+			value: 'allTime'
 		}
 	];
 
@@ -36,7 +33,7 @@
 			<History />
 		</Button>
 	</Dialog.Trigger>
-	<Dialog.Content class="w-[90vw] max-w-2xl">
+	<Dialog.Content class="w-[90vw] max-w-2xl pb-0">
 		<Dialog.Title>Exercise history</Dialog.Title>
 		<Tabs.Root bind:value>
 			<Tabs.List class="grid w-full grid-cols-2">
@@ -46,7 +43,7 @@
 			</Tabs.List>
 			{#each tabItems as item}
 				<Tabs.Content value={item.value}>
-					<PastPerformancesList {exerciseId} upToDate={item.upToDate} />
+					<PastPerformancesList {exerciseId} currentWorkout={item.currentWorkout} />
 				</Tabs.Content>
 			{/each}
 		</Tabs.Root>
