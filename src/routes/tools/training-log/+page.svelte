@@ -3,10 +3,12 @@
 	import { DEFAULT_WORKOUT_TITLE } from '$lib/constants';
 	import { formatDate } from '$lib/ui/formatDate';
 	import AddWorkout from '$lib/components/training-log/AddWorkout.svelte';
+	import { triplit } from '$lib/db/triplit';
+	import { useQuery } from '@triplit/svelte';
 
-	let { data } = $props();
+	const query = useQuery(triplit, triplit.query('workouts').Order('date', 'DESC'));
 
-	let workouts = $derived(data.workouts);
+	let workouts = $derived(query.results);
 </script>
 
 <div class="flex grow flex-col">
