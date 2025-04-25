@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { WorkoutWithRelations } from '$lib/db/types';
-	import Button from '$lib/shadcn/button/button.svelte';
+	import Button, { buttonVariants } from '$lib/shadcn/button/button.svelte';
 	import * as Dialog from '$lib/shadcn/dialog';
 	import * as Tabs from '$lib/shadcn/tabs';
 	import History from '@lucide/svelte/icons/history';
@@ -28,10 +28,11 @@
 </script>
 
 <Dialog.Root>
-	<Dialog.Trigger>
-		<Button size="icon" variant="ghost" aria-label="View exercise history" class="w-8">
-			<History />
-		</Button>
+	<Dialog.Trigger
+		class={buttonVariants({ variant: 'secondary', size: 'icon' })}
+		aria-label="View exercise history"
+	>
+		<History />
 	</Dialog.Trigger>
 	<Dialog.Content class="w-[90vw] max-w-2xl pb-0">
 		<Dialog.Title>Exercise history</Dialog.Title>

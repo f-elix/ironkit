@@ -10,7 +10,7 @@
 	let performances = $derived(performanceGroup.performances);
 </script>
 
-<div class="flex w-full flex-col items-start gap-4 py-2 text-left">
+<div class="flex w-full flex-col items-start gap-4 whitespace-normal py-2 text-left">
 	{#if label}
 		<p class="font-semibold text-muted-foreground">{label}</p>
 	{/if}

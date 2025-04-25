@@ -49,7 +49,7 @@
 	<div aria-hidden="true">&times;</div>
 	<Label class="flex items-center gap-2">
 		<span class="sr-only">Weight</span>
-		<Input type="number" value={weight} oninput={onWeightChange} class="w-20" />
-		<span>{unit}</span>
+		<Input type="number" value={weight} oninput={onWeightChange} class="w-24  pr-8" />
+		<span class="-ml-10 opacity-80">{unit}</span>
 	</Label>
 </div>

@@ -104,8 +104,4 @@
 			</li>
 		{/each}
 	</ul>
-	<!-- <Button size="sm" variant="secondary" class="w-full" onclick={addSet}>
-		<Plus />
-		Add set
-	</Button> -->
 </div>

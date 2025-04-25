@@ -19,15 +19,21 @@
 
 <Collapsible.Root bind:open>
 	{#if !open}
-		<Collapsible.Trigger class={buttonVariants({ variant: 'secondary', size: 'sm', class: 'h-8' })}>
+		<Collapsible.Trigger class={buttonVariants({ variant: 'secondary' })}>
 			<Pencil />
 			Add note
 		</Collapsible.Trigger>
 	{/if}
 	<Collapsible.Content>
 		<Label class="flex flex-col gap-2">
-			<span class="text-sm text-muted-foreground">Note</span>
-			<Textarea value={performance.note} oninput={onNoteChange} rows={2} class="min-h-none" />
+			<span class="sr-only">Note</span>
+			<Textarea
+				value={performance.note}
+				oninput={onNoteChange}
+				rows={3}
+				placeholder="Note"
+				class="min-h-none p-2 text-sm font-normal leading-4"
+			/>
 		</Label>
 	</Collapsible.Content>
 </Collapsible.Root>

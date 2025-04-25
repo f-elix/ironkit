@@ -2,7 +2,7 @@
 	import Performance from '$lib/components/training-log/Performance.svelte';
 	import { triplit } from '$lib/db/triplit';
 	import type { WorkoutWithRelations } from '$lib/db/types';
-	import Button from '$lib/shadcn/button/button.svelte';
+	import Button, { buttonVariants } from '$lib/shadcn/button/button.svelte';
 	import * as Card from '$lib/shadcn/card';
 	import * as Dialog from '$lib/shadcn/dialog';
 	import Separator from '$lib/shadcn/separator/separator.svelte';
@@ -88,13 +88,9 @@
 		<div class="grid gap-2">
 			<ExerciseSelection {onExerciseAdded}>
 				{#snippet trigger()}
-					<Dialog.Trigger>
-						{#snippet child({ props })}
-							<Button variant="secondary" class="w-full" {...props}>
-								<Plus />
-								Add exercise to group
-							</Button>
-						{/snippet}
+					<Dialog.Trigger class={buttonVariants({ variant: 'secondary', class: 'w-full' })}>
+						<Plus />
+						Add exercise to group
 					</Dialog.Trigger>
 				{/snippet}
 			</ExerciseSelection>
