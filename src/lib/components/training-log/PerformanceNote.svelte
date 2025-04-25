@@ -19,7 +19,7 @@
 
 <Collapsible.Root bind:open>
 	{#if !open}
-		<Collapsible.Trigger class={buttonVariants({ variant: 'secondary', size: 'sm' })}>
+		<Collapsible.Trigger class={buttonVariants({ variant: 'secondary', size: 'sm', class: 'h-8' })}>
 			<Pencil />
 			Add note
 		</Collapsible.Trigger>

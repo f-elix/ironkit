@@ -20,7 +20,7 @@
 </script>
 
 <div class="flex flex-col gap-2">
-	<div class="flex flex-col">
+	<div class="flex flex-col gap-1">
 		<div class="flex items-center justify-between gap-2">
 			<div class="flex items-center gap-1">
 				<h3 class="text-xl font-semibold">{exerciseName}</h3>
