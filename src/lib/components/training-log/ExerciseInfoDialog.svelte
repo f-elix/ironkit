@@ -1,6 +1,6 @@
 <script lang="ts">
 	import PlusIcon from '@lucide/svelte/icons/file-plus';
-	import { Button } from '$lib/shadcn/button';
+	import { Button, buttonVariants } from '$lib/shadcn/button';
 	import * as Dialog from '$lib/shadcn/dialog';
 	import Input from '$lib/shadcn/input/input.svelte';
 	import capitalize from 'just-capitalize';
@@ -10,20 +10,31 @@
 	import MuscleGroupSelection from '$lib/components/training-log/MuscleGroupSelection.svelte';
 	import { triplit } from '$lib/db/triplit';
 	import type { Exercise } from '$lib/db/types';
+	import type { Snippet } from 'svelte';
 
 	let {
-		name,
+		exercise,
+		trigger,
+		name = exercise?.name,
 		onExerciseCreated
-	}: { name?: string; onExerciseCreated?: (exercise: Exercise) => void } = $props();
+	}: {
+		exercise?: Exercise;
+		trigger?: Snippet;
+		name?: string;
+		onExerciseCreated?: (exercise: Exercise) => void;
+	} = $props();
 
 	let open = $state(false);
+
+	const title = exercise ? 'Edit exercise' : 'Create exercise';
+	const buttonText = exercise ? 'Save changes' : 'Create';
 
 	const executionTypes = ['reps', 'time'] as const;
 	const loadTypes = ['weighted', 'bodyweight', 'assisted'] as const;
 
-	let executionType = $state<(typeof executionTypes)[number]>('reps');
-	let loadType = $state<(typeof loadTypes)[number]>('weighted');
-	let muscleGroups = $state<string[]>([]);
+	let executionType = $state<(typeof executionTypes)[number]>(exercise?.executionType ?? 'reps');
+	let loadType = $state<(typeof loadTypes)[number]>(exercise?.loadType ?? 'weighted');
+	let muscleGroups = $state<string[]>(Array.from(exercise?.muscleGroups ?? []) ?? []);
 
 	const onSave = async () => {
 		const exercise = await triplit.insert('exercises', {
@@ -38,26 +49,27 @@
 </script>
 
 <Dialog.Root bind:open>
-	<Dialog.Trigger>
-		{#snippet child({ props })}
-			<Button
-				variant="outline"
-				size="lg"
-				class="w-full items-center justify-center bg-muted/50 py-8 text-base ring-inset"
-				{...props}
-			>
-				<span>
-					Create exercise
-					{#if name}
-						"<span class="font-normal">{name}</span>"
-					{/if}
-				</span>
-				<PlusIcon />
-			</Button>
-		{/snippet}
-	</Dialog.Trigger>
+	{#if trigger}
+		{@render trigger()}
+	{:else}
+		<Dialog.Trigger
+			class={buttonVariants({
+				variant: 'outline',
+				size: 'lg',
+				class: 'w-full items-center justify-center bg-muted/50 py-8 text-base ring-inset'
+			})}
+		>
+			<span>
+				Create exercise
+				{#if name}
+					"<span class="font-normal">{name}</span>"
+				{/if}
+			</span>
+			<PlusIcon />
+		</Dialog.Trigger>
+	{/if}
 	<Dialog.Content class="w-[90vw] max-w-2xl">
-		<Dialog.Title class="text-left">Create new exercise</Dialog.Title>
+		<Dialog.Title class="text-left">{title}</Dialog.Title>
 		<form class="flex flex-col gap-6" onsubmit={onSave}>
 			<label>
 				<span class="sr-only">Exercise name</span>
@@ -96,7 +108,7 @@
 				</Select.Root>
 			</Label>
 			<MuscleGroupSelection bind:value={muscleGroups} />
-			<Button type="submit">Create</Button>
+			<Button type="submit">{buttonText}</Button>
 		</form>
 	</Dialog.Content>
 </Dialog.Root>

@@ -40,7 +40,7 @@
 		</Dialog.Description>
 		<Dialog.Footer class="flex flex-row justify-end gap-2">
 			<Dialog.Close class={buttonVariants({ variant: 'secondary' })}>Cancel</Dialog.Close>
-			<Button variant="destructive" onclick={onDelete}>Delete</Button>
+			<Button variant="destructive" onclick={onDelete}>Confirm</Button>
 		</Dialog.Footer>
 	</Dialog.Content>
 </Dialog.Root>

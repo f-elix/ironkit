@@ -14,6 +14,7 @@ export const PAGE_tools_coefficient_calculator = `/tools/coefficient-calculator`
 export const PAGE_tools_load_percentage_calculator = `/tools/load-percentage-calculator`;
 export const PAGE_tools_plate_calculator = `/tools/plate-calculator`;
 export const PAGE_tools_training_log = `/tools/training-log`;
+export const PAGE_tools_training_log_exercises = `/tools/training-log/exercises`;
 export const PAGE_tools_training_log_workout_id = (params: { id: string | number }) => {
 	return `/tools/training-log/workout-${params['id']}`;
 };
@@ -113,6 +114,7 @@ export type KIT_ROUTES = {
 		tools_load_percentage_calculator: never;
 		tools_plate_calculator: never;
 		tools_training_log: never;
+		tools_training_log_exercises: never;
 		tools_training_log_workout_id: 'id';
 		tools_weight_converter: never;
 	};

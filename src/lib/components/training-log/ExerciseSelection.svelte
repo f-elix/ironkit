@@ -3,7 +3,7 @@
 	import * as Dialog from '$lib/shadcn/dialog';
 	import { triplit } from '$lib/db/triplit';
 	import { useQuery } from '@triplit/svelte';
-	import ExerciseCreationDialog from '$lib/components/training-log/ExerciseCreationDialog.svelte';
+	import ExerciseInfoDialog from '$lib/components/training-log/ExerciseInfoDialog.svelte';
 	import type { Snippet } from 'svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 
@@ -36,7 +36,7 @@
 				<Command.List>
 					<Command.Empty class="flex w-full flex-col gap-6 pb-1">
 						<p class="text-sm text-muted-foreground">No exercises found</p>
-						<ExerciseCreationDialog name={value} />
+						<ExerciseInfoDialog name={value} />
 					</Command.Empty>
 					<Command.Group>
 						{#each exercises as exercise (exercise.id)}
@@ -53,7 +53,7 @@
 					</Command.Group>
 					<Command.Group class="px-0 pt-0">
 						<Command.Separator class="mb-3 mt-2" />
-						<ExerciseCreationDialog
+						<ExerciseInfoDialog
 							onExerciseCreated={(newExercise) => {
 								onExerciseSelected(newExercise.id);
 								open = false;
@@ -70,7 +70,7 @@
 			Create your first<br />exercise to get started.
 		{/snippet}
 		{#snippet button()}
-			<ExerciseCreationDialog
+			<ExerciseInfoDialog
 				onExerciseCreated={(newExercise) => {
 					onExerciseSelected(newExercise.id);
 				}}
