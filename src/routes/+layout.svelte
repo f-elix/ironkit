@@ -6,6 +6,7 @@
 	import { watchOffline } from '$lib/ui/watchOffline';
 	import { watchSWUpdate } from '$lib/ui/watchSWUpdate';
 	import { setupViewTransition } from '$lib/ui/setupViewTransition';
+	import { setAuth } from '$lib/db/Auth.svelte';
 
 	let { children } = $props();
 
@@ -13,9 +14,12 @@
 	watchOffline();
 	watchSWUpdate();
 	loadDb();
+	setAuth();
 </script>
 
 <Head />
 <Toaster closeButton richColors theme="dark" />
 
-{@render children()}
+<div class="mx-auto max-w-xl">
+	{@render children()}
+</div>

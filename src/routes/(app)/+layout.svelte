@@ -4,7 +4,7 @@
 	let { children } = $props();
 </script>
 
-<div class="mx-auto flex h-dvh max-w-xl flex-col overflow-y-auto">
+<div class="flex h-dvh flex-col overflow-y-auto">
 	<Header />
 	{@render children()}
 </div>

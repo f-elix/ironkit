@@ -14,7 +14,7 @@
 
 <div class="flex items-center justify-between gap-4 p-4">
 	<Button variant="outline" size="icon" href={PAGE__ROOT} aria-label="Back to home">
-		<ArrowLeftIcon class="size-4" />
+		<ArrowLeftIcon />
 	</Button>
 	<h1
 		class="flex items-center justify-center gap-2 text-center text-sm font-medium"
