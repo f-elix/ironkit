@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { WorkoutWithRelations } from '$lib/db/types';
-	import Button, { buttonVariants } from '$lib/shadcn/button/button.svelte';
+	import { buttonVariants } from '$lib/shadcn/button/button.svelte';
 	import * as Dialog from '$lib/shadcn/dialog';
 	import * as Tabs from '$lib/shadcn/tabs';
 	import History from '@lucide/svelte/icons/history';

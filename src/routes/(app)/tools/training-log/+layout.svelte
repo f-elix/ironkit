@@ -29,7 +29,7 @@
 					class="absolute inset-0 rounded-md bg-muted"
 					in:send={{ key: 'nav-link-bg' }}
 					out:receive={{ key: 'nav-link-bg' }}
-				/>
+				></div>
 			{/if}
 			<span class="relative z-10">
 				{item.label}

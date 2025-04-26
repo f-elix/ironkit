@@ -115,6 +115,7 @@
 								<div
 									class="grid w-10 shrink-0 cursor-grab place-items-center rounded-r-sm bg-gray-900 active:cursor-grabbing"
 									use:dragHandle
+									role="button"
 									tabindex="0"
 									aria-label="Drag to reorder"
 								>
