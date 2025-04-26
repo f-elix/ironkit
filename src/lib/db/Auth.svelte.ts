@@ -23,7 +23,7 @@ export class Auth {
 					this.#handleSignInEvent(session);
 				}
 				if (event === 'TOKEN_REFRESHED' && session) {
-					triplit.updateSessionToken(session.access_token);
+					this.#handleTokenRefreshEvent(session);
 				}
 				this.session = session;
 			});
@@ -39,12 +39,16 @@ export class Auth {
 		const accessToken = session?.access_token;
 		if (accessToken) {
 			await triplit.startSession(accessToken);
-			triplit.updateSessionToken(accessToken);
 		}
 		const pathname = page.url.pathname;
 		if (pathname === PAGE_auth && session) {
 			return this.#goToApp();
 		}
+	}
+
+	async #handleTokenRefreshEvent(session: AuthSession) {
+		await triplit.endSession();
+		await triplit.startSession(session.access_token);
 	}
 
 	async #syncAnonData(session: AuthSession) {
