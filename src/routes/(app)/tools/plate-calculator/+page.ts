@@ -2,8 +2,6 @@ import { tools } from '$lib/data/tools';
 
 export const load = () => {
 	return {
-		metaData: {
-			title: tools.plateCalculator.title
-		}
+		metaData: tools.plateCalculator
 	};
 };

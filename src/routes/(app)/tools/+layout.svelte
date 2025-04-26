@@ -8,8 +8,8 @@
 
 	let { children }: { children: Snippet } = $props();
 
-	let title = $derived(page.data.tool?.title);
-	let Icon = $derived(page.data.tool?.Icon);
+	let title = $derived(page.data.metaData?.title);
+	let Icon = $derived(page.data.metaData?.Icon);
 </script>
 
 <div class="flex items-center justify-between gap-4 p-4">
