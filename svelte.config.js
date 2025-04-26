@@ -18,6 +18,9 @@ const config = {
 			$triplit: 'triplit',
 			$routes: 'src/routes'
 		}
+	},
+	vitePlugin: {
+		inspector: true
 	}
 };
 
