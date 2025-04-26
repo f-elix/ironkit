@@ -19,12 +19,11 @@ export const PAGE_tools_training_log_workout_id = (params: { id: string | number
 	return `/tools/training-log/workout-${params['id']}`;
 };
 export const PAGE_tools_weight_converter = `/tools/weight-converter`;
+export const PAGE_auth = `/auth`;
 
 /**
  * SERVERS
  */
-export const SERVER_GET_api_sync = `/api/sync`;
-export const SERVER_POST_api_sync = `/api/sync`;
 
 /**
  * ACTIONS
@@ -117,8 +116,9 @@ export type KIT_ROUTES = {
 		tools_training_log_exercises: never;
 		tools_training_log_workout_id: 'id';
 		tools_weight_converter: never;
+		auth: never;
 	};
-	SERVERS: { GET_api_sync: never; POST_api_sync: never };
+	SERVERS: Record<string, never>;
 	ACTIONS: Record<string, never>;
 	LINKS: Record<string, never>;
 	Params: { id: never };

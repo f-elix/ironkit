@@ -2,7 +2,7 @@
 	import { page } from '$app/state';
 	import { APP_TITLE } from '$lib/constants';
 
-	let toolTitle = $derived(page.data.tool?.title);
+	let toolTitle = $derived(page.data.metaData?.title);
 	let title = $derived([toolTitle, APP_TITLE].filter(Boolean).join(' - '));
 </script>
 

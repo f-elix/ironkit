@@ -8,7 +8,9 @@ declare global {
 		// interface Error {}
 		// interface Locals {}
 		interface PageData {
-			tool?: Tool;
+			metaData?: {
+				title?: string;
+			};
 		}
 		interface PageState {
 			toolHref?: string;

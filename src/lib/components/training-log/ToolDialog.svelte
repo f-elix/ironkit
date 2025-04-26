@@ -1,10 +1,10 @@
 <script lang="ts">
 	import * as Sheet from '$lib/shadcn/sheet';
-	import CoefficientCalculator from '$routes/tools/coefficient-calculator/+page.svelte';
-	import LoadPercentageCalculator from '$routes/tools/load-percentage-calculator/+page.svelte';
-	import OneRepMaxCalculator from '$routes/tools/1rm-calculator/+page.svelte';
-	import PlateCalculator from '$routes/tools/plate-calculator/+page.svelte';
-	import WeightConverter from '$routes/tools/weight-converter/+page.svelte';
+	import CoefficientCalculator from '$routes/(app)/tools/coefficient-calculator/+page.svelte';
+	import LoadPercentageCalculator from '$routes/(app)/tools/load-percentage-calculator/+page.svelte';
+	import OneRepMaxCalculator from '$routes/(app)/tools/1rm-calculator/+page.svelte';
+	import PlateCalculator from '$routes/(app)/tools/plate-calculator/+page.svelte';
+	import WeightConverter from '$routes/(app)/tools/weight-converter/+page.svelte';
 	import {
 		PAGE_tools_coefficient_calculator,
 		PAGE_tools_load_percentage_calculator,

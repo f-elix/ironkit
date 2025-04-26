@@ -7,4 +7,10 @@ export const load = async ({ params }) => {
 	if (!workout) {
 		throw error(404, 'Workout not found');
 	}
+
+	return {
+		metaData: {
+			title: `Workout - ${workout.title ?? 'Untitled'}`
+		}
+	};
 };
