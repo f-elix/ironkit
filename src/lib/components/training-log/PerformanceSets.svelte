@@ -24,6 +24,7 @@
 			? (nextOrder - currentOrder) / 2 + currentOrder
 			: currentOrder + 1;
 		triplit.insert('performanceSets', {
+			userId: performance.userId,
 			performanceId: performance.id,
 			performanceOrder
 		});

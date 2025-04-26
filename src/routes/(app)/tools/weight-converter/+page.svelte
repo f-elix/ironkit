@@ -11,6 +11,7 @@
 	import { DEFAULT_WEIGHT_UNIT } from '$lib/constants';
 	import { triplit } from '$lib/db/triplit';
 	import { useQuery } from '@triplit/svelte';
+	import { userId } from '$lib/db/userId';
 
 	const query = useQuery(triplit, triplit.query('weightConverter'));
 
@@ -59,6 +60,7 @@
 					onCheckedChange={(v) => {
 						triplit.insert('weightConverter', {
 							...weightConverter,
+							userId: weightConverter?.userId ?? userId(),
 							round: v
 						});
 					}}
@@ -72,6 +74,7 @@
 						onValueChange={(v) => {
 							triplit.insert('weightConverter', {
 								...weightConverter,
+								userId: weightConverter?.userId ?? userId(),
 								unit: v
 							});
 						}}

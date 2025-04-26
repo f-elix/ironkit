@@ -9,6 +9,7 @@
 	import { triplit } from '$lib/db/triplit';
 	import type { GenderClass } from '$lib/types';
 	import LargeRadioButtons from '$lib/components/ui/LargeRadioButtons.svelte';
+	import { userId } from '$lib/db/userId';
 
 	const query = useQuery(triplit, triplit.query('coefficientCalculator'));
 	let coefficientCalculator = $derived(query.results?.[0]);
@@ -71,6 +72,7 @@
 					onValueChange={(v) => {
 						triplit.insert('coefficientCalculator', {
 							...coefficientCalculator,
+							userId: coefficientCalculator?.userId ?? userId(),
 							totalUnit: v
 						});
 					}}
@@ -84,6 +86,7 @@
 					onValueChange={(v) => {
 						triplit.insert('coefficientCalculator', {
 							...coefficientCalculator,
+							userId: coefficientCalculator?.userId ?? userId(),
 							bodyweightUnit: v
 						});
 					}}
@@ -99,6 +102,7 @@
 				onValueChange={(v) => {
 					triplit.insert('coefficientCalculator', {
 						...coefficientCalculator,
+						userId: coefficientCalculator?.userId ?? userId(),
 						genderClass: v as GenderClass
 					});
 				}}

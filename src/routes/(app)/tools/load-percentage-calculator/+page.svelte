@@ -11,6 +11,7 @@
 	import { triplit } from '$lib/db/triplit';
 	import { useQuery } from '@triplit/svelte';
 	import { DEFAULT_WEIGHT_UNIT } from '$lib/constants';
+	import { userId } from '$lib/db/userId';
 
 	const query = useQuery(triplit, triplit.query('loadPercentageCalculator'));
 	let loadPercentageCalculator = $derived(query.results?.[0]);
@@ -69,6 +70,7 @@
 					onCheckedChange={(v) => {
 						triplit.insert('loadPercentageCalculator', {
 							...loadPercentageCalculator,
+							userId: loadPercentageCalculator?.userId ?? userId(),
 							round: v
 						});
 					}}
@@ -82,6 +84,7 @@
 						onValueChange={(v) => {
 							triplit.insert('loadPercentageCalculator', {
 								...loadPercentageCalculator,
+								userId: loadPercentageCalculator?.userId ?? userId(),
 								unit: v
 							});
 						}}

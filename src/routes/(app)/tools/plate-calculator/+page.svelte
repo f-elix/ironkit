@@ -16,6 +16,7 @@
 	import ToolLayout from '$lib/components/app/ToolLayout.svelte';
 	import { useQuery } from '@triplit/svelte';
 	import { triplit } from '$lib/db/triplit';
+	import { userId } from '$lib/db/userId';
 
 	const query = useQuery(triplit, triplit.query('plateCalculator'));
 	let plateCalculator = $derived(query.results?.[0]);
@@ -27,6 +28,7 @@
 		set current(v) {
 			triplit.insert('plateCalculator', {
 				...plateCalculator,
+				userId: plateCalculator?.userId ?? userId(),
 				barWeight: v
 			});
 		},
@@ -109,6 +111,7 @@
 					onCheckedChange={(v) => {
 						triplit.insert('plateCalculator', {
 							...plateCalculator,
+							userId: plateCalculator?.userId ?? userId(),
 							allowNonStandardConfig: v
 						});
 					}}
@@ -127,6 +130,7 @@
 					onCheckedChange={(v) => {
 						triplit.insert('plateCalculator', {
 							...plateCalculator,
+							userId: plateCalculator?.userId ?? userId(),
 							heavyCollars: v
 						});
 					}}

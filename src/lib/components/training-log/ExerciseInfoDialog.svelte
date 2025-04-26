@@ -11,6 +11,7 @@
 	import { triplit } from '$lib/db/triplit';
 	import type { Exercise } from '$lib/db/types';
 	import type { Snippet } from 'svelte';
+	import { userId } from '$lib/db/userId';
 
 	let {
 		exercise,
@@ -38,6 +39,7 @@
 
 	const onSave = async () => {
 		const exercise = await triplit.insert('exercises', {
+			userId: userId(),
 			name: name ?? '',
 			executionType: executionType,
 			loadType: loadType,
