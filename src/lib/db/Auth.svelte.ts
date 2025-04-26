@@ -1,12 +1,13 @@
 import { goto } from '$app/navigation';
 import { page } from '$app/state';
 import { triplit } from '$lib/db/triplit';
-import { getAnonData, type CollectionName } from '$lib/db/getAnonData';
+import { getAnonData } from '$lib/db/getAnonData';
 import { PAGE__ROOT } from '$lib/ROUTES';
 import type { AuthSession } from '@supabase/supabase-js';
 import { Context } from 'runed';
 import { onMount } from 'svelte';
 import { supabase } from '$lib/db/supabase';
+import type { CollectionName } from '$lib/db/types';
 
 // @TODO Create a route for this
 const PAGE_auth = '/auth';
