@@ -5,7 +5,7 @@
 	import UnitSelector from '$lib/components/ui/UnitSelector.svelte';
 	import { triplit } from '$lib/db/triplit';
 	import Button from '$lib/shadcn/button/button.svelte';
-	import Trash from '@lucide/svelte/icons/x';
+	import Trash from '@lucide/svelte/icons/trash';
 	import ExerciseHistoryDialog from '$lib/components/training-log/ExerciseHistoryDialog.svelte';
 
 	type Performance = WorkoutWithRelations['performanceGroups'][number]['performances'][number];
@@ -24,7 +24,7 @@
 		variant="destructive"
 		size="icon"
 		aria-label="Remove exercise"
-		class="absolute right-0 top-0 size-6 [&_svg]:size-4"
+		class="absolute right-0 top-0 size-6 [&_svg]:size-3"
 		onclick={() => onDelete(performance.id)}
 	>
 		<Trash />

@@ -70,7 +70,8 @@
 		"just-capitalize": "^3.2.0",
 		"pnpm": "^10.8.1",
 		"powerlifting-formulas": "^0.2.3",
-		"runed": "^0.25.0"
+		"runed": "^0.25.0",
+		"svelte-dnd-action": "^0.9.61"
 	},
 	"packageManager": "pnpm@10.5.0+sha256.e77bc3c5a9888f823fe061413f60ef02afad4b967c9b16b13458279473ba7d1c"
 }

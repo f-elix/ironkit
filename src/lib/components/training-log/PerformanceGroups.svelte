@@ -10,8 +10,17 @@
 	import CirclePlus from '@lucide/svelte/icons/circle-plus';
 	import * as Dialog from '$lib/shadcn/dialog';
 	import { addExerciseToWorkout } from '$lib/training-log/addExerciseToWorkout';
+	import GripIcon from '@lucide/svelte/icons/grip-vertical';
+	import { dragHandle, dragHandleZone, type DndZoneAttributes } from 'svelte-dnd-action';
+	import { flip } from 'svelte/animate';
+	import { expoOut } from 'svelte/easing';
+	import type { WorkoutWithRelations } from '$lib/db/types';
+
+	type PerformanceGroupType = WorkoutWithRelations['performanceGroups'][number];
 
 	let { workoutId }: { workoutId: string } = $props();
+
+	const FLIP_DURATION = 400;
 
 	const query = useQuery(
 		triplit,
@@ -38,39 +47,84 @@
 		const result = await addExerciseToWorkout(workoutId, exerciseId, lastOrder + 1);
 		selectedPerformanceGroupId = result.performanceGroup.id;
 	};
+
+	const onconsider: DndZoneAttributes<PerformanceGroupType>['onconsider'] = async (e) => {
+		const items = e.detail.items;
+		performanceGroups = items;
+	};
+
+	const onfinalize: DndZoneAttributes<PerformanceGroupType>['onfinalize'] = async (e) => {
+		const items = e.detail.items;
+		performanceGroups = items;
+		items.map(async (item, index) => {
+			await triplit.update('performanceGroups', item.id, {
+				workoutOrder: index
+			});
+		});
+	};
 </script>
 
 <div class="flex grow flex-col gap-4">
 	{#if performanceGroups.length}
-		<Accordion.Root
-			type="single"
-			class="flex flex-col gap-4"
-			bind:value={selectedPerformanceGroupId}
-		>
-			{#each performanceGroups as performanceGroup (performanceGroup.id)}
-				<Accordion.Item value={performanceGroup.id}>
-					{#if selectedPerformanceGroupId !== performanceGroup.id}
-						<Accordion.Trigger
-							class={buttonVariants({
-								variant: 'secondary',
-								class: 'h-auto w-full'
-							})}
+		<Accordion.Root type="single" bind:value={selectedPerformanceGroupId}>
+			{#snippet child({ props })}
+				<ol
+					use:dragHandleZone={{
+						items: $state.snapshot(performanceGroups),
+						flipDurationMs: FLIP_DURATION,
+						dropTargetStyle: {},
+						dragDisabled: !!selectedPerformanceGroupId
+					}}
+					{...props}
+					class="flex flex-col gap-4"
+					{onconsider}
+					{onfinalize}
+				>
+					{#each performanceGroups as performanceGroup (performanceGroup.id)}
+						<li
+							class="flex"
+							animate:flip={{
+								// If the performance group is being edited, don't animate the flip
+								duration: performanceGroup.id === selectedPerformanceGroupId ? 0 : FLIP_DURATION,
+								easing: expoOut
+							}}
 						>
-							<PerformanceGroupSummary {performanceGroup} />
-						</Accordion.Trigger>
-					{/if}
-					<Accordion.Content forceMount>
-						{#snippet child({ props, open })}
-							{#if open}
-								<!-- Forcemount so that `displayNote` inside the group is reset -->
-								<div {...props}>
-									<PerformanceGroup {performanceGroup} />
+							<Accordion.Item value={performanceGroup.id} class="grow">
+								{#if selectedPerformanceGroupId !== performanceGroup.id}
+									<Accordion.Trigger
+										class={buttonVariants({
+											variant: 'secondary',
+											class: 'h-auto w-full rounded-r-none'
+										})}
+									>
+										<PerformanceGroupSummary {performanceGroup} />
+									</Accordion.Trigger>
+								{/if}
+								<Accordion.Content forceMount>
+									{#snippet child({ props, open })}
+										{#if open}
+											<!-- Forcemount so that `displayNote` inside the group is reset -->
+											<div {...props}>
+												<PerformanceGroup {performanceGroup} />
+											</div>
+										{/if}
+									{/snippet}
+								</Accordion.Content>
+							</Accordion.Item>
+							{#if selectedPerformanceGroupId !== performanceGroup.id}
+								<div
+									class="grid w-10 shrink-0 cursor-grab place-items-center rounded-r-sm bg-gray-900 active:cursor-grabbing"
+									use:dragHandle
+									tabindex="0"
+									aria-label="Drag to reorder"
+								>
+									<GripIcon />
 								</div>
 							{/if}
-						{/snippet}
-					</Accordion.Content>
-				</Accordion.Item>
-			{/each}
+						</li>
+					{/each}
+				</ol>
+			{/snippet}
 		</Accordion.Root>
 	{/if}
 	<ExerciseSelection {onExerciseAdded}>
