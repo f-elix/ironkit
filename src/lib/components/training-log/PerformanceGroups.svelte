@@ -134,7 +134,7 @@
 					<Button
 						variant="outline"
 						size="lg"
-						class="w-full justify-center bg-muted/50 py-8"
+						class="w-full justify-center bg-gray-900 py-8"
 						{...props}
 						role="combobox"
 					>
