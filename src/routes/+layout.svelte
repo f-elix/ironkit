@@ -6,6 +6,7 @@
 	import { setupViewTransition } from '$lib/ui/setupViewTransition';
 	import { Toaster } from '$lib/shadcn/sonner';
 	import { loadDb } from '$lib/db/loadDb';
+	import Header from '$lib/components/app/Header.svelte';
 
 	let { children } = $props();
 
@@ -18,5 +19,6 @@
 <Head />
 <Toaster closeButton richColors theme="dark" />
 <div class="mx-auto flex h-dvh max-w-xl flex-col overflow-y-auto">
+	<Header />
 	{@render children()}
 </div>
