@@ -8,7 +8,33 @@
 	let { exercise }: { exercise: Exercise } = $props();
 
 	const onDelete = async () => {
-		await triplit.delete('exercises', exercise.id);
+		const performances = await triplit.fetch(
+			triplit.query('performances').Where('exerciseId', '=', exercise.id).Include('sets')
+		);
+		const performanceGroupIds = performances.map((performance) => performance.performanceGroupId);
+		await triplit.transact(async (tx) => {
+			for (const performance of performances) {
+				for (const set of performance.sets) {
+					await tx.delete('performanceSets', set.id);
+				}
+				await tx.delete('performances', performance.id);
+			}
+
+			await tx.delete('exercises', exercise.id);
+		});
+		const performanceGroups = await triplit.fetch(
+			triplit
+				.query('performanceGroups')
+				.Where('id', 'in', performanceGroupIds)
+				.Include('performances')
+		);
+		await triplit.transact(async (tx) => {
+			for (const performanceGroup of performanceGroups) {
+				if (performanceGroup.performances.length === 0) {
+					await tx.delete('performanceGroups', performanceGroup.id);
+				}
+			}
+		});
 	};
 </script>
 
