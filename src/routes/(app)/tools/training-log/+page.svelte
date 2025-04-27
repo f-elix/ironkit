@@ -15,7 +15,7 @@
 {#if workouts?.length}
 	<div class="flex grow flex-col gap-4">
 		<ul class="flex flex-col gap-4 px-4">
-			{#each workouts as workout}
+			{#each workouts as workout (workout.id)}
 				{@const title = workout.title ?? DEFAULT_WORKOUT_TITLE}
 				{@const date = workout.date}
 				<li>
