@@ -56,7 +56,7 @@ export class Auth {
 	async #syncAnonData(session: AuthSession) {
 		const anonCollections = await getAnonData();
 		await triplit.transact(async (tx) => {
-			for await (const [collectionName, items] of anonCollections) {
+			for await (const [collectionName, items] of Object.entries(anonCollections)) {
 				for await (const item of items) {
 					await tx.update(collectionName as CollectionName, item.id, {
 						userId: session.user.id
