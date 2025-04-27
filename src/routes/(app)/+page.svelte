@@ -2,7 +2,6 @@
 	import Logo from '$lib/components/svg/Logo.svelte';
 	import Button from '$lib/shadcn/button/button.svelte';
 	import { tools } from '$lib/data/tools';
-	import { viewTransitionName } from '$lib/ui/viewTransitionName';
 </script>
 
 <section class="flex flex-col items-center gap-1 p-4 pt-10 text-center">
@@ -20,16 +19,11 @@
 				<Button
 					variant="secondary"
 					size="lg"
-					class="h-24 w-full whitespace-normal border bg-gray-900"
+					class="h-24 w-full flex-col items-center whitespace-normal border bg-gray-900 px-2 text-center"
 					{href}
 				>
-					<span
-						class="flex w-full flex-col items-center gap-2 text-center"
-						style="view-transition-name: {viewTransitionName(title)};"
-					>
-						<Icon class="size-4" />
-						<span>{title}</span>
-					</span>
+					<Icon />
+					<span>{title}</span>
 				</Button>
 			</li>
 		{/each}

@@ -19,7 +19,6 @@
 
 <Head />
 <Toaster closeButton richColors theme="dark" />
-
 <div class="mx-auto max-w-xl">
 	{@render children()}
 </div>

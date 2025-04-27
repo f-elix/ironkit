@@ -4,7 +4,6 @@
 	import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
 	import { PAGE__ROOT } from '$lib/ROUTES';
 	import { page } from '$app/state';
-	import { viewTransitionName } from '$lib/ui/viewTransitionName';
 
 	let { children }: { children: Snippet } = $props();
 
@@ -16,10 +15,7 @@
 	<Button variant="outline" size="icon" href={PAGE__ROOT} aria-label="Back to home">
 		<ArrowLeftIcon />
 	</Button>
-	<h1
-		class="flex items-center justify-center gap-2 text-center text-sm font-medium"
-		style="view-transition-name: {viewTransitionName(title)};"
-	>
+	<h1 class="flex items-center justify-center gap-2 text-center text-sm font-medium">
 		<Icon class="size-4" />
 		{title}
 	</h1>

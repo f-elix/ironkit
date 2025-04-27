@@ -7,33 +7,91 @@
 		}
 	}
 
-	::view-transition-old(root) {
-		animation: 90ms cubic-bezier(0.4, 0, 1, 1) both view-fade-out;
-	}
-
-	::view-transition-new(root) {
-		animation: 150ms cubic-bezier(0, 0, 0.2, 1) 90ms both view-fade-in;
-	}
-
-	:root:has([data-root-transition='skip'])::view-transition-old(root),
-	:root:has([data-root-transition='skip'])::view-transition-new(root) {
-		animation: none;
-	}
-
-	@keyframes view-fade-in {
+	@keyframes view-move-in-from-left {
 		from {
-			opacity: 0;
+			transform: translateX(-100%);
 		}
 	}
 
-	@keyframes view-fade-out {
+	@keyframes view-move-in-from-right {
+		from {
+			transform: translateX(100%);
+		}
+	}
+
+	@keyframes view-move-out-to-left {
 		to {
+			transform: translateX(-100%);
+		}
+	}
+
+	@keyframes view-move-out-to-right {
+		to {
+			transform: translateX(100%);
+		}
+	}
+
+	@keyframes view-move-in-from-bottom {
+		from {
+			transform: translateY(100%);
 			opacity: 0;
 		}
 	}
 
-	::view-transition-group(nav-link-bg) {
-		animation-timing-function: theme('transitionTimingFunction.out-expo');
-		animation-duration: 700ms;
+	@keyframes view-move-out-to-bottom {
+		to {
+			transform: translateY(100%);
+			opacity: 0;
+		}
+	}
+
+	:root {
+		--view-move-animation: 500ms theme('transitionTimingFunction.out-quint') both;
+		--view-move-in-from-left: var(--view-move-animation) view-move-in-from-left;
+		--view-move-in-from-right: var(--view-move-animation) view-move-in-from-right;
+		--view-move-out-to-left: var(--view-move-animation) view-move-out-to-left;
+		--view-move-out-to-right: var(--view-move-animation) view-move-out-to-right;
+		--view-move-in-from-bottom: var(--view-move-animation) view-move-in-from-bottom;
+		--view-move-out-to-bottom: var(--view-move-animation) view-move-out-to-bottom;
+	}
+
+	::view-transition-old(main) {
+		animation: var(--view-move-out-to-left);
+	}
+
+	::view-transition-new(main) {
+		animation: var(--view-move-in-from-left);
+	}
+
+	::view-transition-old(tool):only-child {
+		animation: var(--view-move-out-to-right);
+	}
+
+	::view-transition-new(tool):only-child {
+		animation: var(--view-move-in-from-right);
+	}
+
+	::view-transition-old(workout) {
+		animation: var(--view-move-out-to-bottom);
+	}
+
+	::view-transition-new(workout) {
+		animation: var(--view-move-in-from-bottom);
+	}
+
+	::view-transition-old(training-log-workouts) {
+		animation: var(--view-move-out-to-right);
+	}
+
+	::view-transition-new(training-log-workouts) {
+		animation: var(--view-move-in-from-left);
+	}
+
+	::view-transition-old(training-log-exercises) {
+		animation: var(--view-move-out-to-left);
+	}
+
+	::view-transition-new(training-log-exercises) {
+		animation: var(--view-move-in-from-right);
 	}
 }
