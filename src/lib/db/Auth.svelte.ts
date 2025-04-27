@@ -82,7 +82,7 @@ export class Auth {
 
 	async signOut() {
 		await triplit.endSession();
-		await triplit.clear({ full: true });
+		await triplit.clear();
 		await supabase.auth.signOut();
 	}
 }
