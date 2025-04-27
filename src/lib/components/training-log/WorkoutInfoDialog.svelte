@@ -6,7 +6,7 @@
 	import { Textarea } from '$lib/shadcn/textarea';
 	import DatePicker from '$lib/components/ui/DatePicker.svelte';
 	import { CalendarDate, today } from '@internationalized/date';
-	import { TIMEZONE } from '$lib/constants';
+	import { DEFAULT_WORKOUT_TITLE, TIMEZONE } from '$lib/constants';
 	import Button from '$lib/shadcn/button/button.svelte';
 	import { triplit } from '$lib/db/triplit';
 	import { userId } from '$lib/db/userId';
@@ -46,7 +46,7 @@
 		e.preventDefault();
 		if (workout) {
 			triplit.update('workouts', workout.id, {
-				title,
+				title: title ?? DEFAULT_WORKOUT_TITLE,
 				notes: notes?.trim() ?? null,
 				date: date.toDate(TIMEZONE)
 			});
@@ -57,7 +57,7 @@
 		const newWorkout = await triplit.transact(async (tx) => {
 			const newWorkout = await tx.insert('workouts', {
 				userId: userId(),
-				title,
+				title: title ?? DEFAULT_WORKOUT_TITLE,
 				notes: notes?.trim() ?? null,
 				date: date.toDate(TIMEZONE)
 			});

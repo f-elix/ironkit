@@ -25,11 +25,13 @@ export class Auth {
 				if (event === 'TOKEN_REFRESHED' && session) {
 					this.#handleTokenRefreshEvent(session);
 				}
+				if (event === 'SIGNED_OUT') {
+					this.#goToApp();
+				}
 				this.session = session;
 			});
 
 			return () => {
-				triplit.endSession();
 				data.subscription.unsubscribe();
 			};
 		});
@@ -53,17 +55,15 @@ export class Auth {
 
 	async #syncAnonData(session: AuthSession) {
 		const anonCollections = await getAnonData();
+		console.log(anonCollections);
 		await triplit.transact(async (tx) => {
-			await Promise.all(
-				Object.entries(anonCollections).map(async ([collectionName, collection]) => {
-					return Promise.all(
-						collection.map((item) => {
-							item.userId = session.user.id;
-							tx.insert(collectionName as CollectionName, item);
-						})
-					);
-				})
-			);
+			for await (const [collectionName, items] of anonCollections) {
+				for await (const item of items) {
+					await tx.update(collectionName as CollectionName, item.id, {
+						userId: session.user.id
+					});
+				}
+			}
 		});
 	}
 
@@ -72,8 +72,8 @@ export class Auth {
 		if (this.session) {
 			return;
 		}
-		await triplit.startSession(session.access_token);
 		await this.#syncAnonData(session);
+		await triplit.startSession(session.access_token);
 		return this.#goToApp();
 	}
 
