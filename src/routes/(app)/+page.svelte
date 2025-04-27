@@ -14,12 +14,17 @@
 </section>
 
 <section class="mt-8">
-	<ul class="flex flex-col gap-6 px-10">
+	<ul class="grid grid-cols-2 gap-4 px-4">
 		{#each Object.values(tools) as { Icon, title, href }}
 			<li>
-				<Button variant="secondary" size="lg" class="w-full px-4" {href}>
+				<Button
+					variant="secondary"
+					size="lg"
+					class="h-24 w-full whitespace-normal border bg-gray-900"
+					{href}
+				>
 					<span
-						class="flex w-full items-center gap-2"
+						class="flex w-full flex-col items-center gap-2 text-center"
 						style="view-transition-name: {viewTransitionName(title)};"
 					>
 						<Icon class="size-4" />
