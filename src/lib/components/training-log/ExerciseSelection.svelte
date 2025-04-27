@@ -36,7 +36,13 @@
 				<Command.List>
 					<Command.Empty class="flex w-full flex-col gap-6 pb-1">
 						<p class="text-sm text-muted-foreground">No exercises found</p>
-						<ExerciseInfoDialog name={value} />
+						<ExerciseInfoDialog
+							name={value}
+							onExerciseCreated={(newExercise) => {
+								onExerciseSelected(newExercise.id);
+								open = false;
+							}}
+						/>
 					</Command.Empty>
 					<Command.Group>
 						{#each exercises as exercise (exercise.id)}
