@@ -5,12 +5,14 @@ import {
 	PAGE_tools_coefficient_calculator,
 	PAGE_tools_load_percentage_calculator,
 	PAGE_tools_plate_calculator,
+	PAGE_tools_training_log,
 	PAGE_tools_weight_converter
 } from '$lib/ROUTES';
 import PlateCalculatorIcon from '$lib/components/svg/PlatesIcon.svelte';
 import CoefficientCalculatorIcon from '@lucide/svelte/icons/trophy';
 import OneRepMaxCalculatorIcon from '@lucide/svelte/icons/target';
 import LoadPercentageCalculatorIcon from '@lucide/svelte/icons/percent';
+import TrainingLogIcon from '@lucide/svelte/icons/notebook-pen';
 
 export type Tool = {
 	href: string;
@@ -43,5 +45,10 @@ export const tools: Record<string, Tool> = {
 		href: PAGE_tools_load_percentage_calculator,
 		title: 'Load percentage calculator',
 		Icon: LoadPercentageCalculatorIcon
+	},
+	trainingLog: {
+		href: PAGE_tools_training_log,
+		title: 'Training log',
+		Icon: TrainingLogIcon
 	}
 };

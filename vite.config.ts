@@ -4,7 +4,14 @@ import { defineConfig } from 'vite';
 import { kitRoutes } from 'vite-plugin-kit-routes';
 
 export default defineConfig({
-	plugins: [sveltekit(), kitRoutes({ format: 'variables' })],
+	plugins: [
+		sveltekit(),
+		kitRoutes({
+			format: 'variables',
+			post_update_run: 'npm exec prettier ./src/lib/ROUTES.ts -- -w'
+		})
+	],
+	server: { fs: { allow: ['./triplit'] } },
 	test: {
 		workspace: [
 			{

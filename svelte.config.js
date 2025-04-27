@@ -15,8 +15,12 @@ const config = {
 			}
 		},
 		alias: {
-			'legend-svelte': './src/legend-svelte/index.ts'
+			$triplit: 'triplit',
+			$routes: 'src/routes'
 		}
+	},
+	vitePlugin: {
+		inspector: true
 	}
 };
 

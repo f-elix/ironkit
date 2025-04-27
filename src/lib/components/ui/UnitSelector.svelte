@@ -3,18 +3,27 @@
 	import type { WeightUnit } from '$lib/types';
 	import { buttonVariants } from '$lib/shadcn/button';
 	import { Label } from '$lib/shadcn/label';
-	import type { HTMLInputAttributes } from 'svelte/elements';
 
 	let {
 		value = $bindable(DEFAULT_WEIGHT_UNIT),
-		onchange
-	}: { value: WeightUnit; onchange?: HTMLInputAttributes['onchange'] } = $props();
+		onValueChange
+	}: { value: WeightUnit; onValueChange?: (value: WeightUnit) => void } = $props();
 </script>
 
 <div class="flex items-center gap-1 rounded-lg border p-1">
 	{#each WEIGHT_UNITS as weightUnit}
 		<Label>
-			<input type="radio" value={weightUnit} {onchange} class="peer sr-only" bind:group={value} />
+			<input
+				type="radio"
+				value={weightUnit}
+				onchange={onValueChange
+					? (e) => {
+							onValueChange(e.currentTarget.value as WeightUnit);
+						}
+					: undefined}
+				class="peer sr-only"
+				bind:group={value}
+			/>
 			<span
 				class="border-primary ring-ring ring-offset-2 transition-colors duration-100 ease-linear peer-checked:border peer-checked:bg-accent peer-focus-visible:ring-2 {buttonVariants(
 					{

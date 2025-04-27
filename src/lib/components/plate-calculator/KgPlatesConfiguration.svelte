@@ -35,10 +35,10 @@
 <div class="grid grid-flow-col grid-cols-3 grid-rows-3 gap-x-3 gap-y-4">
 	{#each ALL_PLATES as plate}
 		{@const count = kgPlateConfiguration?.find((p) => p.plate === plate)?.count ?? 0}
-		<span class="flex items-center gap-1">
+		<span class="flex flex-col items-center gap-2">
 			<button
 				class={[
-					'flex size-12 items-center justify-center rounded-full text-xs',
+					'flex size-12 shrink-0 items-center justify-center rounded-full text-xs',
 					plate === 25 && 'bg-kg-plate-red',
 					plate === 20 && 'bg-kg-plate-blue',
 					plate === 15 && 'bg-kg-plate-yellow text-kg-plate-black',
@@ -53,18 +53,20 @@
 			>
 				{plate}kg
 			</button>
-			<span class="text-base font-semibold">
-				{count}&times;
-			</span>
-			{#if count > 0}
-				<button
-					class="ml-1 rounded border border-current text-destructive"
-					aria-label="Remove one"
-					onclick={() => decreasePlateCount(plate)}
-				>
-					<MinusIcon class="size-4" />
-				</button>
-			{/if}
+			<div class="flex items-center gap-2">
+				<span class="text-sm">
+					{count}&times;
+				</span>
+				{#if count > 0}
+					<button
+						class="rounded border border-current text-destructive"
+						aria-label="Remove one"
+						onclick={() => decreasePlateCount(plate)}
+					>
+						<MinusIcon class="size-4" />
+					</button>
+				{/if}
+			</div>
 		</span>
 	{/each}
 </div>

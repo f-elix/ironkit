@@ -1,5 +1,3 @@
-import type { BarWeight } from '$lib/types';
-
 export type KgPlateConfigurationItem = {
 	plate: number;
 	count: number;
@@ -15,7 +13,7 @@ export const getActualBarWeight = ({
 	barWeight,
 	heavyCollars
 }: {
-	barWeight: BarWeight;
+	barWeight: number;
 	heavyCollars: boolean;
 }) => {
 	return barWeight + (heavyCollars ? COLLARS_WEIGHT : 0);
@@ -27,7 +25,7 @@ export const weightToKgPlatesConfiguration = (
 		barWeight = 20,
 		heavyCollars = false
 	}: {
-		barWeight: 20 | 25;
+		barWeight: number;
 		heavyCollars: boolean;
 	}
 ) => {

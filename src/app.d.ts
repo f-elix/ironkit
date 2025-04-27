@@ -1,6 +1,6 @@
 // See https://svelte.dev/docs/kit/types#app.d.ts
 
-import type { Tool } from '$lib/data/tools';
+import type { Component } from 'svelte';
 
 // for information about these interfaces
 declare global {
@@ -8,9 +8,14 @@ declare global {
 		// interface Error {}
 		// interface Locals {}
 		interface PageData {
-			tool?: Tool;
+			metaData?: {
+				title?: string;
+				Icon?: Component;
+			};
 		}
-		// interface PageState {}
+		interface PageState {
+			toolHref?: string;
+		}
 		// interface Platform {}
 	}
 }
