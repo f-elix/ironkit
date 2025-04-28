@@ -45,14 +45,23 @@
 	};
 
 	const onSave = async () => {
-		const exercise = await triplit.insert('exercises', {
-			userId: userId(),
-			name: name ?? '',
-			executionType: executionType,
-			loadType: loadType,
-			muscleGroups: muscleGroups
-		});
-		onExerciseCreated?.(exercise);
+		if (exercise) {
+			await triplit.update('exercises', exercise.id, {
+				name: name ?? '',
+				executionType: executionType,
+				loadType: loadType,
+				muscleGroups: new Set(muscleGroups)
+			});
+		} else {
+			const newExercise = await triplit.insert('exercises', {
+				userId: userId(),
+				name: name ?? '',
+				executionType: executionType,
+				loadType: loadType,
+				muscleGroups: muscleGroups
+			});
+			onExerciseCreated?.(newExercise);
+		}
 		open = false;
 		resetState();
 	};
