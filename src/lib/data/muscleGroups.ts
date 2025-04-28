@@ -22,4 +22,4 @@ export const muscleGroups = [
 	{ id: 'triceps', name: 'Triceps' },
 	{ id: 'neck-flexors', name: 'Neck Flexors' },
 	{ id: 'neck-extensors', name: 'Neck Extensors' }
-];
+].toSorted((a, b) => a.name.localeCompare(b.name));
