@@ -18,13 +18,19 @@
 			{#each workouts as workout (workout.id)}
 				{@const title = workout.title ?? DEFAULT_WORKOUT_TITLE}
 				{@const date = workout.date}
+				{@const note = workout.notes}
 				<li>
 					<a
 						href={PAGE_tools_training_log_workout_id({ id: workout.id })}
 						class="flex flex-col rounded-md border bg-muted/30 p-4"
 					>
-						<span class="text-lg font-bold">{title}</span>
-						<span class="text-sm text-muted-foreground">{formatDate(date)}</span>
+						<span class="flex items-center justify-between gap-4">
+							<span class="text-lg font-bold">{title}</span>
+							<span class="text-sm text-muted-foreground">{formatDate(date)}</span>
+						</span>
+						{#if note}
+							<span class="mt-2 text-sm">{note}</span>
+						{/if}
 					</a>
 				</li>
 			{/each}
