@@ -37,6 +37,13 @@
 	let loadType = $state<(typeof loadTypes)[number]>(exercise?.loadType ?? 'weighted');
 	let muscleGroups = $state<string[]>(Array.from(exercise?.muscleGroups ?? []) ?? []);
 
+	const resetState = () => {
+		name = '';
+		muscleGroups = [];
+		executionType = 'reps';
+		loadType = 'weighted';
+	};
+
 	const onSave = async () => {
 		const exercise = await triplit.insert('exercises', {
 			userId: userId(),
@@ -47,10 +54,18 @@
 		});
 		onExerciseCreated?.(exercise);
 		open = false;
+		resetState();
 	};
 </script>
 
-<Dialog.Root bind:open>
+<Dialog.Root
+	bind:open
+	onOpenChange={(o) => {
+		if (!o) {
+			resetState();
+		}
+	}}
+>
 	{#if trigger}
 		{@render trigger()}
 	{:else}
@@ -71,7 +86,7 @@
 		</Dialog.Trigger>
 	{/if}
 	<Dialog.Content class="w-[90vw] max-w-2xl">
-		<Dialog.Title class="text-left">{title}</Dialog.Title>
+		<Dialog.Title>{title}</Dialog.Title>
 		<form class="flex flex-col gap-6" onsubmit={onSave}>
 			<label>
 				<span class="sr-only">Exercise name</span>
