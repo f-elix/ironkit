@@ -90,7 +90,11 @@
 				{#snippet trigger()}
 					<Dialog.Trigger class={buttonVariants({ variant: 'secondary', class: 'w-full' })}>
 						<Plus />
-						Add exercise to group
+						{#if performances.length < 2}
+							Add exercise to create superset
+						{:else}
+							Add exercise to superset
+						{/if}
 					</Dialog.Trigger>
 				{/snippet}
 			</ExerciseSelection>
