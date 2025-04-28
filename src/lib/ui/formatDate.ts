@@ -6,7 +6,7 @@ export const formatDate = (date: Date | undefined, options?: Intl.DateTimeFormat
 	}
 	const df = new DateFormatter('en-CA', {
 		timeZone: getLocalTimeZone(),
-		dateStyle: 'long',
+		dateStyle: 'full',
 		...options
 	});
 	return df.format(date);
