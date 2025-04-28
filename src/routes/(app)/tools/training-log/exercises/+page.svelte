@@ -2,7 +2,7 @@
 	import { triplit } from '$lib/db/triplit';
 	import { useQuery } from '@triplit/svelte';
 	import ExerciseInfoDialog from '$lib/components/training-log/ExerciseInfoDialog.svelte';
-	import { Dialog } from 'bits-ui';
+	import { computeCommandScore, Dialog } from 'bits-ui';
 	import { buttonVariants } from '$lib/shadcn/button';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import { Trigger } from '$lib/shadcn/dialog';
@@ -19,7 +19,14 @@
 	let search = $state('');
 
 	let filteredExercises = $derived(
-		allExercises?.filter((exercise) => exercise.name.toLowerCase().includes(search.toLowerCase()))
+		allExercises
+			?.map((exercise) => {
+				const muscleGroups = Array.from(exercise.muscleGroups);
+				const score = computeCommandScore(exercise.name, search, muscleGroups);
+				return { ...exercise, score };
+			})
+			.filter((exercise) => exercise.score > 0.1)
+			.toSorted((a, b) => b.score - a.score)
 	);
 
 	let exercises = $derived(search ? (filteredExercises ?? []) : (allExercises ?? []));
