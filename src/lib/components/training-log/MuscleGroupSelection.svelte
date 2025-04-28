@@ -28,7 +28,7 @@
 </script>
 
 <fieldset class="space-y-2">
-	<legend class="text-sm font-medium">Muscle Groups</legend>
+	<legend class="text-sm font-medium">Target muscles</legend>
 	<Combobox.Root
 		type="multiple"
 		onOpenChange={(o) => {
