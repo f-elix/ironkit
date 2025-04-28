@@ -44,7 +44,7 @@
 					{#each exercises as exercise (exercise.id)}
 						{@const name = exercise.name}
 						<li class="flex items-center justify-between gap-4 rounded-md border bg-muted/30 p-4">
-							<span class="text-lg font-bold">{name}</span>
+							<span class="text-lg font-bold leading-6">{name}</span>
 							<div class="flex gap-2">
 								<DeleteExerciseDialog {exercise} />
 								<ExerciseInfoDialog {exercise}>
