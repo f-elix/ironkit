@@ -1,5 +1,4 @@
 <script lang="ts">
-	import Badge from '$lib/shadcn/badge/badge.svelte';
 	import type { WorkoutWithRelations } from '$lib/db/types';
 
 	type PerformanceGroup = WorkoutWithRelations['performanceGroups'][number];
