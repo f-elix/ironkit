@@ -11,7 +11,8 @@
 	import DeleteExerciseDialog from '$lib/components/training-log/DeleteExerciseDialog.svelte';
 	import Label from '$lib/shadcn/label/label.svelte';
 	import Input from '$lib/shadcn/input/input.svelte';
-
+	import { muscleGroups as muscleGroupsList } from '$lib/data/muscleGroups';
+	import Badge from '$lib/shadcn/badge/badge.svelte';
 	const allExercisesQuery = useQuery(triplit, triplit.query('exercises').Order('name', 'ASC'));
 
 	let allExercises = $derived(allExercisesQuery.results);
@@ -43,8 +44,31 @@
 				<ul class="flex flex-col gap-4">
 					{#each exercises as exercise (exercise.id)}
 						{@const name = exercise.name}
-						<li class="flex items-center justify-between gap-4 rounded-md border bg-muted/30 p-4">
-							<span class="text-lg font-bold leading-6">{name}</span>
+						{@const targetMuscleGroups = Array.from(exercise.muscleGroups)}
+						{@const loadType = exercise.loadType}
+						{@const executionType = exercise.executionType}
+						<li class="flex items-start justify-between gap-4 rounded-md border bg-muted/30 p-4">
+							<article class="flex flex-col gap-1">
+								<h3 class="text-lg font-bold leading-6">{name}</h3>
+								<p class="flex flex-col text-sm text-muted-foreground">
+									<span>For {executionType}</span>
+									<span class="capitalize">{loadType}</span>
+								</p>
+								<ul class="mt-2 flex flex-wrap gap-2 text-sm text-muted-foreground">
+									{#each targetMuscleGroups as muscleGroup}
+										{@const muscleGroupName = muscleGroupsList.find(
+											(mg) => mg.id === muscleGroup
+										)?.name}
+										{#if muscleGroupName}
+											<li>
+												<Badge variant="outline">
+													{muscleGroupName}
+												</Badge>
+											</li>
+										{/if}
+									{/each}
+								</ul>
+							</article>
 							<div class="flex gap-2">
 								<DeleteExerciseDialog {exercise} />
 								<ExerciseInfoDialog {exercise}>
