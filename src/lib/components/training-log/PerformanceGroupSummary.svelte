@@ -19,7 +19,7 @@
 		{@const sets = performance.sets?.filter((set) => !!set.weight) ?? []}
 		{@const weightUnit = performance.weightUnit}
 		{@const note = performance.note}
-		<div class="flex flex-col gap-4">
+		<div class="flex w-full flex-col gap-4">
 			<div>
 				<p class="text-base font-semibold">
 					{exercise?.name}
@@ -29,34 +29,40 @@
 				{/if}
 			</div>
 			{#if sets.length}
-				<ul class="flex flex-col gap-2">
-					{#each sets as set (set.id)}
+				<ol class="flex flex-col gap-2">
+					{#each sets as set, i (set.id)}
 						{@const weight = set.weight}
 						{@const reps = set.reps ?? 0}
 						{@const duration = set.durationSeconds ?? 0}
 						{@const note = set.note}
-						<li class="grid grid-cols-2 items-baseline gap-2">
-							<Badge class="flex items-center justify-center gap-2 text-sm">
-								<span>
-									{#if exercise?.executionType === 'reps'}
-										{reps}
-									{/if}
-									{#if exercise?.executionType === 'time'}
-										{duration} sec.
-									{/if}
-								</span>
-								<span aria-hidden="true">&times;</span>
-								<span>
-									{weight}
-									{weightUnit}
-								</span>
-							</Badge>
-							{#if note}
-								<p class="whitespace-normal text-base font-normal">{note}</p>
-							{/if}
+						<li class="flex w-full items-baseline gap-2">
+							<div class="text-sm">{i + 1}</div>
+							<div class="flex w-full items-baseline gap-2 rounded bg-background/80 p-2 text-sm">
+								<p class="shrink-0">
+									<span>
+										{#if exercise?.executionType === 'reps'}
+											{reps}
+										{/if}
+										{#if exercise?.executionType === 'time'}
+											{duration} sec.
+										{/if}
+									</span>
+									<span aria-hidden="true">&times;</span>
+									<span>
+										{weight}
+										{weightUnit}
+									</span>
+								</p>
+								{#if note}
+									-
+									<p class="text-sm text-muted-foreground">
+										{note}
+									</p>
+								{/if}
+							</div>
 						</li>
 					{/each}
-				</ul>
+				</ol>
 			{/if}
 		</div>
 	{/each}

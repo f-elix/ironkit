@@ -52,7 +52,7 @@
 </script>
 
 <div class="flex flex-col gap-2">
-	<ul class="flex flex-col gap-2">
+	<ol class="flex flex-col gap-2">
 		{#each sets as set, i (set.id)}
 			<li
 				class="flex flex-col gap-2"
@@ -60,7 +60,10 @@
 				animate:customFlip={{ duration: 500, easing: expoOut, index: i }}
 			>
 				<div class="flex items-center justify-between gap-2">
-					<PerformanceSet {set} {unit} {exercise} />
+					<div class="flex items-center gap-2">
+						<div class="text-sm">{i + 1}</div>
+						<PerformanceSet {set} {unit} {exercise} />
+					</div>
 					<div class="flex items-center">
 						{#if sets.length > 1}
 							<Button
@@ -104,5 +107,5 @@
 				</Label>
 			</li>
 		{/each}
-	</ul>
+	</ol>
 </div>
