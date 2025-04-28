@@ -42,13 +42,17 @@
 		bind:value
 	>
 		<div class="relative">
-			<Combobox.Input
-				oninput={(e) => (searchValue = e.currentTarget.value)}
-				class="border-border-input placeholder:text-foreground-alt/50 inline-flex h-10 w-full truncate rounded-sm border bg-background px-2 text-base transition-colors focus:outline-none focus:ring-2 focus:ring-foreground focus:ring-offset-2 focus:ring-offset-background sm:text-sm"
-				placeholder="Search muscle groups"
-				aria-label="Search muscle groups"
-				clearOnDeselect
-			/>
+			<Combobox.Input>
+				{#snippet child({ props })}
+					<input
+						{...props}
+						bind:value={searchValue}
+						class="border-border-input placeholder:text-foreground-alt/50 inline-flex h-10 w-full truncate rounded-sm border bg-background px-2 text-base transition-colors focus:outline-none focus:ring-2 focus:ring-foreground focus:ring-offset-2 focus:ring-offset-background sm:text-sm"
+						placeholder="Search muscle groups"
+						aria-label="Search muscle groups"
+					/>
+				{/snippet}
+			</Combobox.Input>
 			<Combobox.Trigger class="absolute end-3 top-1/2 size-6 -translate-y-1/2">
 				<ChevronDown class="size-6 text-muted-foreground" />
 			</Combobox.Trigger>
