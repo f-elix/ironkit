@@ -22,7 +22,7 @@
 		</div>
 		<div class="mt-auto flex w-full flex-col p-4">
 			<Button href={PAGE_tools_training_log} size="lg" class="bg-emerald-500">
-				Finish workout
+				Workout done
 				<Check />
 			</Button>
 		</div>
