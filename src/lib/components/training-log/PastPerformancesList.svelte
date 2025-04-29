@@ -8,6 +8,7 @@
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import { today } from '@internationalized/date';
 	import { TIMEZONE } from '$lib/constants';
+	import PerformanceSetSummary from '$lib/components/training-log/PerformanceSetSummary.svelte';
 
 	let { exerciseId, currentWorkout }: { exerciseId: string; currentWorkout?: Maybe<Workout> } =
 		$props();
@@ -65,35 +66,8 @@
 					</div>
 					<ul class="flex flex-col gap-2">
 						{#each sets as set, i (set.id)}
-							{@const weight = set.weight}
-							{@const reps = set.reps ?? 0}
-							{@const duration = set.durationSeconds ?? 0}
-							{@const note = set.note}
 							<li class="flex w-full items-baseline gap-2">
-								<div class="text-sm">{i + 1}</div>
-								<div class="flex w-full items-baseline gap-2 rounded bg-muted/50 p-2 text-sm">
-									<p class="shrink-0">
-										<span>
-											{#if exercise?.executionType === 'reps'}
-												{reps}
-											{/if}
-											{#if exercise?.executionType === 'time'}
-												{duration} sec.
-											{/if}
-										</span>
-										<span aria-hidden="true">&times;</span>
-										<span>
-											{weight}
-											{weightUnit}
-										</span>
-									</p>
-									{#if note}
-										-
-										<p class="text-sm text-muted-foreground">
-											{note}
-										</p>
-									{/if}
-								</div>
+								<PerformanceSetSummary {set} {performance} order={i + 1} />
 							</li>
 						{/each}
 					</ul>

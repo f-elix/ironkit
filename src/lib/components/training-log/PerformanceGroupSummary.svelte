@@ -1,4 +1,5 @@
 <script lang="ts">
+	import PerformanceSetSummary from '$lib/components/training-log/PerformanceSetSummary.svelte';
 	import type { WorkoutWithRelations } from '$lib/db/types';
 
 	type PerformanceGroup = WorkoutWithRelations['performanceGroups'][number];
@@ -15,8 +16,8 @@
 	{/if}
 	{#each performances as performance (performance.id)}
 		{@const exercise = performance.exercise}
-		{@const sets = performance.sets?.filter((set) => !!set.weight) ?? []}
-		{@const weightUnit = performance.weightUnit}
+		{@const sets =
+			performance.sets?.filter((set) => !!set.weight || !!set.reps || !!set.durationSeconds) ?? []}
 		{@const note = performance.note}
 		<div class="flex w-full flex-col gap-4">
 			<div>
@@ -30,35 +31,8 @@
 			{#if sets.length}
 				<ol class="flex flex-col gap-2">
 					{#each sets as set, i (set.id)}
-						{@const weight = set.weight}
-						{@const reps = set.reps ?? 0}
-						{@const duration = set.durationSeconds ?? 0}
-						{@const note = set.note}
-						<li class="flex w-full items-baseline gap-2">
-							<div class="text-sm">{i + 1}</div>
-							<div class="flex w-full items-baseline gap-2 rounded bg-background/80 p-2 text-sm">
-								<p class="shrink-0">
-									<span>
-										{#if exercise?.executionType === 'reps'}
-											{reps}
-										{/if}
-										{#if exercise?.executionType === 'time'}
-											{duration} sec.
-										{/if}
-									</span>
-									<span aria-hidden="true">&times;</span>
-									<span>
-										{weight}
-										{weightUnit}
-									</span>
-								</p>
-								{#if note}
-									-
-									<p class="text-sm text-muted-foreground">
-										{note}
-									</p>
-								{/if}
-							</div>
+						<li>
+							<PerformanceSetSummary {set} {performance} order={i + 1} />
 						</li>
 					{/each}
 				</ol>

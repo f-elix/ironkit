@@ -114,7 +114,7 @@
 			</label>
 			<LargeRadioButtons
 				label="Execution type"
-				items={executionTypes.map((type) => ({
+				items={EXERCISE_EXECUTION_TYPES.map((type) => ({
 					value: type,
 					label: type
 				}))}
@@ -131,7 +131,7 @@
 					</Select.Trigger>
 					<Select.Content>
 						<Select.Group>
-							{#each loadTypes as loadType (loadType)}
+							{#each EXERCISE_LOAD_TYPES as loadType (loadType)}
 								<Select.Item value={loadType} label={loadType} class="capitalize"
 									>{loadType}</Select.Item
 								>
