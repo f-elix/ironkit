@@ -10,7 +10,7 @@
 	}: { value: WeightUnit; onValueChange?: (value: WeightUnit) => void } = $props();
 </script>
 
-<div class="flex items-center gap-1 rounded-lg border p-1">
+<div class="flex h-10 items-center gap-1 rounded-lg border px-[0.2rem]">
 	{#each WEIGHT_UNITS as weightUnit}
 		<Label>
 			<input
@@ -25,7 +25,7 @@
 				bind:group={value}
 			/>
 			<span
-				class="border-primary ring-ring ring-offset-2 transition-colors duration-100 ease-linear peer-checked:border peer-checked:bg-accent peer-focus-visible:ring-2 {buttonVariants(
+				class="rounded-[0.3rem] border-primary ring-ring ring-offset-2 transition-colors duration-100 ease-linear peer-checked:border peer-checked:bg-accent peer-focus-visible:ring-2 {buttonVariants(
 					{
 						variant: 'ghost',
 						size: 'sm',
