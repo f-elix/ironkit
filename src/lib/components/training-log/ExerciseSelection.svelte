@@ -24,6 +24,7 @@
 	const onExerciseSelected = async (exerciseId: string) => {
 		await onExerciseAdded?.(exerciseId);
 		open = false;
+		value = '';
 	};
 </script>
 
