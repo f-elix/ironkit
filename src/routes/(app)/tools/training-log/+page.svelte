@@ -19,15 +19,22 @@
 				{@const title = workout.title ?? DEFAULT_WORKOUT_TITLE}
 				{@const date = workout.date}
 				{@const note = workout.notes}
+				{@const bodyweight = workout.bodyweight}
+				{@const bodyweightUnit = workout.bodyweightUnit}
 				<li>
 					<a
 						href={PAGE_tools_training_log_workout_id({ id: workout.id })}
 						class="flex flex-col rounded-md border bg-muted/30 p-4"
 					>
-						<span class="flex items-center justify-between gap-4">
-							<span class="text-lg font-bold">{title}</span>
-							<span class="text-sm text-muted-foreground">{formatDate(date)}</span>
-						</span>
+						<span class="text-lg font-bold">{title}</span>
+						<span class="text-sm text-muted-foreground">{formatDate(date)}</span>
+						{#if bodyweight}
+							<span class="text-sm">
+								<span class="font-medium">Bodyweight:</span>
+								{bodyweight}
+								{bodyweightUnit}
+							</span>
+						{/if}
 						{#if note}
 							<span class="mt-2 text-sm">{note}</span>
 						{/if}
