@@ -83,7 +83,9 @@ export const schema = S.Collections({
 			...baseOwnedCollectionSchema(),
 			title: S.String({ default: DEFAULT_WORKOUT_TITLE }),
 			date: S.Date({ default: S.Default.now() }),
-			notes: S.Optional(S.String())
+			notes: S.Optional(S.String()),
+			bodyweight: S.Optional(S.Number()),
+			bodyweightUnit: S.Optional(S.String({ enum: WEIGHT_UNITS, default: 'lbs' }))
 		}),
 		relationships: {
 			performanceGroups: S.RelationMany('performanceGroups', {

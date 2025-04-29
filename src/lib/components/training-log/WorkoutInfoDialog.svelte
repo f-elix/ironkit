@@ -14,6 +14,7 @@
 	import { PAGE_tools_training_log_workout_id } from '$lib/ROUTES';
 	import Label from '$lib/shadcn/label/label.svelte';
 	import PreviousWorkoutSelection from '$lib/components/training-log/PreviousWorkoutSelection.svelte';
+	import UnitSelector from '$lib/components/ui/UnitSelector.svelte';
 
 	let {
 		trigger,
@@ -41,6 +42,8 @@
 				)
 			: today(TIMEZONE)
 	);
+	let bodyweight = $state(workout?.bodyweight);
+	let bodyweightUnit = $state(workout?.bodyweightUnit ?? 'lbs');
 
 	const onSave = async (e: Event) => {
 		e.preventDefault();
@@ -48,7 +51,9 @@
 			triplit.update('workouts', workout.id, {
 				title: title ?? DEFAULT_WORKOUT_TITLE,
 				notes: notes?.trim() ?? null,
-				date: date.toDate(TIMEZONE)
+				date: date.toDate(TIMEZONE),
+				bodyweight,
+				bodyweightUnit
 			});
 			open = false;
 			return;
@@ -59,7 +64,9 @@
 				userId: userId(),
 				title: title ?? DEFAULT_WORKOUT_TITLE,
 				notes: notes?.trim() ?? null,
-				date: date.toDate(TIMEZONE)
+				date: date.toDate(TIMEZONE),
+				bodyweight,
+				bodyweightUnit
 			});
 			if (templateWorkout) {
 				const peformanceGroups = await tx.fetch(
@@ -113,16 +120,23 @@
 				<PreviousWorkoutSelection bind:selectedWorkout={templateWorkout} />
 			{/if}
 			<Label class="flex flex-col gap-2">
-				Name
-				<Input type="text" placeholder="Workout name" bind:value={title} />
+				Workout name
+				<Input type="text" bind:value={title} />
 			</Label>
 			<Label class="flex flex-col gap-2">
 				Date
 				<DatePicker bind:value={date} />
 			</Label>
+			<div class="flex items-end gap-2">
+				<Label class="flex flex-col gap-2">
+					Bodyweight
+					<Input type="number" min="0" bind:value={bodyweight} />
+				</Label>
+				<UnitSelector bind:value={bodyweightUnit} />
+			</div>
 			<Label class="flex flex-col gap-2">
 				Notes
-				<Textarea placeholder="Workout notes" bind:value={notes} rows={5} class="font-normal" />
+				<Textarea placeholder="Workout notes..." bind:value={notes} rows={5} class="font-normal" />
 			</Label>
 			<Dialog.Footer>
 				<Button type="submit">{buttonText}</Button>
