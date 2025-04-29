@@ -40,6 +40,7 @@
 		exercise?.executionType ?? DEFAULT_EXERCISE_EXECUTION_TYPE
 	);
 	let loadType = $state<(typeof EXERCISE_LOAD_TYPES)[number]>(
+		// @ts-expect-error - TODO: fix this
 		exercise?.loadType ?? DEFAULT_EXERCISE_LOAD_TYPE
 	);
 	let muscleGroups = $state<string[]>(Array.from(exercise?.muscleGroups ?? []) ?? []);

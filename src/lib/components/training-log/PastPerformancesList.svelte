@@ -54,8 +54,6 @@
 			{#each performances as performance (performance.id)}
 				{@const date = formatDate(performance.workout?.date)}
 				{@const sets = performance.sets ?? []}
-				{@const exercise = performance.exercise}
-				{@const weightUnit = performance.weightUnit}
 				{@const note = performance.note}
 				<li class="flex flex-col gap-3 pt-4">
 					<div class="flex flex-col gap-1">
