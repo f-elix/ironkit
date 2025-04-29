@@ -12,6 +12,12 @@
 	import type { Exercise } from '$lib/db/types';
 	import type { Snippet } from 'svelte';
 	import { userId } from '$lib/db/userId';
+	import {
+		DEFAULT_EXERCISE_EXECUTION_TYPE,
+		DEFAULT_EXERCISE_LOAD_TYPE,
+		EXERCISE_EXECUTION_TYPES,
+		EXERCISE_LOAD_TYPES
+	} from '$lib/constants';
 
 	let {
 		exercise,
@@ -30,18 +36,19 @@
 	const title = exercise ? 'Edit exercise' : 'Create exercise';
 	const buttonText = exercise ? 'Save changes' : 'Create';
 
-	const executionTypes = ['reps', 'time'] as const;
-	const loadTypes = ['weighted', 'bodyweight', 'assisted'] as const;
-
-	let executionType = $state<(typeof executionTypes)[number]>(exercise?.executionType ?? 'reps');
-	let loadType = $state<(typeof loadTypes)[number]>(exercise?.loadType ?? 'weighted');
+	let executionType = $state<(typeof EXERCISE_EXECUTION_TYPES)[number]>(
+		exercise?.executionType ?? DEFAULT_EXERCISE_EXECUTION_TYPE
+	);
+	let loadType = $state<(typeof EXERCISE_LOAD_TYPES)[number]>(
+		exercise?.loadType ?? DEFAULT_EXERCISE_LOAD_TYPE
+	);
 	let muscleGroups = $state<string[]>(Array.from(exercise?.muscleGroups ?? []) ?? []);
 
 	const resetState = () => {
 		name = '';
 		muscleGroups = [];
-		executionType = 'reps';
-		loadType = 'weighted';
+		executionType = DEFAULT_EXERCISE_EXECUTION_TYPE;
+		loadType = DEFAULT_EXERCISE_LOAD_TYPE;
 	};
 
 	const onSave = async () => {

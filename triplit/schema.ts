@@ -1,9 +1,13 @@
 import { type Collection, Schema as S } from '@triplit/client';
 import {
 	ANON_USER_ID,
+	DEFAULT_EXERCISE_LOAD_TYPE,
+	DEFAULT_EXERCISE_EXECUTION_TYPE,
 	DEFAULT_GENDER_CLASS,
 	DEFAULT_WEIGHT_UNIT,
 	DEFAULT_WORKOUT_TITLE,
+	EXERCISE_LOAD_TYPES,
+	EXERCISE_EXECUTION_TYPES,
 	GENDER_CLASSES,
 	WEIGHT_UNITS
 } from '$lib/constants';
@@ -148,8 +152,14 @@ export const schema = S.Collections({
 		schema: S.Schema({
 			...baseOwnedCollectionSchema(),
 			name: S.String(),
-			executionType: S.String({ enum: ['reps', 'time'] }),
-			loadType: S.String({ enum: ['weighted', 'bodyweight', 'assisted'] }),
+			executionType: S.String({
+				enum: EXERCISE_EXECUTION_TYPES,
+				default: DEFAULT_EXERCISE_EXECUTION_TYPE
+			}),
+			loadType: S.String({
+				enum: [...EXERCISE_LOAD_TYPES, 'assisted'],
+				default: DEFAULT_EXERCISE_LOAD_TYPE
+			}),
 			muscleGroups: S.Set(S.String(), { default: S.Default.Set.empty() })
 		}),
 		permissions: authenticatedOnly()
