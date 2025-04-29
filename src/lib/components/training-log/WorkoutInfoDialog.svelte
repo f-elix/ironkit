@@ -130,7 +130,7 @@
 			<div class="flex items-end gap-2">
 				<Label class="flex flex-col gap-2">
 					Bodyweight
-					<Input type="number" min="0" bind:value={bodyweight} />
+					<Input type="number" min="0" step="0.1" bind:value={bodyweight} />
 				</Label>
 				<UnitSelector bind:value={bodyweightUnit} />
 			</div>
