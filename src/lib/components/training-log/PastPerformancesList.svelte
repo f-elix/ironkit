@@ -6,8 +6,10 @@
 	import type { Workout } from '$lib/db/types';
 	import { exists } from '@triplit/client';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
+	import { today } from '@internationalized/date';
+	import { TIMEZONE } from '$lib/constants';
 
-	let { exerciseId, currentWorkout }: { exerciseId: string; currentWorkout: Maybe<Workout> } =
+	let { exerciseId, currentWorkout }: { exerciseId: string; currentWorkout?: Maybe<Workout> } =
 		$props();
 
 	let performancesQuery = triplit.query('performances').Where(
@@ -17,12 +19,17 @@
 		})
 	);
 
-	if (currentWorkout?.id) {
-		performancesQuery = performancesQuery.Where(['workoutId', '!=', currentWorkout.id]);
-	}
-
-	if (currentWorkout?.date) {
-		performancesQuery = performancesQuery.Where(['workout.date', '<=', currentWorkout.date]);
+	if (currentWorkout) {
+		performancesQuery = performancesQuery.Where(
+			['workoutId', '!=', currentWorkout.id],
+			['workout.date', '<=', currentWorkout.date]
+		);
+	} else {
+		performancesQuery = performancesQuery.Where([
+			'workout.date',
+			'<',
+			today(TIMEZONE).toDate(TIMEZONE)
+		]);
 	}
 
 	const query = useQuery(

@@ -10,43 +10,32 @@
 
 	let { performance }: { performance: Performance } = $props();
 
-	const tabItems = [
-		{
-			label: 'Up to this workout',
-			value: 'upToWorkout',
-			currentWorkout: performance.workout
-		},
-		{
-			label: 'All time',
-			value: 'allTime'
-		}
-	];
+	const allTimeId = 'allTime';
+	const upToWorkoutId = 'upToWorkout';
 
 	let exerciseId = $derived(performance.exerciseId);
-
-	let value = $state(tabItems[0].value);
 </script>
 
 <Dialog.Root>
 	<Dialog.Trigger
-		class={buttonVariants({ variant: 'secondary', size: 'icon' })}
+		class={buttonVariants({ variant: 'secondary', size: 'icon', class: 'text-amber-500' })}
 		aria-label="View exercise history"
 	>
 		<History />
 	</Dialog.Trigger>
 	<Dialog.Content class="w-[90vw] max-w-2xl pb-0">
 		<Dialog.Title>Exercise history</Dialog.Title>
-		<Tabs.Root bind:value>
+		<Tabs.Root>
 			<Tabs.List class="grid w-full grid-cols-2">
-				{#each tabItems as item}
-					<Tabs.Trigger value={item.value}>{item.label}</Tabs.Trigger>
-				{/each}
+				<Tabs.Trigger value={allTimeId}>All time</Tabs.Trigger>
+				<Tabs.Trigger value={upToWorkoutId}>Up to this workout</Tabs.Trigger>
 			</Tabs.List>
-			{#each tabItems as item}
-				<Tabs.Content value={item.value}>
-					<PastPerformancesList {exerciseId} currentWorkout={item.currentWorkout} />
-				</Tabs.Content>
-			{/each}
+			<Tabs.Content value={allTimeId}>
+				<PastPerformancesList {exerciseId} />
+			</Tabs.Content>
+			<Tabs.Content value={upToWorkoutId}>
+				<PastPerformancesList {exerciseId} currentWorkout={performance.workout} />
+			</Tabs.Content>
 		</Tabs.Root>
 	</Dialog.Content>
 </Dialog.Root>
