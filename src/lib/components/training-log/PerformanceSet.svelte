@@ -12,15 +12,19 @@
 		exercise
 	}: { set: PerformanceSet; unit: WeightUnit; exercise: Maybe<Exercise> } = $props();
 
-	let executionType = $derived(exercise?.executionType ?? 'reps');
-	let loadType = $derived(exerciseLoadType(exercise) ?? 'weighted');
-	let weight = $derived(set.weight);
-	let reps = $derived(set.reps);
-	let durationSeconds = $derived(set.durationSeconds);
+	const executionType = exercise?.executionType ?? 'reps';
+	const loadType = exerciseLoadType(exercise) ?? 'weighted';
+	const weight = set.weight;
+	const reps = set.reps;
+	const durationSeconds = set.durationSeconds;
 
 	const onWeightChange = (event: Event) => {
-		const value = (event.target as HTMLInputElement).valueAsNumber;
-		triplit.update('performanceSets', set.id, { weight: value });
+		const value = (event.target as HTMLInputElement).value;
+		const valueAsNumber = parseFloat(value);
+		if (isNaN(valueAsNumber)) {
+			return;
+		}
+		triplit.update('performanceSets', set.id, { weight: valueAsNumber });
 	};
 
 	const onRepsChange = (event: Event) => {
@@ -54,7 +58,15 @@
 	{/if}
 	<Label class="flex items-center gap-2">
 		<span class="sr-only">Weight</span>
-		<Input type="number" value={weight} oninput={onWeightChange} step="0.01" class="w-24 pr-8" />
+		<Input
+			type="text"
+			value={weight}
+			oninput={onWeightChange}
+			step="0.01"
+			inputmode="numeric"
+			pattern="-?[0-9]*[.,]?[0-9]*"
+			class="w-24 pr-8"
+		/>
 		<span class="-ml-10 opacity-80">{unit}</span>
 	</Label>
 </div>
