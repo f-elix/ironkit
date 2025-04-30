@@ -5,8 +5,6 @@
 	import Input from '$lib/shadcn/input/input.svelte';
 	import capitalize from 'just-capitalize';
 	import LargeRadioButtons from '$lib/components/ui/LargeRadioButtons.svelte';
-	import * as Select from '$lib/shadcn/select';
-	import Label from '$lib/shadcn/label/label.svelte';
 	import MuscleGroupSelection from '$lib/components/training-log/MuscleGroupSelection.svelte';
 	import { triplit } from '$lib/db/triplit';
 	import type { Exercise } from '$lib/db/types';
@@ -125,23 +123,17 @@
 					executionType = v;
 				}}
 			/>
-			<Label class="flex flex-col items-start gap-2">
-				<span class="whitespace-nowrap">Load type</span>
-				<Select.Root type="single" bind:value={loadType}>
-					<Select.Trigger class="capitalize">
-						{loadType}
-					</Select.Trigger>
-					<Select.Content>
-						<Select.Group>
-							{#each EXERCISE_LOAD_TYPES as loadType (loadType)}
-								<Select.Item value={loadType} label={loadType} class="capitalize"
-									>{loadType}</Select.Item
-								>
-							{/each}
-						</Select.Group>
-					</Select.Content>
-				</Select.Root>
-			</Label>
+			<LargeRadioButtons
+				label="Load type"
+				items={EXERCISE_LOAD_TYPES.map((type) => ({
+					value: type,
+					label: type
+				}))}
+				value={loadType}
+				onValueChange={(v) => {
+					loadType = v;
+				}}
+			/>
 			<MuscleGroupSelection bind:value={muscleGroups} />
 			<Button type="submit">{buttonText}</Button>
 		</form>
