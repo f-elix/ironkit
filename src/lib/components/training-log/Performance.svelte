@@ -4,9 +4,8 @@
 	import PerformanceSets from '$lib/components/training-log/PerformanceSets.svelte';
 	import UnitSelector from '$lib/components/ui/UnitSelector.svelte';
 	import { triplit } from '$lib/db/triplit';
-	import Button from '$lib/shadcn/button/button.svelte';
-	import Trash from '@lucide/svelte/icons/trash-2';
 	import ExerciseHistoryDialog from '$lib/components/training-log/ExerciseHistoryDialog.svelte';
+	import DeletePerformanceDialog from '$lib/components/training-log/DeletePerformanceDialog.svelte';
 
 	type Performance = WorkoutWithRelations['performanceGroups'][number]['performances'][number];
 
@@ -20,15 +19,9 @@
 </script>
 
 <div class="relative flex flex-col gap-6">
-	<Button
-		variant="destructive"
-		size="icon"
-		aria-label="Remove exercise"
-		class="absolute right-0 top-0 size-6 [&_svg]:size-3"
-		onclick={() => onDelete(performance.id)}
-	>
-		<Trash />
-	</Button>
+	<div class="absolute right-0 top-0">
+		<DeletePerformanceDialog onConfirm={() => onDelete(performance.id)} />
+	</div>
 	<h3 class="max-w-[80%] text-lg font-semibold leading-5">
 		{exerciseName}
 	</h3>
