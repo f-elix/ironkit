@@ -52,7 +52,7 @@
 </script>
 
 <div class="flex flex-col gap-2">
-	<ol class="flex flex-col gap-2">
+	<ol class="flex flex-col gap-4">
 		{#each sets as set, i (set.id)}
 			<li
 				class="flex flex-col gap-2"
@@ -63,32 +63,6 @@
 					<div class="flex items-center gap-2">
 						<div class="text-sm">{i + 1}</div>
 						<PerformanceSet {set} {unit} {exercise} />
-					</div>
-					<div class="flex items-center">
-						{#if sets.length > 1}
-							<Button
-								size="icon"
-								variant="ghost"
-								class="w-8 text-destructive"
-								onclick={() => {
-									deleteSet(set.id);
-								}}
-								aria-label="Delete set"
-							>
-								<Minus />
-							</Button>
-						{/if}
-						<Button
-							size="icon"
-							variant="ghost"
-							class="w-8"
-							onclick={() => {
-								addSet(set.performanceOrder, sets[i + 1]?.performanceOrder);
-							}}
-							aria-label="Add a set below"
-						>
-							<Plus />
-						</Button>
 					</div>
 				</div>
 				<Label class="flex flex-col gap-2">
@@ -105,6 +79,32 @@
 						}}
 					/>
 				</Label>
+				<div class="flex gap-2">
+					{#if sets.length > 1}
+						<Button
+							size="sm"
+							variant="destructive"
+							class="h-7 flex-1 border border-destructive/50 bg-destructive/10"
+							onclick={() => {
+								deleteSet(set.id);
+							}}
+						>
+							<Minus class="text-destructive" />
+							Remove set
+						</Button>
+					{/if}
+					<Button
+						size="sm"
+						variant="secondary"
+						class="h-7 flex-1"
+						onclick={() => {
+							addSet(set.performanceOrder, sets[i + 1]?.performanceOrder);
+						}}
+					>
+						<Plus />
+						Add set below
+					</Button>
+				</div>
 			</li>
 		{/each}
 	</ol>
