@@ -90,7 +90,8 @@
 			class={buttonVariants({
 				variant: 'outline',
 				size: 'lg',
-				class: 'w-full items-center justify-center bg-muted/50 py-8 text-base ring-inset'
+				class:
+					'h-auto w-full items-center justify-center whitespace-normal bg-muted/50 py-8 text-base ring-inset'
 			})}
 		>
 			<span>
