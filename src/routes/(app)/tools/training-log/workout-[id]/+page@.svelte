@@ -15,7 +15,7 @@
 </script>
 
 {#if workout}
-	<div class="flex grow flex-col" style="view-transition-name: workout;">
+	<div class="flex h-dvh flex-col" style="view-transition-name: workout;">
 		<div class="flex grow flex-col gap-6 p-4 pb-0">
 			<WorkoutHeader {workout} />
 			<PerformanceGroups {workoutId} />

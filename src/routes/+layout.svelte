@@ -5,12 +5,12 @@
 	import { loadDb } from '$lib/db/loadDb';
 	import { watchOffline } from '$lib/ui/watchOffline';
 	import { watchSWUpdate } from '$lib/ui/watchSWUpdate';
-	import { setupViewTransition } from '$lib/ui/setupViewTransition';
+	import { setupViewTransitions } from '$lib/ui/setupViewTransitions';
 	import { setAuth } from '$lib/db/Auth.svelte';
 
 	let { children } = $props();
 
-	setupViewTransition();
+	setupViewTransitions();
 	watchOffline();
 	watchSWUpdate();
 	loadDb();
@@ -19,6 +19,4 @@
 
 <Head />
 <Toaster closeButton richColors theme="dark" />
-<div class="mx-auto max-w-xl">
-	{@render children()}
-</div>
+{@render children()}

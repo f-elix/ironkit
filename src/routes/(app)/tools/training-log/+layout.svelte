@@ -20,16 +20,11 @@
 
 	const [send, receive] = crossfade({ duration: 500, easing: expoOut });
 
-	let viewTransitionName = $state('');
-
+	// This is used to conditionally apply the view transition name to the training log layout
+	// so that it doesn't have a view transition when the page is loaded and when going away from the training log
+	let isTrainingLogNav = $state(false);
 	beforeNavigate((nav) => {
-		viewTransitionName = '';
-		if (nav.to?.url.pathname === PAGE_tools_training_log) {
-			viewTransitionName = 'training-log-workouts';
-		}
-		if (nav.to?.url.pathname === PAGE_tools_training_log_exercises) {
-			viewTransitionName = 'training-log-exercises';
-		}
+		isTrainingLogNav = nav.to?.url.pathname.includes(PAGE_tools_training_log) ?? false;
 	});
 </script>
 
@@ -50,6 +45,9 @@
 		</a>
 	{/each}
 </nav>
-<div class="mt-4 flex grow flex-col" style="view-transition-name: {viewTransitionName};">
+<div
+	class="mt-4 flex grow flex-col"
+	style="view-transition-name: {isTrainingLogNav ? 'training-log' : ''};"
+>
 	{@render children()}
 </div>
