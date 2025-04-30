@@ -22,13 +22,6 @@
 	let exercise = $derived(performance.exercise);
 	let executionType = $derived(exercise?.executionType ?? DEFAULT_EXERCISE_EXECUTION_TYPE);
 	let loadType = $derived(exercise?.loadType ?? DEFAULT_EXERCISE_LOAD_TYPE);
-
-	let totalWeight = $derived.by(() => {
-		if (loadType === 'bodyweight') {
-			return bodyweight + weight;
-		}
-		return weight;
-	});
 </script>
 
 <div class="flex w-full items-baseline gap-2">
@@ -50,20 +43,14 @@
 			<span aria-hidden="true">&times;</span>
 			<span>
 				{#if loadType === 'bodyweight'}
-					{bodyweight}
-					{#if bodyweightUnit !== weightUnit}
-						{bodyweightUnit}
-					{/if}
+					bodyweight ({bodyweight}
+					{bodyweightUnit})
 					{#if weight > 0}
 						+ {weight}
 					{:else if weight < 0}
 						- {Math.abs(weight)}
 					{/if}
 					{#if weight}
-						{weightUnit}
-						({totalWeight}
-						{weightUnit})
-					{:else}
 						{weightUnit}
 					{/if}
 				{:else}
