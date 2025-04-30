@@ -76,7 +76,7 @@
 <Dialog.Root
 	bind:open
 	onOpenChange={(o) => {
-		if (!o) {
+		if (!o && !exercise) {
 			resetState();
 		}
 	}}
