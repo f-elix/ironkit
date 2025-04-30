@@ -1,6 +1,7 @@
 <script lang="ts">
 	import PerformanceSetSummary from '$lib/components/training-log/PerformanceSetSummary.svelte';
 	import type { WorkoutWithRelations } from '$lib/db/types';
+	import Badge from '$lib/shadcn/badge/badge.svelte';
 
 	type PerformanceGroup = WorkoutWithRelations['performanceGroups'][number];
 
@@ -12,7 +13,7 @@
 
 <div class="flex w-full flex-col items-start gap-4 whitespace-normal py-2 text-left">
 	{#if label}
-		<p class="font-semibold text-muted-foreground">{label}</p>
+		<Badge>{label}</Badge>
 	{/if}
 	{#each performances as performance (performance.id)}
 		{@const exercise = performance.exercise}
