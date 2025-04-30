@@ -4,6 +4,7 @@ import {
 	DEFAULT_EXERCISE_LOAD_TYPE,
 	DEFAULT_EXERCISE_EXECUTION_TYPE,
 	DEFAULT_GENDER_CLASS,
+	DEFAULT_PERFORMANCE_GROUP_LABEL,
 	DEFAULT_WEIGHT_UNIT,
 	DEFAULT_WORKOUT_TITLE,
 	EXERCISE_LOAD_TYPES,
@@ -102,7 +103,7 @@ export const schema = S.Collections({
 		schema: S.Schema({
 			...baseOwnedCollectionSchema(),
 			workoutId: S.String(),
-			label: S.Optional(S.String()),
+			label: S.Optional(S.String({ default: DEFAULT_PERFORMANCE_GROUP_LABEL })),
 			workoutOrder: S.Number()
 		}),
 		relationships: {

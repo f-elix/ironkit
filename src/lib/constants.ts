@@ -22,6 +22,8 @@ export const DEFAULT_EXERCISE_LOAD_TYPE = 'weighted' as const;
 export const EXERCISE_EXECUTION_TYPES = ['reps', 'time'] as const;
 export const DEFAULT_EXERCISE_EXECUTION_TYPE = 'reps' as const;
 
+export const DEFAULT_PERFORMANCE_GROUP_LABEL = 'Superset' as const;
+
 export const PLATES = {
 	kg: [25, 20, 15, 10, 5, 2.5, 1.25],
 	lbs: [45, 25, 10, 5, 2.5]

@@ -1,3 +1,4 @@
+import { DEFAULT_PERFORMANCE_GROUP_LABEL } from '$lib/constants';
 import { triplit } from '$lib/db/triplit';
 import { userId } from '$lib/db/userId';
 
@@ -10,7 +11,8 @@ export const addExerciseToWorkout = async (
 		const performanceGroup = await tx.insert('performanceGroups', {
 			userId: userId(),
 			workoutId,
-			workoutOrder
+			workoutOrder,
+			label: DEFAULT_PERFORMANCE_GROUP_LABEL
 		});
 
 		const performance = await tx.insert('performances', {

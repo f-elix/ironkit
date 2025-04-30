@@ -56,6 +56,11 @@
 			onGroupDelete();
 		}
 	};
+
+	const onLabelChange = async (event: Event) => {
+		const value = (event.currentTarget as HTMLInputElement).value;
+		await triplit.update('performanceGroups', performanceGroup.id, { label: value });
+	};
 </script>
 
 <Card.Root class="bg-muted/30">
@@ -64,16 +69,7 @@
 			<div class="flex flex-row items-center justify-between gap-2">
 				<Label class="grow">
 					<span class="sr-only">Group title</span>
-					<Input
-						type="text"
-						placeholder="Group title"
-						value={label}
-						oninput={(e) => {
-							triplit.update('performanceGroups', performanceGroup.id, {
-								label: e.currentTarget.value
-							});
-						}}
-					/>
+					<Input type="text" placeholder="Group title" value={label} oninput={onLabelChange} />
 				</Label>
 			</div>
 		{/if}
