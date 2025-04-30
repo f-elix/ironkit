@@ -18,6 +18,7 @@
 		EXERCISE_EXECUTION_TYPES,
 		EXERCISE_LOAD_TYPES
 	} from '$lib/constants';
+	import { exerciseLoadType } from '$lib/db/exerciseLoadType';
 
 	let {
 		exercise,
@@ -40,8 +41,7 @@
 		exercise?.executionType ?? DEFAULT_EXERCISE_EXECUTION_TYPE
 	);
 	let loadType = $state<(typeof EXERCISE_LOAD_TYPES)[number]>(
-		// @ts-expect-error - TODO: fix this
-		exercise?.loadType ?? DEFAULT_EXERCISE_LOAD_TYPE
+		exerciseLoadType(exercise) ?? DEFAULT_EXERCISE_LOAD_TYPE
 	);
 	let muscleGroups = $state<string[]>(Array.from(exercise?.muscleGroups ?? []) ?? []);
 
