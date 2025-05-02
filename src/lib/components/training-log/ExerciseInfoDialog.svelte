@@ -3,7 +3,6 @@
 	import { Button, buttonVariants } from '$lib/shadcn/button';
 	import * as Dialog from '$lib/shadcn/dialog';
 	import Input from '$lib/shadcn/input/input.svelte';
-	import capitalize from 'just-capitalize';
 	import LargeRadioButtons from '$lib/components/ui/LargeRadioButtons.svelte';
 	import MuscleGroupSelection from '$lib/components/training-log/MuscleGroupSelection.svelte';
 	import { triplit } from '$lib/db/triplit';
@@ -106,11 +105,7 @@
 		<form class="flex flex-col gap-6" onsubmit={onSave}>
 			<label>
 				<span class="sr-only">Exercise name</span>
-				<Input
-					type="text"
-					placeholder="Exercise name"
-					bind:value={() => capitalize(name ?? ''), (v) => (name = v)}
-				/>
+				<Input type="text" placeholder="Exercise name" bind:value={name} />
 			</label>
 			<LargeRadioButtons
 				label="Execution type"
