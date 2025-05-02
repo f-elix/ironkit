@@ -12,7 +12,7 @@
 </script>
 
 <div class="flex w-full flex-col items-start gap-4 whitespace-normal py-2 text-left">
-	{#if label}
+	{#if label && performances.length > 1}
 		<Badge>{label}</Badge>
 	{/if}
 	{#each performances as performance (performance.id)}
