@@ -55,6 +55,16 @@
 							}}
 						/>
 					</Command.Empty>
+					<Command.Group class="px-0 pt-2">
+						<ExerciseInfoDialog
+							triggerSize="sm"
+							onExerciseCreated={(newExercise) => {
+								onExerciseSelected(newExercise.id);
+								open = false;
+							}}
+						/>
+					</Command.Group>
+					<Command.Separator class="my-2" />
 					<Command.Group>
 						{#each exercises as exercise (exercise.id)}
 							<Command.Item
@@ -67,15 +77,6 @@
 								{exercise.name}
 							</Command.Item>
 						{/each}
-					</Command.Group>
-					<Command.Group class="px-0 pt-0">
-						<Command.Separator class="mb-3 mt-2" />
-						<ExerciseInfoDialog
-							onExerciseCreated={(newExercise) => {
-								onExerciseSelected(newExercise.id);
-								open = false;
-							}}
-						/>
 					</Command.Group>
 				</Command.List>
 			</Command.Root>

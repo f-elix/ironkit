@@ -21,11 +21,13 @@
 		exercise,
 		trigger,
 		name = exercise?.name,
-		onExerciseCreated
+		onExerciseCreated,
+		triggerSize = 'default'
 	}: {
 		exercise?: Exercise;
 		trigger?: Snippet;
 		name?: string;
+		triggerSize?: 'default' | 'sm';
 		onExerciseCreated?: (exercise: Exercise) => void;
 	} = $props();
 
@@ -87,8 +89,10 @@
 			class={buttonVariants({
 				variant: 'outline',
 				size: 'lg',
-				class:
-					'h-auto w-full items-center justify-center whitespace-normal bg-muted/50 py-8 text-base ring-inset'
+				class: [
+					'h-auto w-full items-center justify-center whitespace-normal bg-muted/50 text-base ring-inset',
+					triggerSize === 'default' ? 'py-8' : 'py-2'
+				]
 			})}
 		>
 			<span>
