@@ -60,7 +60,7 @@
 							<Command.Item
 								class="text-lg"
 								value={exercise.name.toLowerCase()}
-								keywords={[...exercise.muscleGroups, exercise.loadType]}
+								keywords={[...exercise.muscleGroups, exercise.loadType, exercise.executionType]}
 								onSelect={() => {
 									onExerciseSelected(exercise.id);
 								}}

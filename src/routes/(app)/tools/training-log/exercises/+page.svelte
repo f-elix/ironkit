@@ -23,10 +23,14 @@
 		allExercises
 			?.map((exercise) => {
 				const muscleGroups = Array.from(exercise.muscleGroups);
-				const score = computeCommandScore(exercise.name, search, muscleGroups);
+				const score = computeCommandScore(exercise.name, search, [
+					...muscleGroups,
+					exercise.loadType,
+					exercise.executionType
+				]);
 				return { ...exercise, score };
 			})
-			.filter((exercise) => exercise.score > 0.1)
+			.filter((exercise) => exercise.score > 0)
 			.toSorted((a, b) => b.score - a.score)
 	);
 
