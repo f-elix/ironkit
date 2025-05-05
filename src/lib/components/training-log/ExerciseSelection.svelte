@@ -6,7 +6,6 @@
 	import ExerciseInfoDialog from '$lib/components/training-log/ExerciseInfoDialog.svelte';
 	import type { Snippet } from 'svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
-	import { computeCommandScore } from 'bits-ui';
 
 	let {
 		onExerciseAdded,
@@ -27,22 +26,13 @@
 		open = false;
 		value = '';
 	};
-
-	const customFilter = (
-		commandValue: string,
-		search: string,
-		commandKeywords?: string[]
-	): number => {
-		const score = computeCommandScore(commandValue, search, commandKeywords);
-		return score > 0.5 ? score : 0;
-	};
 </script>
 
 {#if exercises.length}
 	<Dialog.Root bind:open>
 		{@render trigger?.()}
 		<Dialog.Content class="w-[90vw] max-w-2xl">
-			<Command.Root filter={customFilter}>
+			<Command.Root>
 				<Command.Input placeholder="Search exercises" bind:value />
 				<Command.List>
 					<Command.Empty class="flex w-full flex-col gap-6 pb-1">
@@ -69,7 +59,8 @@
 						{#each exercises as exercise (exercise.id)}
 							<Command.Item
 								class="text-lg"
-								keywords={[exercise.name, ...exercise.muscleGroups, exercise.loadType]}
+								value={exercise.name.toLowerCase()}
+								keywords={[...exercise.muscleGroups, exercise.loadType]}
 								onSelect={() => {
 									onExerciseSelected(exercise.id);
 								}}
