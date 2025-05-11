@@ -14,10 +14,7 @@
 		$props();
 
 	let performancesQuery = triplit.query('performances').Where(
-		['exerciseId', '=', exerciseId],
-		exists('sets', {
-			where: [['weight', 'isDefined', true]]
-		})
+		['exerciseId', '=', exerciseId]
 	);
 
 	if (currentWorkout) {
