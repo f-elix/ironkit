@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { triplit } from '$lib/db/triplit';
-	import { useQuery } from '@triplit/svelte';
 	import Check from '@lucide/svelte/icons/check';
 	import { Combobox } from 'bits-ui';
 	import ChevronDown from '@lucide/svelte/icons/chevron-down';
@@ -10,11 +8,10 @@
 	import Label from '$lib/shadcn/label/label.svelte';
 	import type { Workout } from '$lib/db/types';
 
-	let { selectedWorkout = $bindable() }: { selectedWorkout?: Maybe<Workout> } = $props();
-
-	const query = useQuery(triplit, triplit.query('workouts').Order('date', 'DESC'));
-
-	let workouts = $derived(query.results ?? []);
+	let {
+		workouts = [],
+		selectedWorkout = $bindable()
+	}: { workouts: Workout[]; selectedWorkout?: Maybe<Workout> } = $props();
 
 	let items = $derived(
 		workouts.map((workout) => ({

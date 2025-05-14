@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Workout } from '$lib/db/types';
 	import * as Dialog from '$lib/shadcn/dialog';
-	import type { Snippet } from 'svelte';
+	import { type Snippet } from 'svelte';
 	import { Input } from '$lib/shadcn/input';
 	import { Textarea } from '$lib/shadcn/textarea';
 	import DatePicker from '$lib/components/ui/DatePicker.svelte';
@@ -15,6 +15,8 @@
 	import Label from '$lib/shadcn/label/label.svelte';
 	import PreviousWorkoutSelection from '$lib/components/training-log/PreviousWorkoutSelection.svelte';
 	import UnitSelector from '$lib/components/ui/UnitSelector.svelte';
+	import { useQuery } from '@triplit/svelte';
+	import { defaultInteractiveWidget } from '$lib/defaultInteractiveWidget';
 
 	let {
 		trigger,
@@ -23,6 +25,10 @@
 		workout?: Workout;
 		trigger: Snippet<[{ props: Record<string, unknown> }]>;
 	} = $props();
+
+	const previousWorkoutsQuery = useQuery(triplit, triplit.query('workouts').Order('date', 'DESC'));
+	let previousWorkouts = $derived(previousWorkoutsQuery.results ?? []);
+	let showPreviousWorkoutSelection = $derived(!workout && previousWorkouts.length);
 
 	const dialogTitle = workout ? 'Edit workout' : 'Create workout';
 	const buttonText = workout ? 'Save changes' : 'Create';
@@ -105,9 +111,20 @@
 		});
 		goto(PAGE_tools_training_log_workout_id({ id: newWorkout.id }));
 	};
+
+	let resetInteractiveWidget: (() => void) | undefined;
 </script>
 
-<Dialog.Root bind:open>
+<Dialog.Root
+	bind:open
+	onOpenChange={(isOpen) => {
+		if (isOpen) {
+			resetInteractiveWidget = defaultInteractiveWidget();
+		} else {
+			resetInteractiveWidget?.();
+		}
+	}}
+>
 	<Dialog.Trigger>
 		{#snippet child({ props })}
 			{@render trigger({ props })}
@@ -116,8 +133,11 @@
 	<Dialog.Content class="w-[90vw] max-w-2xl">
 		<Dialog.Title class="text-left">{dialogTitle}</Dialog.Title>
 		<form class="flex flex-col gap-4" onsubmit={onSave}>
-			{#if !workout}
-				<PreviousWorkoutSelection bind:selectedWorkout={templateWorkout} />
+			{#if showPreviousWorkoutSelection}
+				<PreviousWorkoutSelection
+					workouts={previousWorkouts}
+					bind:selectedWorkout={templateWorkout}
+				/>
 			{/if}
 			<Label class="flex flex-col gap-2">
 				Workout name
@@ -136,7 +156,7 @@
 			</div>
 			<Label class="flex flex-col gap-2">
 				Notes
-				<Textarea placeholder="Workout notes..." bind:value={notes} rows={5} class="font-normal" />
+				<Textarea placeholder="Workout notes..." bind:value={notes} rows={2} class="font-normal" />
 			</Label>
 			<Dialog.Footer>
 				<Button type="submit">{buttonText}</Button>
