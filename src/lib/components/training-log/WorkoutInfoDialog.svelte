@@ -85,6 +85,7 @@
 				);
 				for (const templatePerformanceGroup of peformanceGroups) {
 					const newGroup = await tx.insert('performanceGroups', {
+						label: templatePerformanceGroup.label,
 						userId: templatePerformanceGroup.userId,
 						workoutId: newWorkout.id,
 						workoutOrder: templatePerformanceGroup.workoutOrder
