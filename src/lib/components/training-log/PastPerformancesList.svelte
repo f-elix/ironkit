@@ -4,7 +4,6 @@
 	import { useQuery } from '@triplit/svelte';
 	import { ScrollArea } from '$lib/shadcn/scroll-area';
 	import type { Workout } from '$lib/db/types';
-	import { exists } from '@triplit/client';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import { today } from '@internationalized/date';
 	import { TIMEZONE } from '$lib/constants';
@@ -13,9 +12,7 @@
 	let { exerciseId, currentWorkout }: { exerciseId: string; currentWorkout?: Maybe<Workout> } =
 		$props();
 
-	let performancesQuery = triplit.query('performances').Where(
-		['exerciseId', '=', exerciseId]
-	);
+	let performancesQuery = triplit.query('performances').Where(['exerciseId', '=', exerciseId]);
 
 	if (currentWorkout) {
 		performancesQuery = performancesQuery.Where(
@@ -47,16 +44,16 @@
 
 {#if performances.length}
 	<ScrollArea class="h-[50vh]">
-		<ul class="flex flex-col gap-4 divide-y divide-border pb-7 pt-4">
+		<ul class="divide-border flex flex-col gap-4 divide-y pt-4 pb-7">
 			{#each performances as performance (performance.id)}
 				{@const date = formatDate(performance.workout?.date)}
 				{@const sets = performance.sets ?? []}
 				{@const note = performance.note}
-				<li class="flex flex-col gap-3 pt-4">
+				<li class="flex flex-col gap-3 pb-4">
 					<div class="flex flex-col gap-1">
 						<h4 class="text-base font-semibold">{date}</h4>
 						{#if note}
-							<p class="text-sm text-muted-foreground">{note}</p>
+							<p class="text-muted-foreground text-sm">{note}</p>
 						{/if}
 					</div>
 					<ul class="flex flex-col gap-2">

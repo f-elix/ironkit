@@ -31,9 +31,9 @@
 				<RadioGroup.Item {value} class="peer sr-only" />
 				<div
 					class={[
-						'rounded border border-muted py-4 text-center capitalize',
+						'border-muted rounded border py-4 text-center capitalize',
 						'transition-colors duration-100 ease-linear',
-						'cursor-pointer hover:bg-muted',
+						'hover:bg-muted cursor-pointer',
 						'peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-secondary'
 					]}
 				>

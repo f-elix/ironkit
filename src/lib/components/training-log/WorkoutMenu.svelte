@@ -47,7 +47,7 @@
 		<DropdownMenu.Separator />
 		<DropdownMenu.Group>
 			<DropdownMenu.Item class="text-destructive" onSelect={onDeleteWorkout}>
-				<TrashIcon />
+				<TrashIcon class="text-destructive" />
 				Delete workout
 			</DropdownMenu.Item>
 		</DropdownMenu.Group>

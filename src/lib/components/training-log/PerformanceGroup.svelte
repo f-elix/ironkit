@@ -63,7 +63,7 @@
 	};
 </script>
 
-<Card.Root class="bg-muted/30">
+<Card.Root class="bg-muted/30 py-0">
 	<Card.Content class="flex flex-col gap-4 p-4">
 		{#if performances.length > 1}
 			<div class="flex flex-row items-center justify-between gap-2">
@@ -73,9 +73,9 @@
 				</Label>
 			</div>
 		{/if}
-		<ul class="flex flex-col gap-4 divide-y divide-border">
+		<ul class="divide-border flex flex-col gap-4 divide-y">
 			{#each performances as performance (performance.id)}
-				<li class="flex flex-col gap-2 pt-4 first:pt-0">
+				<li class="flex flex-col gap-2 pb-4 last:pb-0">
 					<Performance {performance} {onDelete} />
 				</li>
 			{/each}
