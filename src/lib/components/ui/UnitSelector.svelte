@@ -25,7 +25,7 @@
 				bind:group={value}
 			/>
 			<span
-				class="rounded-[0.3rem] border-primary ring-ring ring-offset-2 transition-colors duration-100 ease-linear peer-checked:border peer-checked:bg-accent peer-focus-visible:ring-2 {buttonVariants(
+				class="border-primary ring-ring peer-checked:bg-accent rounded-[0.3rem] ring-offset-2 transition-colors duration-100 ease-linear peer-checked:border peer-focus-visible:ring-2 {buttonVariants(
 					{
 						variant: 'ghost',
 						size: 'sm',

@@ -59,7 +59,7 @@
 				</span>
 				{#if count > 0}
 					<button
-						class="rounded border border-current text-destructive"
+						class="text-destructive rounded border border-current"
 						aria-label="Remove one"
 						onclick={() => decreasePlateCount(plate)}
 					>

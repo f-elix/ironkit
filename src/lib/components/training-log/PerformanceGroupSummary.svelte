@@ -11,7 +11,7 @@
 	let performances = $derived(performanceGroup.performances);
 </script>
 
-<div class="flex w-full flex-col items-start gap-4 whitespace-normal py-2 text-left">
+<div class="flex w-full flex-col items-start gap-4 py-2 text-left whitespace-normal">
 	{#if label && performances.length > 1}
 		<Badge>{label}</Badge>
 	{/if}
@@ -26,7 +26,7 @@
 					{exercise?.name}
 				</p>
 				{#if note}
-					<p class="whitespace-normal text-sm text-muted-foreground">{note}</p>
+					<p class="text-muted-foreground text-sm whitespace-normal">{note}</p>
 				{/if}
 			</div>
 			{#if sets.length}

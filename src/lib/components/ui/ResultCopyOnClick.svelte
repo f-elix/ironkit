@@ -14,13 +14,13 @@
 >
 	{#snippet children({ copied })}
 		{@render childrenProp({ copied })}
-		<span class="flex items-center gap-2 text-muted-foreground/70">
+		<span class="text-muted-foreground/70 flex items-center gap-2">
 			{#if copied}
 				Copied
 				<CheckIcon class="size-4" />
 			{:else}
-				<span class="hidden pointer:inline">Click to copy</span>
-				<span class="hidden touch:inline">Tap to copy</span>
+				<span class="pointer:inline hidden">Click to copy</span>
+				<span class="touch:inline hidden">Tap to copy</span>
 			{/if}
 		</span>
 	{/snippet}

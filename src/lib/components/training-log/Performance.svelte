@@ -19,10 +19,10 @@
 </script>
 
 <div class="relative flex flex-col gap-6">
-	<div class="absolute right-0 top-0">
+	<div class="absolute top-0 right-0">
 		<DeletePerformanceDialog onConfirm={() => onDelete(performance.id)} />
 	</div>
-	<h3 class="max-w-[80%] text-lg font-semibold leading-5">
+	<h3 class="max-w-[80%] text-lg leading-5 font-semibold">
 		{exerciseName}
 	</h3>
 	<div class="flex flex-col gap-4">

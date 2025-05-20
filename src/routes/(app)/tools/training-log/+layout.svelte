@@ -34,7 +34,7 @@
 		<a href={item.href} class="relative rounded-md px-4 py-2 text-center">
 			{#if active}
 				<div
-					class="absolute inset-0 rounded-md bg-muted"
+					class="bg-muted absolute inset-0 rounded-md"
 					in:send={{ key: 'nav-link-bg' }}
 					out:receive={{ key: 'nav-link-bg' }}
 				></div>

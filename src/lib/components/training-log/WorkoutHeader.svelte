@@ -35,7 +35,7 @@
 	</div>
 	<div class="flex flex-col gap-2">
 		<div class="flex items-start justify-between gap-4">
-			<h1 class="text-2xl font-semibold leading-6">{title}</h1>
+			<h1 class="text-2xl leading-6 font-semibold">{title}</h1>
 			<WorkoutInfoDialog {workout}>
 				{#snippet trigger({ props })}
 					<Button {...props} size="icon" variant="ghost" class="shrink-0">
@@ -46,7 +46,7 @@
 		</div>
 		<div class="flex shrink-0 flex-col items-start text-right">
 			{#if date}
-				<time class="text-sm text-muted-foreground" datetime={date.toISOString()}>
+				<time class="text-muted-foreground text-sm" datetime={date.toISOString()}>
 					{formatDate(date)}
 				</time>
 			{/if}

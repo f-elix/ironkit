@@ -29,7 +29,7 @@
 	class={[
 		'flex items-center gap-4 px-2',
 		'transition-colors duration-150 ease-linear',
-		'border-b focus-within:border-foreground focus-within:bg-muted/30 focus-within:outline-hidden'
+		'focus-within:border-foreground focus-within:bg-muted/30 border-b focus-within:outline-hidden'
 	]}
 >
 	<Label for={id} class="sr-only">{label} ({unit})</Label>
@@ -42,7 +42,7 @@
 		bind:this={input}
 		placeholder="0"
 		class={[
-			'w-20 bg-transparent px-2 py-4 text-xl font-medium placeholder:text-muted-foreground focus:outline-hidden'
+			'placeholder:text-muted-foreground w-20 bg-transparent px-2 py-4 text-xl font-medium focus:outline-hidden'
 		]}
 		{...rest}
 	/>

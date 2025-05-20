@@ -24,7 +24,7 @@
 		<button
 			type="button"
 			class={[
-				'absolute right-2 top-1/2 -translate-y-1/2',
+				'absolute top-1/2 right-2 -translate-y-1/2',
 				'transition-colors duration-150 ease-linear',
 				!value && 'text-muted-foreground/50'
 			]}

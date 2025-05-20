@@ -26,11 +26,11 @@
 
 <div class="flex w-full items-baseline gap-2">
 	<div
-		class="grid size-5 shrink-0 place-items-center rounded-full bg-foreground text-sm font-bold text-background"
+		class="bg-foreground text-background grid size-5 shrink-0 place-items-center rounded-full text-sm font-bold"
 	>
 		{order}
 	</div>
-	<div class="flex w-full flex-col gap-1 rounded border border-foreground/50 p-2 text-sm">
+	<div class="border-foreground/50 flex w-full flex-col gap-1 rounded border p-2 text-sm">
 		<p class="shrink-0">
 			<span>
 				{#if executionType === 'reps'}
@@ -60,7 +60,7 @@
 			</span>
 		</p>
 		{#if note}
-			<p class="text-sm text-muted-foreground">
+			<p class="text-muted-foreground text-sm">
 				{note}
 			</p>
 		{/if}

@@ -19,7 +19,7 @@
 				<Button
 					variant="secondary"
 					size="lg"
-					class="h-24 w-full flex-col items-center whitespace-normal border bg-gray-900 px-2 text-center"
+					class="h-24 w-full flex-col items-center border bg-gray-900 px-2 text-center whitespace-normal"
 					{href}
 				>
 					<Icon />

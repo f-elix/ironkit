@@ -66,11 +66,11 @@
 
 <ToolLayout>
 	{#snippet output()}
-		<div class="grid h-32 place-items-center rounded-lg border bg-secondary px-4">
+		<div class="bg-secondary grid h-32 place-items-center rounded-lg border px-4">
 			{#if kgPlateConfiguration?.length > 0}
 				<KgPlatesRepresentation {kgPlateConfiguration} {heavyCollars} />
 			{:else if message}
-				<p class="px-4 text-center leading-5 text-muted-foreground">
+				<p class="text-muted-foreground px-4 text-center leading-5">
 					{message}
 				</p>
 			{/if}
@@ -149,7 +149,7 @@
 									bind:group={barWeightGroup.current}
 								/>
 								<span
-									class="border border-muted-foreground/50 ring-ring ring-offset-2 peer-checked:border-primary peer-checked:bg-accent peer-focus-visible:ring-2 {buttonVariants(
+									class="border-muted-foreground/50 ring-ring peer-checked:border-primary peer-checked:bg-accent border ring-offset-2 peer-focus-visible:ring-2 {buttonVariants(
 										{
 											variant: 'ghost',
 											size: 'sm',

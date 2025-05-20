@@ -12,7 +12,7 @@
 	<h2 class="text-lg font-medium">Page not found</h2>
 	<Button href={PAGE__ROOT} class="mt-4">Go to home</Button>
 	{#if showError}
-		<pre class="mt-4 w-full overflow-scroll rounded-md bg-muted p-4 text-sm">{JSON.stringify(
+		<pre class="bg-muted mt-4 w-full overflow-scroll rounded-md p-4 text-sm">{JSON.stringify(
 				page.error,
 				null,
 				2

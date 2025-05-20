@@ -30,12 +30,12 @@
 		<!-- We use position: absolute here so that the mobile keyboard can cover it. Otherwise, the inputs disappear when the keyboard is open -->
 		<div class="absolute inset-x-4">
 			<div class="flex flex-col gap-4">
-				<p class="text-sm text-muted-foreground">The following formulas are used:</p>
+				<p class="text-muted-foreground text-sm">The following formulas are used:</p>
 				<dl class="grid grid-cols-3 gap-x-10 gap-y-5">
 					{#each Object.entries(FORMULAS) as [key, formula]}
 						<div class="flex flex-col items-center gap-2 text-center text-sm leading-none">
 							<dt class="flex items-center gap-1">
-								<span class="text-sm capitalize text-muted-foreground">{formula.label}</span>
+								<span class="text-muted-foreground text-sm capitalize">{formula.label}</span>
 								<HintBadge>
 									<div class="flex flex-col gap-1">
 										<h2 class="text-base font-bold">{formula.label}</h2>
@@ -52,7 +52,7 @@
 					{/each}
 				</dl>
 			</div>
-			<div class="mt-6 rounded-sm border bg-muted p-4 first-line:rounded-sm">
+			<div class="bg-muted mt-6 rounded-sm border p-4 first-line:rounded-sm">
 				<dl class="grid grid-cols-3 gap-x-10 gap-y-5">
 					{@render mainResult('Min', oneRepMax.min)}
 					{@render mainResult('Average', oneRepMax.average)}

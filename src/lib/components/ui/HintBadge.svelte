@@ -17,7 +17,7 @@
 </script>
 
 {#if text || children}
-	<span class="hidden items-center touch:inline-flex">
+	<span class="touch:inline-flex hidden items-center">
 		<Dialog.Root>
 			<Dialog.Trigger>
 				{#snippet child({ props })}
@@ -31,7 +31,7 @@
 				{/snippet}
 			</Dialog.Trigger>
 			<Dialog.Content
-				class="max-w-72 rounded-sm border-none bg-accent p-4 text-secondary-foreground [&_[data-dialog-close]:not(.close-btn)]:hidden"
+				class="bg-accent text-secondary-foreground max-w-72 rounded-sm border-none p-4 [&_[data-dialog-close]:not(.close-btn)]:hidden"
 			>
 				<div class="flex flex-col gap-8">
 					{#if text}
@@ -48,7 +48,7 @@
 			</Dialog.Content>
 		</Dialog.Root>
 	</span>
-	<span class="hidden items-center pointer:inline-flex">
+	<span class="pointer:inline-flex hidden items-center">
 		<Tooltip.Provider>
 			<Tooltip.Root delayDuration={100}>
 				<Tooltip.Trigger>
@@ -68,7 +68,7 @@
 				</Tooltip.Trigger>
 				<Tooltip.Content
 					sideOffset={8}
-					class="max-w-80 border-muted p-3 text-left text-sm shadow-lg"
+					class="border-muted max-w-80 p-3 text-left text-sm shadow-lg"
 				>
 					{#if text}
 						<p>{text}</p>

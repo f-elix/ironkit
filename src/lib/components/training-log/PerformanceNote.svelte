@@ -32,7 +32,7 @@
 				oninput={onNoteChange}
 				rows={3}
 				placeholder="Note"
-				class="min-h-none p-2 text-sm font-normal leading-4"
+				class="min-h-none p-2 text-sm leading-4 font-normal"
 			/>
 		</Label>
 	</Collapsible.Content>

@@ -24,10 +24,10 @@
 				<li>
 					<a
 						href={PAGE_tools_training_log_workout_id({ id: workout.id })}
-						class="flex flex-col rounded-md border bg-muted/30 p-4"
+						class="bg-muted/30 flex flex-col rounded-md border p-4"
 					>
 						<span class="text-lg font-bold">{title}</span>
-						<span class="text-sm text-muted-foreground">{formatDate(date)}</span>
+						<span class="text-muted-foreground text-sm">{formatDate(date)}</span>
 						{#if bodyweight}
 							<span class="text-sm">
 								<span class="font-medium">Bodyweight:</span>
@@ -42,7 +42,7 @@
 				</li>
 			{/each}
 		</ul>
-		<div class="sticky bottom-0 mt-auto flex flex-col bg-background p-4 pb-4">
+		<div class="bg-background sticky bottom-0 mt-auto flex flex-col p-4 pb-4">
 			<AddWorkout />
 		</div>
 	</div>

@@ -12,7 +12,7 @@
 		<h2 class="text-center text-2xl font-bold">{title}</h2>
 	{/if}
 	{#if description}
-		<p class="text-center leading-5 text-muted-foreground">
+		<p class="text-muted-foreground text-center leading-5">
 			{@render description()}
 		</p>
 	{/if}
