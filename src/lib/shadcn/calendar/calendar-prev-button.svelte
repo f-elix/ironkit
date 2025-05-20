@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Calendar as CalendarPrimitive } from "bits-ui";
-	import ChevronLeft from "@lucide/svelte/icons/chevron-left";
-	import { buttonVariants } from "$lib/shadcn/button/index.js";
+	import ChevronLeftIcon from "@lucide/svelte/icons/chevron-left";
+	import { buttonVariants } from "$lib/shadcn//button/index.js";
 	import { cn } from "$lib/shadcn/utils.js";
 
 	let {
@@ -13,13 +13,13 @@
 </script>
 
 {#snippet Fallback()}
-	<ChevronLeft class="size-4" />
+	<ChevronLeftIcon class="size-4" />
 {/snippet}
 
 <CalendarPrimitive.PrevButton
 	bind:ref
 	class={cn(
-		buttonVariants({ variant: "outline-solid" }),
+		buttonVariants({ variant: "outline" }),
 		"size-7 bg-transparent p-0 opacity-50 hover:opacity-100",
 		className
 	)}
