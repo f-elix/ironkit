@@ -1,0 +1,6 @@
+@utility grid-stack {
+	grid-template: 100% / 100%;
+	> * {
+		grid-area: 1 / 1;
+	}
+}

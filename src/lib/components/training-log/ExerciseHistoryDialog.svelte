@@ -23,12 +23,12 @@
 	>
 		<History />
 	</Dialog.Trigger>
-	<Dialog.Content class="w-[90vw] max-w-2xl pb-0">
+	<Dialog.Content class="w-[90vw] max-w-2xl p-5 pb-0">
 		<Dialog.Title>Exercise history</Dialog.Title>
 		<Tabs.Root>
 			<Tabs.List class="grid w-full grid-cols-2">
-				<Tabs.Trigger value={allTimeId}>All time</Tabs.Trigger>
-				<Tabs.Trigger value={upToWorkoutId}>Up to this workout</Tabs.Trigger>
+				<Tabs.Trigger class="font-normal" value={allTimeId}>All time</Tabs.Trigger>
+				<Tabs.Trigger class="font-normal" value={upToWorkoutId}>Up to this workout</Tabs.Trigger>
 			</Tabs.List>
 			<Tabs.Content value={allTimeId}>
 				<PastPerformancesList {exerciseId} />

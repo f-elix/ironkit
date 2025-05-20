@@ -11,11 +11,11 @@
 		class={buttonVariants({
 			variant: 'destructive',
 			size: 'icon',
-			class: 'size-6 [&_svg]:size-3'
+			class: 'size-6'
 		})}
 		aria-label="Remove exercise"
 	>
-		<TrashIcon />
+		<TrashIcon class="size-3" />
 	</Dialog.Trigger>
 	<Dialog.Content class="w-[90vw] max-w-2xl">
 		<Dialog.Title>Delete exercise</Dialog.Title>

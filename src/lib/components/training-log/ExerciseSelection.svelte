@@ -31,12 +31,12 @@
 {#if exercises.length}
 	<Dialog.Root bind:open>
 		{@render trigger?.()}
-		<Dialog.Content class="w-[90vw] max-w-2xl">
-			<Command.Root>
+		<Dialog.Content class="w-[90vw] max-w-2xl p-4">
+			<Command.Root class="bg-transparent">
 				<Command.Input placeholder="Search exercises" bind:value />
 				<Command.List>
 					<Command.Empty class="flex w-full flex-col gap-6 pb-1">
-						<p class="text-sm text-muted-foreground">No exercises found</p>
+						<p class="text-muted-foreground text-sm">No exercises found</p>
 						<ExerciseInfoDialog
 							name={value}
 							onExerciseCreated={(newExercise) => {

@@ -84,7 +84,7 @@
 						<Button
 							size="sm"
 							variant="destructive"
-							class="h-7 flex-1 border border-destructive/50 bg-destructive/10"
+							class="dark:border-destructive/50 dark:bg-destructive/10 h-7 flex-1 border"
 							onclick={() => {
 								deleteSet(set.id);
 							}}
