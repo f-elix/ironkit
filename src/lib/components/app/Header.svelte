@@ -12,7 +12,7 @@
 </script>
 
 <header
-	class="flex items-center justify-between gap-2 bg-sidebar px-4 py-2 text-sidebar-foreground sm:py-4"
+	class="bg-sidebar text-sidebar-foreground flex items-center justify-between gap-2 px-4 py-2 sm:py-4"
 	style="view-transition-name: main-header;"
 >
 	<a href={PAGE__ROOT} aria-label="Home" class="w-6">
