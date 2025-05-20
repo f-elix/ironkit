@@ -58,7 +58,7 @@
 	}
 
 	:root {
-		--view-move-base-animation: 500ms theme('transitionTimingFunction.out-quint') both;
+		--view-move-base-animation: 500ms var(--ease-out-quint) both;
 		--view-move-in-from-left: var(--view-move-base-animation) view-move-in-from-left;
 		--view-move-in-from-right: var(--view-move-base-animation) view-move-in-from-right;
 		--view-move-out-to-left: var(--view-move-base-animation) view-move-out-to-left;

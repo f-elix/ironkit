@@ -90,7 +90,7 @@
 				variant: 'outline',
 				size: 'lg',
 				class: [
-					'h-auto w-full items-center justify-center whitespace-normal bg-muted/50 text-base ring-inset',
+					'bg-muted/50 h-auto w-full items-center justify-center text-base whitespace-normal ring-inset',
 					triggerSize === 'default' ? 'py-8' : 'py-2'
 				]
 			})}
