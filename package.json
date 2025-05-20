@@ -13,9 +13,9 @@
 		"format": "prettier --write .",
 		"format:check": "prettier --check .",
 		"lint": "eslint --max-warnings=0 --cache .",
-		"lc": "npm run lint && npm run check",
+		"lc": "pnpm lint && pnpm check",
 		"test:unit": "vitest",
-		"test": "npm run test:unit -- --run",
+		"test": "pnpm test:unit -- --run",
 		"assets:generate": "pwa-assets-generator --preset minimal-2023 pwa-assets/symbol.svg"
 	},
 	"devDependencies": {
