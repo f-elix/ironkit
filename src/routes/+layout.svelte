@@ -19,4 +19,7 @@
 
 <Head />
 <Toaster closeButton richColors theme="dark" />
+<aside class="bg-sidebar-primary hidden p-2 text-center md:block">
+	<p class="font-medium">This app is optimized for mobile. The desktop version is coming soon.</p>
+</aside>
 {@render children()}
