@@ -52,45 +52,51 @@
 						{@const targetMuscleGroups = Array.from(exercise.muscleGroups)}
 						{@const loadType = exercise.loadType}
 						{@const executionType = exercise.executionType}
-						<li class="bg-muted/30 flex items-start justify-between gap-4 rounded-md border p-4">
+						<li class="bg-muted/30 gap-4 rounded-md border p-4">
 							<article class="flex flex-col gap-1">
-								<h3 class="text-lg leading-6 font-bold">{name}</h3>
-								<p class="text-muted-foreground flex flex-col text-sm">
-									<span>For {executionType}</span>
-									<span class="capitalize">{loadType}</span>
-								</p>
-								<ul class="text-muted-foreground mt-2 flex flex-wrap gap-2 text-sm">
-									{#each targetMuscleGroups as muscleGroup}
-										{@const muscleGroupName = muscleGroupsList.find(
-											(mg) => mg.id === muscleGroup
-										)?.name}
-										{#if muscleGroupName}
-											<li>
-												<Badge variant="outline">
-													{muscleGroupName}
-												</Badge>
-											</li>
-										{/if}
-									{/each}
-								</ul>
+								<div class="flex justify-between gap-4">
+									<h3 class="text-lg leading-6 font-bold">{name}</h3>
+									<DeleteExerciseDialog {exercise} />
+								</div>
+								<div class="flex items-end justify-between gap-4">
+									<div class="flex flex-col gap-1">
+										<p class="text-muted-foreground flex flex-col text-sm">
+											<span>For {executionType}</span>
+											<span class="capitalize">{loadType}</span>
+										</p>
+										<ul class="text-muted-foreground mt-2 flex flex-wrap gap-2 text-sm">
+											{#each targetMuscleGroups as muscleGroup}
+												{@const muscleGroupName = muscleGroupsList.find(
+													(mg) => mg.id === muscleGroup
+												)?.name}
+												{#if muscleGroupName}
+													<li>
+														<Badge variant="outline">
+															{muscleGroupName}
+														</Badge>
+													</li>
+												{/if}
+											{/each}
+										</ul>
+									</div>
+									<div class="flex gap-1">
+										<ExerciseInfoDialog {exercise}>
+											{#snippet trigger()}
+												<Dialog.Trigger
+													class={buttonVariants({
+														variant: 'secondary',
+														size: 'icon'
+													})}
+													aria-label="Edit {name}"
+												>
+													<EditIcon />
+												</Dialog.Trigger>
+											{/snippet}
+										</ExerciseInfoDialog>
+										<ExerciseHistoryDialog exerciseId={exercise.id} />
+									</div>
+								</div>
 							</article>
-							<div class="flex gap-2">
-								<DeleteExerciseDialog {exercise} />
-								<ExerciseInfoDialog {exercise}>
-									{#snippet trigger()}
-										<Dialog.Trigger
-											class={buttonVariants({
-												variant: 'secondary',
-												size: 'icon'
-											})}
-											aria-label="Edit {name}"
-										>
-											<EditIcon />
-										</Dialog.Trigger>
-									{/snippet}
-								</ExerciseInfoDialog>
-								<ExerciseHistoryDialog exerciseId={exercise.id} />
-							</div>
 						</li>
 					{/each}
 				</ul>

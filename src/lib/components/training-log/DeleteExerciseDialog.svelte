@@ -40,7 +40,7 @@
 
 <Dialog.Root>
 	<Dialog.Trigger
-		class={buttonVariants({ variant: 'destructive', size: 'icon' })}
+		class={buttonVariants({ variant: 'destructive', size: 'icon', class: 'size-7' })}
 		aria-label="Delete exercise"
 	>
 		<TrashIcon />
