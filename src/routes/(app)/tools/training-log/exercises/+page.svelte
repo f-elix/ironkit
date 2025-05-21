@@ -13,6 +13,7 @@
 	import Input from '$lib/shadcn/input/input.svelte';
 	import { muscleGroups as muscleGroupsList } from '$lib/data/muscleGroups';
 	import Badge from '$lib/shadcn/badge/badge.svelte';
+	import ExerciseHistoryDialog from '$lib/components/training-log/ExerciseHistoryDialog.svelte';
 	const allExercisesQuery = useQuery(triplit, triplit.query('exercises').Order('name', 'ASC'));
 
 	let allExercises = $derived(allExercisesQuery.results);
@@ -88,6 +89,7 @@
 										</Dialog.Trigger>
 									{/snippet}
 								</ExerciseInfoDialog>
+								<ExerciseHistoryDialog exerciseId={exercise.id} />
 							</div>
 						</li>
 					{/each}

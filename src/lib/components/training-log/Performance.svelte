@@ -37,7 +37,10 @@
 						triplit.update('performances', performance.id, { weightUnit: unit });
 					}}
 				/>
-				<ExerciseHistoryDialog {performance} />
+				<ExerciseHistoryDialog
+					exerciseId={performance.exerciseId}
+					currentWorkout={performance.workout}
+				/>
 			</div>
 		</div>
 		<PerformanceSets {performance} />
