@@ -12,17 +12,19 @@
 	<p class="text-muted-foreground">Tools for lifters.</p>
 </section>
 
-<section class="mt-8">
-	<ul class="grid grid-cols-2 gap-4 px-4">
+<section class="px-4 pt-8 pb-16">
+	<ul
+		class="mx-auto grid max-w-100 grid-cols-2 gap-2 md:max-w-200 md:grid-cols-3 md:gap-4 lg:max-w-240"
+	>
 		{#each Object.values(tools) as { Icon, title, href }}
 			<li>
 				<Button
 					variant="secondary"
 					size="lg"
-					class="h-24 w-full flex-col items-center border bg-gray-900 px-2 text-center whitespace-normal"
+					class="aspect-[4/3] h-auto w-full flex-col items-center border bg-gray-900 px-2 text-center whitespace-normal lg:text-xl"
 					{href}
 				>
-					<Icon />
+					<Icon class="lg:size-8" />
 					<span>{title}</span>
 				</Button>
 			</li>
