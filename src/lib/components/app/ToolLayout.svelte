@@ -24,7 +24,7 @@
 		{@render input?.()}
 		<div
 			class={[
-				'bg-muted/30 self-stretch rounded-t-lg p-4 pt-6 backdrop-blur-xl',
+				'bg-popover self-stretch rounded-t-lg p-4 pt-6 backdrop-blur-xl',
 				'ease-out-expo animate-in slide-in-from-bottom-full duration-700'
 			]}
 		>
