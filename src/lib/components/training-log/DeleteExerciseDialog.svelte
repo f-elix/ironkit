@@ -45,7 +45,7 @@
 	>
 		<TrashIcon />
 	</Dialog.Trigger>
-	<Dialog.Content class="w-[90vw] max-w-2xl">
+	<Dialog.Content>
 		<Dialog.Title>Delete exercise</Dialog.Title>
 		<Dialog.Description>Are you sure you want to delete this exercise?</Dialog.Description>
 		<Dialog.Footer class="flex flex-row justify-end gap-2">

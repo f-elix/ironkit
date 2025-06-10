@@ -2,7 +2,9 @@
 @import 'tw-animate-css';
 
 @import './view-transitions.css';
-@import './theme.css';
+@import './theme.shadcn.css';
+@import './theme.animations.css';
+@import './theme.custom.css';
 @import './theme.utilities.css';
 
 html {

@@ -20,7 +20,7 @@
 	>
 		<History />
 	</Dialog.Trigger>
-	<Dialog.Content class="w-[90vw] max-w-2xl p-5 pb-0">
+	<Dialog.Content class="p-5 pb-0">
 		<Dialog.Title>Exercise history</Dialog.Title>
 		{#if currentWorkout}
 			<Tabs.Root>

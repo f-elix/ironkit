@@ -25,7 +25,7 @@
 	<h3 class="max-w-[80%] text-lg leading-5 font-semibold">
 		{exerciseName}
 	</h3>
-	<div class="flex flex-col gap-4">
+	<div class="flex flex-col gap-6">
 		<div class="flex items-start justify-between gap-2">
 			<div class="grow">
 				<PerformanceNote {performance} />

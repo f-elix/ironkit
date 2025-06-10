@@ -104,7 +104,7 @@
 			<PlusIcon />
 		</Dialog.Trigger>
 	{/if}
-	<Dialog.Content class="w-[90vw] max-w-2xl">
+	<Dialog.Content>
 		<Dialog.Title>{title}</Dialog.Title>
 		<form class="flex flex-col gap-6" onsubmit={onSave}>
 			<label>

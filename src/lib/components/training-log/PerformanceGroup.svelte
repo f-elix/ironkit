@@ -63,13 +63,19 @@
 	};
 </script>
 
-<Card.Root class="bg-muted/30 py-0">
+<Card.Root class="bg-muted/30 rounded-sm py-0">
 	<Card.Content class="flex flex-col gap-4 p-4">
 		{#if performances.length > 1}
 			<div class="flex flex-row items-center justify-between gap-2">
 				<Label class="grow">
 					<span class="sr-only">Group title</span>
-					<Input type="text" placeholder="Group title" value={label} oninput={onLabelChange} />
+					<Input
+						type="text"
+						placeholder="Group title"
+						value={label}
+						oninput={onLabelChange}
+						class="text-sm"
+					/>
 				</Label>
 			</div>
 		{/if}

@@ -33,7 +33,7 @@
 </script>
 
 <Dialog.Root bind:open>
-	<Dialog.Content class="w-[90vw] max-w-2xl">
+	<Dialog.Content>
 		<Dialog.Title>Delete workout</Dialog.Title>
 		<Dialog.Description>
 			Are you sure you want to delete this workout? This action cannot be undone.

@@ -1,0 +1,45 @@
+@custom-variant touch {
+	@media (pointer: coarse) {
+		@slot;
+	}
+}
+
+@custom-variant pointer {
+	@media (pointer: fine) {
+		@slot;
+	}
+}
+
+@theme {
+	--color-kg-plate-red: #b13b46;
+	--color-kg-plate-blue: #204577;
+	--color-kg-plate-yellow: #d4ab05;
+	--color-kg-plate-green: #00990b;
+	--color-kg-plate-white: #e6e8e7;
+	--color-kg-plate-black: #060505;
+	--color-kg-plate-silver: #c8c9cb;
+
+	--ease-out-quad: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+	--ease-in-out-quad: cubic-bezier(0.455, 0.03, 0.515, 0.955);
+	--ease-in-cubic: cubic-bezier(0.55, 0.055, 0.675, 0.19);
+	--ease-out-cubic: cubic-bezier(0.215, 0.61, 0.355, 1);
+	--ease-in-out-cubic: cubic-bezier(0.645, 0.045, 0.355, 1);
+	--ease-in-quart: cubic-bezier(0.895, 0.03, 0.685, 0.22);
+	--ease-out-quart: cubic-bezier(0.165, 0.84, 0.44, 1);
+	--ease-in-out-quart: cubic-bezier(0.77, 0, 0.175, 1);
+	--ease-in-quint: cubic-bezier(0.755, 0.05, 0.855, 0.06);
+	--ease-out-quint: cubic-bezier(0.23, 1, 0.32, 1);
+	--ease-in-out-quint: cubic-bezier(0.86, 0, 0.07, 1);
+	--ease-in-expo: cubic-bezier(0.95, 0.05, 0.795, 0.035);
+	--ease-out-expo: cubic-bezier(0.19, 1, 0.22, 1);
+	--ease-in-out-expo: cubic-bezier(1, 0, 0, 1);
+	--ease-in-circ: cubic-bezier(0.6, 0.04, 0.98, 0.335);
+	--ease-out-circ: cubic-bezier(0.075, 0.82, 0.165, 1);
+	--ease-in-out-circ: cubic-bezier(0.785, 0.135, 0.15, 0.86);
+	--ease-in-back: cubic-bezier(0.6, -0.28, 0.735, 0.045);
+	--ease-out-back: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+	--ease-in-out-back: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+	--ease-bounce-light: cubic-bezier(0, 1.1, 1, 1.1);
+
+	--spacing-dialog: calc(100vw - (--spacing(4) * 2));
+}

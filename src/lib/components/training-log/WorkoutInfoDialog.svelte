@@ -131,7 +131,7 @@
 			{@render trigger({ props })}
 		{/snippet}
 	</Dialog.Trigger>
-	<Dialog.Content class="w-[90vw] max-w-2xl p-5">
+	<Dialog.Content class="p-5">
 		<Dialog.Title class="text-left">{dialogTitle}</Dialog.Title>
 		<form class="flex flex-col gap-4" onsubmit={onSave}>
 			{#if showPreviousWorkoutSelection}

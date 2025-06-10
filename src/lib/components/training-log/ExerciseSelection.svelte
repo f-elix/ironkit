@@ -31,7 +31,7 @@
 {#if exercises.length}
 	<Dialog.Root bind:open>
 		{@render trigger?.()}
-		<Dialog.Content class="w-[90vw] max-w-2xl p-4">
+		<Dialog.Content class="p-4">
 			<Command.Root class="bg-transparent">
 				<Command.Input placeholder="Search exercises" bind:value />
 				<Command.List>
