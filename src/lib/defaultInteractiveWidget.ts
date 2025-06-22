@@ -14,7 +14,9 @@ export const defaultInteractiveWidget = () => {
 	}
 	const content = metaTag.getAttribute('content') ?? '';
 	const newContent = content.replace(INTERACTIVE_WIDGET_CONTENT, '');
-	metaTag.setAttribute('content', newContent);
+	if (newContent) {
+		metaTag.setAttribute('content', newContent);
+	}
 	return () => {
 		metaTag.setAttribute('content', content);
 	};
