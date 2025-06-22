@@ -6,6 +6,7 @@
 	import ExerciseInfoDialog from '$lib/components/training-log/ExerciseInfoDialog.svelte';
 	import type { Snippet } from 'svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
+	import Separator from '$lib/shadcn/separator/separator.svelte';
 
 	let {
 		onExerciseAdded,
@@ -45,7 +46,7 @@
 							}}
 						/>
 					</Command.Empty>
-					<Command.Group class="px-0 pt-2">
+					<Command.Group class="pt-2">
 						<ExerciseInfoDialog
 							triggerSize="sm"
 							onExerciseCreated={(newExercise) => {
@@ -53,9 +54,7 @@
 								open = false;
 							}}
 						/>
-					</Command.Group>
-					<Command.Separator class="my-2" />
-					<Command.Group>
+						<Separator class="my-2" />
 						{#each exercises as exercise (exercise.id)}
 							<Command.Item
 								class="text-lg"
