@@ -10,6 +10,8 @@
 	}
 }
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
 	--color-kg-plate-red: #b13b46;
 	--color-kg-plate-blue: #204577;
