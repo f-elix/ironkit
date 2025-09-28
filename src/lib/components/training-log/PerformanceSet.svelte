@@ -21,19 +21,16 @@
 	const onWeightChange = (event: Event) => {
 		const value = (event.target as HTMLInputElement).value;
 		const valueAsNumber = parseFloat(value);
-		if (isNaN(valueAsNumber)) {
-			return;
-		}
-		triplit.update('performanceSets', set.id, { weight: valueAsNumber });
+		triplit.update('performanceSets', set.id, { weight: valueAsNumber || 0 });
 	};
 
 	const onRepsChange = (event: Event) => {
-		const value = (event.target as HTMLInputElement).valueAsNumber;
+		const value = (event.target as HTMLInputElement).valueAsNumber || 0;
 		triplit.update('performanceSets', set.id, { reps: value });
 	};
 
 	const onTimeChange = (event: Event) => {
-		const value = (event.target as HTMLInputElement).valueAsNumber;
+		const value = (event.target as HTMLInputElement).valueAsNumber || 0;
 		triplit.update('performanceSets', set.id, { durationSeconds: value });
 	};
 </script>

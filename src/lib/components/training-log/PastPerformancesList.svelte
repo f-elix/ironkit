@@ -8,6 +8,7 @@
 	import { today } from '@internationalized/date';
 	import { TIMEZONE } from '$lib/constants';
 	import PerformanceSetSummary from '$lib/components/training-log/PerformanceSetSummary.svelte';
+	import { or } from '@triplit/client';
 
 	let { exerciseId, currentWorkout }: { exerciseId: string; currentWorkout?: Maybe<Workout> } =
 		$props();
@@ -33,7 +34,15 @@
 			.Order('workout.date', 'DESC')
 			.Limit(10)
 			.Include('sets', (setsRel) => {
-				return setsRel('sets').Order('performanceOrder', 'ASC');
+				return setsRel('sets')
+					.Where(
+						or([
+							['weight', '>', 0],
+							['reps', '>', 0],
+							['durationSeconds', '>', 0]
+						])
+					)
+					.Order('performanceOrder', 'ASC');
 			})
 			.Include('workout')
 			.Include('exercise')
@@ -49,21 +58,23 @@
 				{@const date = formatDate(performance.workout?.date)}
 				{@const sets = performance.sets ?? []}
 				{@const note = performance.note}
-				<li class="flex flex-col gap-3 pb-4">
-					<div class="flex flex-col gap-1">
-						<h4 class="text-base font-semibold">{date}</h4>
-						{#if note}
-							<p class="text-muted-foreground text-sm">{note}</p>
-						{/if}
-					</div>
-					<ul class="flex flex-col gap-2">
-						{#each sets as set, i (set.id)}
-							<li class="flex w-full items-baseline gap-2">
-								<PerformanceSetSummary {set} {performance} order={i + 1} />
-							</li>
-						{/each}
-					</ul>
-				</li>
+				{#if sets.length}
+					<li class="flex flex-col gap-3 pb-4">
+						<div class="flex flex-col gap-1">
+							<h4 class="text-base font-semibold">{date}</h4>
+							{#if note}
+								<p class="text-muted-foreground text-sm">{note}</p>
+							{/if}
+						</div>
+						<ul class="flex flex-col gap-2">
+							{#each sets as set, i (set.id)}
+								<li class="flex w-full items-baseline gap-2">
+									<PerformanceSetSummary {set} {performance} order={i + 1} />
+								</li>
+							{/each}
+						</ul>
+					</li>
+				{/if}
 			{/each}
 		</ul>
 	</ScrollArea>

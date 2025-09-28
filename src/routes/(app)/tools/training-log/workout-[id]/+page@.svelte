@@ -8,7 +8,7 @@
 	import Check from '@lucide/svelte/icons/check';
 	import { PAGE_tools_training_log } from '$lib/ROUTES';
 
-	const workoutId = page.params.id;
+	const workoutId = page.params.id as string;
 	const query = useQuery(triplit, triplit.query('workouts').Where('id', '=', workoutId));
 
 	let workout = $derived(query.results?.[0]);

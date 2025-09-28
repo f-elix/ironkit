@@ -1,7 +1,6 @@
 <script lang="ts">
 	import Performance from '$lib/components/training-log/Performance.svelte';
 	import { triplit } from '$lib/db/triplit';
-	import type { WorkoutWithRelations } from '$lib/db/types';
 	import Button, { buttonVariants } from '$lib/shadcn/button/button.svelte';
 	import * as Card from '$lib/shadcn/card';
 	import * as Dialog from '$lib/shadcn/dialog';
@@ -13,20 +12,42 @@
 	import Input from '$lib/shadcn/input/input.svelte';
 	import Check from '@lucide/svelte/icons/check';
 	import { Accordion } from 'bits-ui';
+	import { useQueryOne } from '@triplit/svelte';
 
-	type PerformanceGroup = WorkoutWithRelations['performanceGroups'][number];
+	let { performanceGroupId }: { performanceGroupId: string } = $props();
 
-	let { performanceGroup }: { performanceGroup: PerformanceGroup } = $props();
+	const query = useQueryOne(
+		triplit,
+		triplit
+			.query('performanceGroups')
+			.Where('id', '=', performanceGroupId)
+			.Include('performances', (performancesRel) => {
+				return performancesRel('performances')
+					.Order('groupOrder', 'ASC')
+					.Include('exercise')
+					.Include('sets', (setsRel) => {
+						return setsRel('sets').Order('performanceOrder', 'ASC');
+					})
+					.Include('workout');
+			})
+	);
 
-	let label = $derived(performanceGroup.label);
-	let performances = $derived(performanceGroup.performances);
+	let performanceGroup = $derived(query.result);
+	let label = $derived(performanceGroup?.label);
+	let performances = $derived(performanceGroup?.performances ?? []);
 
 	const onExerciseAdded = async (exerciseId: string) => {
+		if (!performanceGroup) {
+			return;
+		}
 		const lastOrder = performances.at(-1)?.groupOrder ?? 0;
 		await addExerciseToPeformanceGroup(performanceGroup, exerciseId, lastOrder + 1);
 	};
 
 	const onGroupDelete = async () => {
+		if (!performanceGroup) {
+			return;
+		}
 		const sets = await triplit.fetch(
 			triplit.query('performanceSets').Where(
 				'performanceId',
@@ -58,6 +79,9 @@
 	};
 
 	const onLabelChange = async (event: Event) => {
+		if (!performanceGroup) {
+			return;
+		}
 		const value = (event.currentTarget as HTMLInputElement).value;
 		await triplit.update('performanceGroups', performanceGroup.id, { label: value });
 	};
