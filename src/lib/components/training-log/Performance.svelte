@@ -15,7 +15,11 @@
 	}: { performance: Performance; onDelete: (performanceId: string) => void } = $props();
 
 	let exerciseName = $derived(performance.exercise?.name);
+	let workout = $derived(performance.workout);
 	let unit = $derived(performance.weightUnit);
+	let bodyweight = $derived(
+		workout?.bodyweight ? `${workout?.bodyweight} ${workout?.bodyweightUnit}` : ''
+	);
 </script>
 
 <div class="relative flex flex-col gap-6">
@@ -24,6 +28,14 @@
 	</div>
 	<h3 class="max-w-[80%] text-lg leading-5 font-semibold">
 		{exerciseName}
+		{#if performance.exercise?.loadType === 'bodyweight'}
+			<span class="text-sm opacity-70">
+				- bodyweight
+				{#if bodyweight}
+					({bodyweight})
+				{/if}
+			</span>
+		{/if}
 	</h3>
 	<div class="flex flex-col gap-6">
 		<div class="flex items-start justify-between gap-2">
