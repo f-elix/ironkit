@@ -66,7 +66,6 @@ export const setupViewTransitions = () => {
 		}
 		return new Promise((resolve) => {
 			document.startViewTransition({
-				// @ts-expect-error - `update` and `types` are supported but not typed
 				update: async () => {
 					resolve();
 					await navigation.complete;

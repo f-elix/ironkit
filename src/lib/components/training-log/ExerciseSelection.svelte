@@ -48,6 +48,7 @@
 					</Command.Empty>
 					<Command.Group class="pt-2">
 						<ExerciseInfoDialog
+							name={value}
 							triggerSize="sm"
 							onExerciseCreated={(newExercise) => {
 								onExerciseSelected(newExercise.id);

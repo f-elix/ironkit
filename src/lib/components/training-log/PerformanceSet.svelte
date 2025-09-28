@@ -21,43 +21,40 @@
 	const onWeightChange = (event: Event) => {
 		const value = (event.target as HTMLInputElement).value;
 		const valueAsNumber = parseFloat(value);
-		if (isNaN(valueAsNumber)) {
-			return;
-		}
-		triplit.update('performanceSets', set.id, { weight: valueAsNumber });
+		triplit.update('performanceSets', set.id, { weight: valueAsNumber || 0 });
 	};
 
 	const onRepsChange = (event: Event) => {
-		const value = (event.target as HTMLInputElement).valueAsNumber;
+		const value = (event.target as HTMLInputElement).valueAsNumber || 0;
 		triplit.update('performanceSets', set.id, { reps: value });
 	};
 
 	const onTimeChange = (event: Event) => {
-		const value = (event.target as HTMLInputElement).valueAsNumber;
+		const value = (event.target as HTMLInputElement).valueAsNumber || 0;
 		triplit.update('performanceSets', set.id, { durationSeconds: value });
 	};
 </script>
 
-<div class="flex items-center gap-2">
+<div class="flex items-center gap-2 whitespace-nowrap">
 	{#if executionType === 'reps'}
-		<Label class="flex items-center gap-2">
+		<Label class="flex items-center">
 			<span class="sr-only">Reps</span>
-			<Input type="number" value={reps} oninput={onRepsChange} min="0" class="w-20" />
+			<Input type="number" value={reps} oninput={onRepsChange} min="0" class="w-16" />
 		</Label>
 	{/if}
 	{#if executionType === 'time'}
-		<Label class="flex items-center gap-2">
+		<Label class="flex items-center gap-1">
 			<span class="sr-only">Time</span>
 			<Input type="number" value={durationSeconds} oninput={onTimeChange} min="0" class="w-20" />
-			<span>sec.</span>
+			<span>sec</span>
 		</Label>
 	{/if}
 	<div aria-hidden="true">&times;</div>
-	{#if loadType === 'bodyweight'}
-		<div>BW +</div>
-	{/if}
-	<Label class="flex items-center gap-2">
+	<Label class="relative flex w-28 items-center">
 		<span class="sr-only">Weight</span>
+		{#if loadType === 'bodyweight'}
+			<div class="absolute left-2 opacity-70">+</div>
+		{/if}
 		<Input
 			type="text"
 			value={weight}
@@ -65,8 +62,8 @@
 			step="0.01"
 			inputmode="numeric"
 			pattern="-?[0-9]*[.,]?[0-9]*"
-			class="w-24 pr-8"
+			class={['w-full pr-8', loadType === 'bodyweight' && 'pl-5']}
 		/>
-		<span class="-ml-10 opacity-80">{unit}</span>
+		<span class="absolute right-2 opacity-70">{unit}</span>
 	</Label>
 </div>

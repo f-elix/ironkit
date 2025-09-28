@@ -14,9 +14,7 @@
 	import { dragHandle, dragHandleZone, type DndZoneAttributes } from 'svelte-dnd-action';
 	import { flip } from 'svelte/animate';
 	import { expoOut } from 'svelte/easing';
-	import type { WorkoutWithRelations } from '$lib/db/types';
-
-	type PerformanceGroupType = WorkoutWithRelations['performanceGroups'][number];
+	import type { PerformanceGroup as PerformanceGroupType } from '$lib/db/types';
 
 	let { workoutId }: { workoutId: string } = $props();
 
@@ -28,15 +26,6 @@
 			.query('performanceGroups')
 			.Where('workoutId', '=', workoutId)
 			.Order('workoutOrder', 'ASC')
-			.Include('performances', (performancesRel) => {
-				return performancesRel('performances')
-					.Order('groupOrder', 'ASC')
-					.Include('exercise')
-					.Include('sets', (setsRel) => {
-						return setsRel('sets').Order('performanceOrder', 'ASC');
-					})
-					.Include('workout');
-			})
 	);
 
 	let performanceGroups = $derived(query.results ?? []);
@@ -97,7 +86,7 @@
 											class: 'h-auto w-full rounded-r-none'
 										})}
 									>
-										<PerformanceGroupSummary {performanceGroup} />
+										<PerformanceGroupSummary performanceGroupId={performanceGroup.id} />
 									</Accordion.Trigger>
 								{/if}
 								<Accordion.Content forceMount>
@@ -105,7 +94,7 @@
 										{#if open}
 											<!-- Forcemount so that `displayNote` inside the group is reset -->
 											<div {...props}>
-												<PerformanceGroup {performanceGroup} />
+												<PerformanceGroup performanceGroupId={performanceGroup.id} />
 											</div>
 										{/if}
 									{/snippet}

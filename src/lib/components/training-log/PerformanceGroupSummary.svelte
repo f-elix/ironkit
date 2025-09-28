@@ -1,14 +1,39 @@
 <script lang="ts">
 	import PerformanceSetSummary from '$lib/components/training-log/PerformanceSetSummary.svelte';
-	import type { WorkoutWithRelations } from '$lib/db/types';
+	import { triplit } from '$lib/db/triplit';
 	import Badge from '$lib/shadcn/badge/badge.svelte';
+	import { or } from '@triplit/client';
+	import { useQueryOne } from '@triplit/svelte';
 
-	type PerformanceGroup = WorkoutWithRelations['performanceGroups'][number];
+	let { performanceGroupId }: { performanceGroupId: string } = $props();
 
-	let { performanceGroup }: { performanceGroup: PerformanceGroup } = $props();
+	const query = useQueryOne(
+		triplit,
+		triplit
+			.query('performanceGroups')
+			.Where('id', '=', performanceGroupId)
+			.Include('performances', (performancesRel) => {
+				return performancesRel('performances')
+					.Order('groupOrder', 'ASC')
+					.Include('exercise')
+					.Include('sets', (setsRel) => {
+						return setsRel('sets')
+							.Where(
+								or([
+									['weight', '>', 0],
+									['reps', '>', 0],
+									['durationSeconds', '>', 0]
+								])
+							)
+							.Order('performanceOrder', 'ASC');
+					})
+					.Include('workout');
+			})
+	);
 
-	let label = $derived(performanceGroup.label);
-	let performances = $derived(performanceGroup.performances);
+	let performanceGroup = $derived(query.result);
+	let label = $derived(performanceGroup?.label);
+	let performances = $derived(performanceGroup?.performances ?? []);
 </script>
 
 <div class="flex w-full flex-col items-start gap-4 py-2 text-left whitespace-normal">
@@ -17,8 +42,7 @@
 	{/if}
 	{#each performances as performance (performance.id)}
 		{@const exercise = performance.exercise}
-		{@const sets =
-			performance.sets?.filter((set) => !!set.weight || !!set.reps || !!set.durationSeconds) ?? []}
+		{@const sets = performance.sets ?? []}
 		{@const note = performance.note}
 		<div class="flex w-full flex-col gap-4">
 			<div>
