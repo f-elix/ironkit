@@ -5,7 +5,7 @@
 	import PencilIcon from '@lucide/svelte/icons/pencil';
 	import { Button } from '$lib/shadcn/button';
 	import XIcon from '@lucide/svelte/icons/x';
-	import { PAGE_tools_training_log } from '$lib/ROUTES';
+	import { resolve } from '$app/paths';
 	import WorkoutMenu from '$lib/components/training-log/WorkoutMenu.svelte';
 
 	const {
@@ -24,7 +24,7 @@
 <header class="flex flex-col gap-4">
 	<div class="flex items-center justify-between gap-4">
 		<Button
-			href={PAGE_tools_training_log}
+			href={resolve('/(app)/tools/training-log')}
 			variant="outline"
 			size="icon"
 			aria-label="Back to training log"

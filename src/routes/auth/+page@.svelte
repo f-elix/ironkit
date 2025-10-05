@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { PAGE__ROOT } from '$lib/ROUTES';
+	import { resolve } from '$app/paths';
 	import Button from '$lib/shadcn/button/button.svelte';
 	import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
 	import GoogleLogin from '$lib/components/app/GoogleLogin.svelte';
@@ -8,7 +8,7 @@
 </script>
 
 <div class="flex h-dvh flex-col p-4">
-	<Button variant="outline" size="icon" href={PAGE__ROOT} aria-label="Back to home">
+	<Button variant="outline" size="icon" href={resolve('/')} aria-label="Back to home">
 		<ArrowLeftIcon />
 	</Button>
 	<div class="flex grow flex-col items-center justify-center gap-4">

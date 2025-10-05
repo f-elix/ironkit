@@ -2,9 +2,9 @@
 	import type { Workout } from '$lib/db/types';
 	import { Button, buttonVariants } from '$lib/shadcn/button';
 	import * as Dialog from '$lib/shadcn/dialog';
-	import { PAGE_tools_training_log } from '$lib/ROUTES';
 	import { triplit } from '$lib/db/triplit';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 
 	let { workout, open = $bindable() }: { workout: Workout; open: boolean } = $props();
 
@@ -28,7 +28,7 @@
 				await tx.delete('performanceGroups', performanceGroup.id);
 			}
 		});
-		goto(PAGE_tools_training_log);
+		goto(resolve('/(app)/tools/training-log'));
 	};
 </script>
 

@@ -11,12 +11,12 @@
 	import { triplit } from '$lib/db/triplit';
 	import { userId } from '$lib/db/userId';
 	import { goto } from '$app/navigation';
-	import { PAGE_tools_training_log_workout_id } from '$lib/ROUTES';
 	import Label from '$lib/shadcn/label/label.svelte';
 	import PreviousWorkoutSelection from '$lib/components/training-log/PreviousWorkoutSelection.svelte';
 	import UnitSelector from '$lib/components/ui/UnitSelector.svelte';
 	import { useQuery } from '@triplit/svelte';
 	import { defaultInteractiveWidget } from '$lib/defaultInteractiveWidget';
+	import { resolve } from '$app/paths';
 
 	let {
 		trigger,
@@ -110,7 +110,7 @@
 			}
 			return newWorkout;
 		});
-		goto(PAGE_tools_training_log_workout_id({ id: newWorkout.id }));
+		goto(resolve('/(app)/tools/training-log/workout-[id]', { id: newWorkout.id }));
 	};
 
 	let resetInteractiveWidget: (() => void) | undefined;

@@ -2,7 +2,7 @@ import { goto } from '$app/navigation';
 import { page } from '$app/state';
 import { triplit } from '$lib/db/triplit';
 import { getAnonData } from '$lib/db/getAnonData';
-import { PAGE__ROOT, PAGE_auth } from '$lib/ROUTES';
+import { resolve } from '$app/paths';
 import type { AuthSession } from '@supabase/supabase-js';
 import { Context } from 'runed';
 import { onMount } from 'svelte';
@@ -43,7 +43,7 @@ export class Auth {
 			await triplit.startSession(accessToken);
 		}
 		const pathname = page.url.pathname;
-		if (pathname === PAGE_auth && session) {
+		if (pathname === resolve('/auth') && session) {
 			return this.#goToApp();
 		}
 	}
@@ -77,7 +77,7 @@ export class Auth {
 	}
 
 	#goToApp() {
-		return goto(PAGE__ROOT);
+		return goto(resolve('/'));
 	}
 
 	async signOut() {

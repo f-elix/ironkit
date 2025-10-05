@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { pushState } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import DeleteWorkoutDialog from '$lib/components/training-log/DeleteWorkoutDialog.svelte';
 	import ToolDialog from '$lib/components/training-log/ToolDialog.svelte';
 	import { tools, type Tool } from '$lib/data/tools';
 	import type { Workout } from '$lib/db/types';
-	import { PAGE_tools_training_log } from '$lib/ROUTES';
 	import { buttonVariants } from '$lib/shadcn/button';
 	import * as DropdownMenu from '$lib/shadcn/dropdown-menu';
 	import EllipsisVertical from '@lucide/svelte/icons/ellipsis-vertical';
@@ -19,7 +19,9 @@
 		deleteDialogOpen = true;
 	};
 
-	const toolItems = Object.values(tools).filter((tool) => tool.href !== PAGE_tools_training_log);
+	const toolItems = Object.values(tools).filter(
+		(tool) => tool.href !== resolve('/(app)/tools/training-log')
+	);
 
 	const onToolItemClick = (tool: Tool) => {
 		pushState('', {

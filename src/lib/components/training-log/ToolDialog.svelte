@@ -5,22 +5,16 @@
 	import OneRepMaxCalculator from '$routes/(app)/tools/1rm-calculator/+page.svelte';
 	import PlateCalculator from '$routes/(app)/tools/plate-calculator/+page.svelte';
 	import WeightConverter from '$routes/(app)/tools/weight-converter/+page.svelte';
-	import {
-		PAGE_tools_coefficient_calculator,
-		PAGE_tools_load_percentage_calculator,
-		PAGE_tools_1rm_calculator,
-		PAGE_tools_plate_calculator,
-		PAGE_tools_weight_converter
-	} from '$lib/ROUTES';
+	import { tools } from '$lib/data/tools';
 
 	let { toolHref }: { toolHref: Maybe<string> } = $props();
 
 	const ToolComponents = {
-		[PAGE_tools_coefficient_calculator]: CoefficientCalculator,
-		[PAGE_tools_load_percentage_calculator]: LoadPercentageCalculator,
-		[PAGE_tools_1rm_calculator]: OneRepMaxCalculator,
-		[PAGE_tools_plate_calculator]: PlateCalculator,
-		[PAGE_tools_weight_converter]: WeightConverter
+		[tools.coefficientCalculator.href]: CoefficientCalculator,
+		[tools.loadPercentageCalculator.href]: LoadPercentageCalculator,
+		[tools.oneRepMaxCalculator.href]: OneRepMaxCalculator,
+		[tools.plateCalculator.href]: PlateCalculator,
+		[tools.weightConverter.href]: WeightConverter
 	};
 
 	let ToolComponent = $derived(

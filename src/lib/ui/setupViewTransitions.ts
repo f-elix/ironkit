@@ -1,10 +1,5 @@
 import { onNavigate } from '$app/navigation';
-import {
-	PAGE__ROOT,
-	PAGE_tools_training_log,
-	PAGE_tools_training_log_exercises,
-	PAGE_tools_training_log_workout_id
-} from '$lib/ROUTES';
+import { resolve } from '$app/paths';
 import { isDesktop } from '$lib/isDesktop.svelte';
 import type { Navigation } from '@sveltejs/kit';
 
@@ -28,27 +23,33 @@ const getTransitionType = (navigation: Navigation): TransitionType => {
 		return 'fade';
 	}
 
-	if (from === PAGE__ROOT) {
+	if (from === resolve('/')) {
 		return 'main-slide-in-from-right';
 	}
 
-	if (to === PAGE__ROOT) {
+	if (to === resolve('/')) {
 		return 'main-slide-in-from-left';
 	}
 
-	if (from === PAGE_tools_training_log && to === PAGE_tools_training_log_exercises) {
+	if (
+		from === resolve('/(app)/tools/training-log') &&
+		to === resolve('/(app)/tools/training-log/exercises')
+	) {
 		return 'training-log-slide-in-from-right';
 	}
 
-	if (from === PAGE_tools_training_log_exercises && to === PAGE_tools_training_log) {
+	if (
+		from === resolve('/(app)/tools/training-log/exercises') &&
+		to === resolve('/(app)/tools/training-log')
+	) {
 		return 'training-log-slide-in-from-left';
 	}
 
-	if (to.startsWith(PAGE_tools_training_log_workout_id({ id: '' }))) {
+	if (to.startsWith(resolve('/(app)/tools/training-log/workout-[id]', { id: '' }))) {
 		return 'workout';
 	}
 
-	if (from.startsWith(PAGE_tools_training_log_workout_id({ id: '' }))) {
+	if (from.startsWith(resolve('/(app)/tools/training-log/workout-[id]', { id: '' }))) {
 		return 'workout';
 	}
 

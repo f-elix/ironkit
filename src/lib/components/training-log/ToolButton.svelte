@@ -1,15 +1,15 @@
 <script lang="ts">
 	import { pushState } from '$app/navigation';
+	import { resolve } from '$app/paths';
 
 	import type { Tool } from '$lib/data/tools';
 	import { isDesktop } from '$lib/isDesktop.svelte';
-	import { PAGE_tools_training_log } from '$lib/ROUTES';
 	import Button from '$lib/shadcn/button/button.svelte';
 
 	let { href, title, Icon }: Tool = $props();
 
 	const onclick = (e: Event) => {
-		if (!isDesktop.current || href === PAGE_tools_training_log) {
+		if (!isDesktop.current || href === resolve('/(app)/tools/training-log')) {
 			return;
 		}
 		e.preventDefault();

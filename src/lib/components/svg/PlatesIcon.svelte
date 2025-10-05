@@ -5,4 +5,4 @@
 	let props: IconProps = $props();
 </script>
 
-<DumbbellIcon {...props} class={['-rotate-45', props.class]} size={20} />
+<DumbbellIcon {...props} class={['rotate-45', props.class]} size={20} />

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { PAGE_tools_training_log_workout_id } from '$lib/ROUTES';
+	import { resolve } from '$app/paths';
 	import { DEFAULT_WORKOUT_TITLE } from '$lib/constants';
 	import { formatDate } from '$lib/ui/formatDate';
 	import AddWorkout from '$lib/components/training-log/AddWorkout.svelte';
@@ -23,7 +23,7 @@
 				{@const bodyweightUnit = workout.bodyweightUnit}
 				<li>
 					<a
-						href={PAGE_tools_training_log_workout_id({ id: workout.id })}
+						href={resolve('/(app)/tools/training-log/workout-[id]', { id: workout.id })}
 						class="bg-muted/30 flex flex-col rounded-md border p-4"
 					>
 						<span class="text-lg font-bold">{title}</span>

@@ -1,18 +1,11 @@
 import type { Component } from 'svelte';
 import WeightConverterIcon from '@lucide/svelte/icons/weight';
-import {
-	PAGE_tools_1rm_calculator,
-	PAGE_tools_coefficient_calculator,
-	PAGE_tools_load_percentage_calculator,
-	PAGE_tools_plate_calculator,
-	PAGE_tools_training_log,
-	PAGE_tools_weight_converter
-} from '$lib/ROUTES';
 import PlateCalculatorIcon from '$lib/components/svg/PlatesIcon.svelte';
 import CoefficientCalculatorIcon from '@lucide/svelte/icons/trophy';
 import OneRepMaxCalculatorIcon from '@lucide/svelte/icons/target';
 import LoadPercentageCalculatorIcon from '@lucide/svelte/icons/percent';
 import TrainingLogIcon from '@lucide/svelte/icons/notebook-pen';
+import { resolve } from '$app/paths';
 
 export type Tool = {
 	href: string;
@@ -22,32 +15,32 @@ export type Tool = {
 
 export const tools: Record<string, Tool> = {
 	weightConverter: {
-		href: PAGE_tools_weight_converter,
+		href: resolve('/(app)/tools/weight-converter'),
 		title: 'Kg/lbs converter',
 		Icon: WeightConverterIcon
 	},
 	plateCalculator: {
-		href: PAGE_tools_plate_calculator,
+		href: resolve('/(app)/tools/plate-calculator'),
 		title: 'Plate calculator',
 		Icon: PlateCalculatorIcon
 	},
 	coefficientCalculator: {
-		href: PAGE_tools_coefficient_calculator,
+		href: resolve('/(app)/tools/coefficient-calculator'),
 		title: 'Coefficient calculator',
 		Icon: CoefficientCalculatorIcon
 	},
 	oneRepMaxCalculator: {
-		href: PAGE_tools_1rm_calculator,
+		href: resolve('/(app)/tools/1rm-calculator'),
 		title: '1rm calculator',
 		Icon: OneRepMaxCalculatorIcon
 	},
 	loadPercentageCalculator: {
-		href: PAGE_tools_load_percentage_calculator,
+		href: resolve('/(app)/tools/load-percentage-calculator'),
 		title: 'Load percentage calculator',
 		Icon: LoadPercentageCalculatorIcon
 	},
 	trainingLog: {
-		href: PAGE_tools_training_log,
+		href: resolve('/(app)/tools/training-log'),
 		title: 'Training log',
 		Icon: TrainingLogIcon
 	}

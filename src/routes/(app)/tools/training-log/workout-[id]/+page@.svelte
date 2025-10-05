@@ -6,7 +6,7 @@
 	import Button from '$lib/shadcn/button/button.svelte';
 	import { useQuery } from '@triplit/svelte';
 	import Check from '@lucide/svelte/icons/check';
-	import { PAGE_tools_training_log } from '$lib/ROUTES';
+	import { resolve } from '$app/paths';
 
 	const workoutId = page.params.id as string;
 	const query = useQuery(triplit, triplit.query('workouts').Where('id', '=', workoutId));
@@ -21,7 +21,7 @@
 			<PerformanceGroups {workoutId} />
 		</div>
 		<div class="mt-auto flex w-full flex-col p-4">
-			<Button href={PAGE_tools_training_log} size="lg" class="bg-emerald-500">
+			<Button href={resolve('/(app)/tools/training-log')} size="lg" class="bg-emerald-500">
 				Done
 				<Check />
 			</Button>

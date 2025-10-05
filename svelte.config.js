@@ -10,7 +10,7 @@ const config = {
 		}),
 		typescript: {
 			config: (config) => {
-				config.exclude.push('../src/lib/shadcn/**/*', '../src/lib/ROUTES.ts');
+				config.exclude.push('../src/lib/shadcn/**/*');
 				return config;
 			}
 		},

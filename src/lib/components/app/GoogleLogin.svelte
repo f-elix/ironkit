@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { PAGE__ROOT } from '$lib/ROUTES';
 	import { goto } from '$app/navigation';
 	import { ElementSize } from 'runed';
 	import { supabase } from '$lib/db/supabase';
+	import { resolve } from '$app/paths';
 
 	let loaded = $state(false);
 
@@ -40,7 +40,7 @@
 					}
 
 					// redirect to protected page
-					goto(PAGE__ROOT);
+					goto(resolve('/'));
 				} catch (error) {
 					console.error('Error logging in with Google One Tap', error);
 				}

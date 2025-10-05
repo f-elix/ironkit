@@ -1,18 +1,10 @@
 import { svelteTesting } from '@testing-library/svelte/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
-import { kitRoutes } from 'vite-plugin-kit-routes';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
-	plugins: [
-		tailwindcss(),
-		sveltekit(),
-		kitRoutes({
-			format: 'variables',
-			post_update_run: 'npm exec prettier ./src/lib/ROUTES.ts -- -w'
-		})
-	],
+	plugins: [tailwindcss(), sveltekit()],
 	server: { fs: { allow: ['./triplit'] } },
 	test: {
 		workspace: [
