@@ -45,11 +45,11 @@ const getTransitionType = (navigation: Navigation): TransitionType => {
 		return 'training-log-slide-in-from-left';
 	}
 
-	if (to.startsWith(resolve('/(app)/tools/training-log/workout-[id]', { id: '' }))) {
+	if (to.startsWith(resolve('/(app)/tools/training-log/workout-[id]', { id: 'id' }))) {
 		return 'workout';
 	}
 
-	if (from.startsWith(resolve('/(app)/tools/training-log/workout-[id]', { id: '' }))) {
+	if (from.startsWith(resolve('/(app)/tools/training-log/workout-[id]', { id: 'id' }))) {
 		return 'workout';
 	}
 
