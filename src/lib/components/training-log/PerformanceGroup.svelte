@@ -13,6 +13,7 @@
 	import Check from '@lucide/svelte/icons/check';
 	import { Accordion } from 'bits-ui';
 	import { useQueryOne } from '@triplit/svelte';
+	import ClosePeformanceButton from '$lib/components/training-log/ClosePeformanceButton.svelte';
 
 	let { performanceGroupId }: { performanceGroupId: string } = $props();
 
@@ -90,7 +91,7 @@
 <Card.Root class="bg-muted/30 rounded-sm py-0">
 	<Card.Content class="flex flex-col gap-4 p-4">
 		{#if performances.length > 1}
-			<div class="flex flex-row items-center justify-between gap-2">
+			<div class="flex items-center gap-2">
 				<Label class="grow">
 					<span class="sr-only">Group title</span>
 					<Input
@@ -101,12 +102,13 @@
 						class="text-sm"
 					/>
 				</Label>
+				<ClosePeformanceButton />
 			</div>
 		{/if}
 		<ul class="divide-border flex flex-col gap-4 divide-y">
 			{#each performances as performance (performance.id)}
 				<li class="flex flex-col gap-2 pb-4 last:pb-0">
-					<Performance {performance} {onDelete} />
+					<Performance {performance} {onDelete} showCloseButton={performances.length < 2} />
 				</li>
 			{/each}
 		</ul>
