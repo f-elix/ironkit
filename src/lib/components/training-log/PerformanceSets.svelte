@@ -51,7 +51,7 @@
 						{i + 1}
 					</div>
 					<PerformanceSet {set} {unit} {exercise} />
-					{#if i > 0}
+					{#if sets.length > 1}
 						<Button
 							size="sm"
 							variant="link"
