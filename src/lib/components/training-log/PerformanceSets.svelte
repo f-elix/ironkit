@@ -44,7 +44,7 @@
 			animate:flip={{ duration: 500, easing: expoOut }}
 		>
 			<div class="flex items-center justify-between gap-2">
-				<div class="flex items-center gap-2">
+				<div class="flex w-full items-center gap-2">
 					<div
 						class="bg-primary text-primary-foreground grid size-5 place-items-center rounded-full text-center text-sm font-medium"
 					>
@@ -55,6 +55,7 @@
 						<Button
 							size="sm"
 							variant="link"
+							class="ml-auto"
 							onclick={() => {
 								deleteSet(set.id);
 							}}
