@@ -51,6 +51,18 @@
 						{i + 1}
 					</div>
 					<PerformanceSet {set} {unit} {exercise} />
+					{#if i > 0}
+						<Button
+							size="sm"
+							variant="link"
+							onclick={() => {
+								deleteSet(set.id);
+							}}
+							aria-label="Remove set"
+						>
+							<Minus class="text-destructive" />
+						</Button>
+					{/if}
 				</div>
 			</div>
 			<Label class="flex flex-col gap-2">
@@ -68,19 +80,6 @@
 				/>
 			</Label>
 			<div class="flex gap-2">
-				{#if sets.length > 1}
-					<Button
-						size="sm"
-						variant="destructive"
-						class="border-destructive/50 bg-destructive/10 dark:bg-destructive/10 h-7 flex-1 border"
-						onclick={() => {
-							deleteSet(set.id);
-						}}
-					>
-						<Minus class="text-destructive" />
-						Remove set
-					</Button>
-				{/if}
 				<Button
 					size="sm"
 					variant="secondary"
@@ -90,7 +89,7 @@
 					}}
 				>
 					<Plus />
-					Add set below
+					Add set
 				</Button>
 			</div>
 		</li>
