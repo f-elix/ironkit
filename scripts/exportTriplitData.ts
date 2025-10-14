@@ -2,9 +2,12 @@ import { TriplitClient } from '@triplit/client';
 import { schema } from '../triplit/schema.js';
 import { writeFileSync } from 'fs';
 import { join } from 'path';
+import { loadEnv } from 'vite';
 
-const TRIPLIT_SERVER_URL = process.env.PUBLIC_TRIPLIT_SERVER_URL || '';
-const TRIPLIT_TOKEN = process.env.TRIPLIT_TOKEN || '';
+const env = loadEnv('development', process.cwd(), 'TRIPLIT_');
+
+const TRIPLIT_SERVER_URL = env.TRIPLIT_DB_URL || '';
+const TRIPLIT_TOKEN = env.TRIPLIT_SERVICE_TOKEN || '';
 
 console.log('Starting Triplit data export...');
 console.log('Server URL:', TRIPLIT_SERVER_URL);
@@ -37,12 +40,9 @@ async function exportData() {
 		console.log(`\nExporting ${collectionName}...`);
 		try {
 			// Try to fetch from server first
-			const query = triplit.query(collectionName);
-			// @ts-expect-error - Query types are complex
-			const results = await triplit.fetch(query);
-			const items = Array.from(results.values());
-			exportData[collectionName] = items;
-			console.log(`  ✓ Exported ${items.length} items from ${collectionName}`);
+			const results = await triplit.http.fetch({ collectionName });
+			exportData[collectionName] = results;
+			console.log(`  ✓ Exported ${results.length} items from ${collectionName}`);
 		} catch (error) {
 			console.error(`  ✗ Error exporting ${collectionName}:`, error);
 			exportData[collectionName] = [];
