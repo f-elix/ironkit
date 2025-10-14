@@ -17,7 +17,8 @@
 		"test:unit": "vitest",
 		"test": "pnpm test:unit -- --run",
 		"assets:generate": "pwa-assets-generator --preset minimal-2023 pwa-assets/symbol.svg",
-		"export:triplit": "tsx scripts/exportTriplitData.ts"
+		"export:triplit": "tsx scripts/exportTriplitData.ts",
+		"triplit:snapshot": "triplit snapshot create"
 	},
 	"devDependencies": {
 		"@eslint/compat": "1.4.0",
