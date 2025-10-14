@@ -8,13 +8,14 @@
 	import { Slider } from '$lib/shadcn/slider';
 	import UnitSelector from '$lib/components/ui/UnitSelector.svelte';
 	import { roundWeightToNearest } from '$lib/math/roundWeightToNearest';
-	import { triplit } from '$lib/db/triplit';
-	import { useQuery } from '@triplit/svelte';
+	import { useConvexQuery, useConvexMutation } from '$lib/db/convexHelpers.svelte';
+	import { api } from '$convex/_generated/api';
 	import { DEFAULT_WEIGHT_UNIT } from '$lib/constants';
-	import { userId } from '$lib/db/userId';
 
-	const query = useQuery(triplit, triplit.query('loadPercentageCalculator'));
-	let loadPercentageCalculator = $derived(query.results?.[0]);
+	const query = useConvexQuery(api.loadPercentageCalculator.get, {});
+	const upsertMutation = useConvexMutation(api.loadPercentageCalculator.upsert);
+
+	let loadPercentageCalculator = $derived(query.data);
 	let unit = $derived(loadPercentageCalculator?.unit ?? DEFAULT_WEIGHT_UNIT);
 	let round = $derived(loadPercentageCalculator?.round ?? false);
 
@@ -68,9 +69,8 @@
 					id="round-to-nearest"
 					checked={round}
 					onCheckedChange={(v) => {
-						triplit.insert('loadPercentageCalculator', {
-							...loadPercentageCalculator,
-							userId: loadPercentageCalculator?.userId ?? userId(),
+						upsertMutation.mutate({
+							unit,
 							round: v
 						});
 					}}
@@ -82,10 +82,9 @@
 					<UnitSelector
 						value={unit}
 						onValueChange={(v) => {
-							triplit.insert('loadPercentageCalculator', {
-								...loadPercentageCalculator,
-								userId: loadPercentageCalculator?.userId ?? userId(),
-								unit: v
+							upsertMutation.mutate({
+								unit: v,
+								round
 							});
 						}}
 					/>

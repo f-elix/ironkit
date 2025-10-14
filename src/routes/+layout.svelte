@@ -2,19 +2,17 @@
 	import '../app.css';
 	import Head from '$lib/components/app/Head.svelte';
 	import { Toaster } from '$lib/shadcn/sonner';
-	import { loadDb } from '$lib/db/loadDb';
 	import { watchOffline } from '$lib/ui/watchOffline';
 	import { watchSWUpdate } from '$lib/ui/watchSWUpdate';
 	import { setupViewTransitions } from '$lib/ui/setupViewTransitions';
-	import { setAuth } from '$lib/db/Auth.svelte';
+	import { setConvexAuth } from '$lib/db/ConvexAuth.svelte';
 
 	let { children } = $props();
 
 	setupViewTransitions();
 	watchOffline();
 	watchSWUpdate();
-	loadDb();
-	setAuth();
+	setConvexAuth();
 </script>
 
 <Head />

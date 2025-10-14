@@ -1,8 +1,8 @@
 <script lang="ts">
 	import * as Command from '$lib/shadcn/command';
 	import * as Dialog from '$lib/shadcn/dialog';
-	import { triplit } from '$lib/db/triplit';
-	import { useQuery } from '@triplit/svelte';
+	import { useConvexQuery } from '$lib/db/convexHelpers.svelte';
+	import { api } from '$convex/_generated/api';
 	import ExerciseInfoDialog from '$lib/components/training-log/ExerciseInfoDialog.svelte';
 	import type { Snippet } from 'svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
@@ -16,9 +16,9 @@
 		trigger?: Snippet;
 	} = $props();
 
-	const exercisesQuery = useQuery(triplit, triplit.query('exercises'));
+	const exercisesQuery = useConvexQuery(api.exercises.list, {});
 
-	let exercises = $derived(exercisesQuery.results ?? []);
+	let exercises = $derived(exercisesQuery.data ?? []);
 	let value = $state('');
 	let open = $state(false);
 
@@ -56,13 +56,13 @@
 							}}
 						/>
 						<Separator class="my-2" />
-						{#each exercises as exercise (exercise.id)}
+						{#each exercises as exercise (exercise._id)}
 							<Command.Item
 								class="text-lg"
 								value={exercise.name.toLowerCase()}
 								keywords={[...exercise.muscleGroups, exercise.loadType, exercise.executionType]}
 								onSelect={() => {
-									onExerciseSelected(exercise.id);
+									onExerciseSelected(exercise._id);
 								}}
 							>
 								{exercise.name}

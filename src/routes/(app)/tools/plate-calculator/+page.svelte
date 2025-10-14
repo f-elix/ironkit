@@ -14,22 +14,23 @@
 	} from '$lib/plateCalculator';
 	import { buttonVariants } from '$lib/shadcn/button';
 	import ToolLayout from '$lib/components/app/ToolLayout.svelte';
-	import { useQuery } from '@triplit/svelte';
-	import { triplit } from '$lib/db/triplit';
-	import { userId } from '$lib/db/userId';
+	import { useConvexQuery, useConvexMutation } from '$lib/db/convexHelpers.svelte';
+	import { api } from '$convex/_generated/api';
 
-	const query = useQuery(triplit, triplit.query('plateCalculator'));
-	let plateCalculator = $derived(query.results?.[0]);
+	const query = useConvexQuery(api.plateCalculator.get, {});
+	const upsertMutation = useConvexMutation(api.plateCalculator.upsert);
+
+	let plateCalculator = $derived(query.data);
 	let heavyCollars = $derived(plateCalculator?.heavyCollars ?? false);
 	let barWeight = $derived(plateCalculator?.barWeight ?? 20);
 	let allowNonStandardConfig = $derived(plateCalculator?.allowNonStandardConfig ?? false);
 
 	const barWeightGroup = $state({
 		set current(v) {
-			triplit.insert('plateCalculator', {
-				...plateCalculator,
-				userId: plateCalculator?.userId ?? userId(),
-				barWeight: v
+			upsertMutation.mutate({
+				barWeight: v,
+				heavyCollars,
+				allowNonStandardConfig
 			});
 		},
 		get current() {
@@ -109,9 +110,9 @@
 					id="allow-non-standard-configuration"
 					checked={allowNonStandardConfig}
 					onCheckedChange={(v) => {
-						triplit.insert('plateCalculator', {
-							...plateCalculator,
-							userId: plateCalculator?.userId ?? userId(),
+						upsertMutation.mutate({
+							barWeight,
+							heavyCollars,
 							allowNonStandardConfig: v
 						});
 					}}
@@ -128,10 +129,10 @@
 					id="heavy-collars"
 					checked={heavyCollars}
 					onCheckedChange={(v) => {
-						triplit.insert('plateCalculator', {
-							...plateCalculator,
-							userId: plateCalculator?.userId ?? userId(),
-							heavyCollars: v
+						upsertMutation.mutate({
+							barWeight,
+							heavyCollars: v,
+							allowNonStandardConfig
 						});
 					}}
 				/>

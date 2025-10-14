@@ -9,13 +9,13 @@
 	import ToolLayout from '$lib/components/app/ToolLayout.svelte';
 	import ResultCopyOnClick from '$lib/components/ui/ResultCopyOnClick.svelte';
 	import { DEFAULT_WEIGHT_UNIT } from '$lib/constants';
-	import { triplit } from '$lib/db/triplit';
-	import { useQuery } from '@triplit/svelte';
-	import { userId } from '$lib/db/userId';
+	import { useConvexQuery, useConvexMutation } from '$lib/db/convexHelpers.svelte';
+	import { api } from '$convex/_generated/api';
 
-	const query = useQuery(triplit, triplit.query('weightConverter'));
+	const query = useConvexQuery(api.weightConverter.get, {});
+	const upsertMutation = useConvexMutation(api.weightConverter.upsert);
 
-	let weightConverter = $derived(query.results?.[0]);
+	let weightConverter = $derived(query.data);
 	let unit = $derived(weightConverter?.unit ?? DEFAULT_WEIGHT_UNIT);
 	let round = $derived(weightConverter?.round ?? false);
 
@@ -58,9 +58,8 @@
 					id="round-to-nearest"
 					checked={round}
 					onCheckedChange={(v) => {
-						triplit.insert('weightConverter', {
-							...weightConverter,
-							userId: weightConverter?.userId ?? userId(),
+						upsertMutation.mutate({
+							unit,
 							round: v
 						});
 					}}
@@ -72,10 +71,9 @@
 					<UnitSelector
 						value={unit}
 						onValueChange={(v) => {
-							triplit.insert('weightConverter', {
-								...weightConverter,
-								userId: weightConverter?.userId ?? userId(),
-								unit: v
+							upsertMutation.mutate({
+								unit: v,
+								round
 							});
 						}}
 					/>

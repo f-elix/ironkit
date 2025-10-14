@@ -5,14 +5,15 @@
 	import { DEFAULT_WEIGHT_UNIT, DEFAULT_GENDER_CLASS, GENDER_CLASSES } from '$lib/constants';
 	import { Label } from '$lib/shadcn/label';
 	import ToolLayout from '$lib/components/app/ToolLayout.svelte';
-	import { useQuery } from '@triplit/svelte';
-	import { triplit } from '$lib/db/triplit';
+	import { useConvexQuery, useConvexMutation } from '$lib/db/convexHelpers.svelte';
+	import { api } from '$convex/_generated/api';
 	import type { GenderClass } from '$lib/types';
 	import LargeRadioButtons from '$lib/components/ui/LargeRadioButtons.svelte';
-	import { userId } from '$lib/db/userId';
 
-	const query = useQuery(triplit, triplit.query('coefficientCalculator'));
-	let coefficientCalculator = $derived(query.results?.[0]);
+	const query = useConvexQuery(api.coefficientCalculator.get, {});
+	const upsertMutation = useConvexMutation(api.coefficientCalculator.upsert);
+
+	let coefficientCalculator = $derived(query.data);
 	let bodyweightUnit = $derived(coefficientCalculator?.bodyweightUnit ?? DEFAULT_WEIGHT_UNIT);
 	let totalUnit = $derived(coefficientCalculator?.totalUnit ?? DEFAULT_WEIGHT_UNIT);
 	let genderClass = $derived(coefficientCalculator?.genderClass ?? DEFAULT_GENDER_CLASS);
@@ -70,10 +71,10 @@
 				<UnitSelector
 					value={totalUnit}
 					onValueChange={(v) => {
-						triplit.insert('coefficientCalculator', {
-							...coefficientCalculator,
-							userId: coefficientCalculator?.userId ?? userId(),
-							totalUnit: v
+						upsertMutation.mutate({
+							genderClass,
+							totalUnit: v,
+							bodyweightUnit
 						});
 					}}
 				/>
@@ -84,9 +85,9 @@
 				<UnitSelector
 					value={bodyweightUnit}
 					onValueChange={(v) => {
-						triplit.insert('coefficientCalculator', {
-							...coefficientCalculator,
-							userId: coefficientCalculator?.userId ?? userId(),
+						upsertMutation.mutate({
+							genderClass,
+							totalUnit,
 							bodyweightUnit: v
 						});
 					}}
@@ -100,10 +101,10 @@
 				}))}
 				value={genderClass}
 				onValueChange={(v) => {
-					triplit.insert('coefficientCalculator', {
-						...coefficientCalculator,
-						userId: coefficientCalculator?.userId ?? userId(),
-						genderClass: v as GenderClass
+					upsertMutation.mutate({
+						genderClass: v as GenderClass,
+						totalUnit,
+						bodyweightUnit
 					});
 				}}
 			/>
