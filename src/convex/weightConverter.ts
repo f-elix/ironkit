@@ -1,6 +1,7 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 import { getAuthUserId } from '@convex-dev/auth/server';
+import { weightUnit } from './schema';
 
 export const get = query({
 	args: {},
@@ -21,7 +22,7 @@ export const get = query({
 
 export const upsert = mutation({
 	args: {
-		unit: v.string(),
+		unit: weightUnit,
 		round: v.boolean()
 	},
 	handler: async (ctx, args) => {

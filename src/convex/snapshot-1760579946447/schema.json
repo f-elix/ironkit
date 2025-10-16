@@ -1,0 +1,1101 @@
+{
+  "collections": {
+    "weightConverter": {
+      "schema": {
+        "type": "record",
+        "config": {},
+        "properties": {
+          "id": {
+            "type": "string",
+            "config": {
+              "nullable": false,
+              "default": {
+                "func": "uuid",
+                "args": null
+              }
+            }
+          },
+          "userId": {
+            "type": "string",
+            "config": {
+              "default": "anon"
+            }
+          },
+          "updatedAt": {
+            "type": "date",
+            "config": {
+              "default": {
+                "func": "now",
+                "args": null
+              }
+            }
+          },
+          "unit": {
+            "type": "string",
+            "config": {
+              "enum": [
+                "kg",
+                "lbs"
+              ],
+              "default": "kg"
+            }
+          },
+          "round": {
+            "type": "boolean",
+            "config": {
+              "default": false
+            }
+          }
+        }
+      },
+      "permissions": {
+        "authenticated": {
+          "read": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          },
+          "insert": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          },
+          "update": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          },
+          "postUpdate": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          },
+          "delete": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    "coefficientCalculator": {
+      "schema": {
+        "type": "record",
+        "config": {},
+        "properties": {
+          "id": {
+            "type": "string",
+            "config": {
+              "nullable": false,
+              "default": {
+                "func": "uuid",
+                "args": null
+              }
+            }
+          },
+          "userId": {
+            "type": "string",
+            "config": {
+              "default": "anon"
+            }
+          },
+          "updatedAt": {
+            "type": "date",
+            "config": {
+              "default": {
+                "func": "now",
+                "args": null
+              }
+            }
+          },
+          "genderClass": {
+            "type": "string",
+            "config": {
+              "enum": [
+                "male",
+                "female"
+              ],
+              "default": "male"
+            }
+          },
+          "totalUnit": {
+            "type": "string",
+            "config": {
+              "enum": [
+                "kg",
+                "lbs"
+              ],
+              "default": "kg"
+            }
+          },
+          "bodyweightUnit": {
+            "type": "string",
+            "config": {
+              "enum": [
+                "kg",
+                "lbs"
+              ],
+              "default": "kg"
+            }
+          }
+        }
+      },
+      "permissions": {
+        "authenticated": {
+          "read": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          },
+          "insert": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          },
+          "update": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          },
+          "postUpdate": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          },
+          "delete": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    "loadPercentageCalculator": {
+      "schema": {
+        "type": "record",
+        "config": {},
+        "properties": {
+          "id": {
+            "type": "string",
+            "config": {
+              "nullable": false,
+              "default": {
+                "func": "uuid",
+                "args": null
+              }
+            }
+          },
+          "userId": {
+            "type": "string",
+            "config": {
+              "default": "anon"
+            }
+          },
+          "updatedAt": {
+            "type": "date",
+            "config": {
+              "default": {
+                "func": "now",
+                "args": null
+              }
+            }
+          },
+          "unit": {
+            "type": "string",
+            "config": {
+              "enum": [
+                "kg",
+                "lbs"
+              ],
+              "default": "kg"
+            }
+          },
+          "round": {
+            "type": "boolean",
+            "config": {
+              "default": false
+            }
+          }
+        }
+      },
+      "permissions": {
+        "authenticated": {
+          "read": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          },
+          "insert": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          },
+          "update": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          },
+          "postUpdate": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          },
+          "delete": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    "plateCalculator": {
+      "schema": {
+        "type": "record",
+        "config": {},
+        "properties": {
+          "id": {
+            "type": "string",
+            "config": {
+              "nullable": false,
+              "default": {
+                "func": "uuid",
+                "args": null
+              }
+            }
+          },
+          "userId": {
+            "type": "string",
+            "config": {
+              "default": "anon"
+            }
+          },
+          "updatedAt": {
+            "type": "date",
+            "config": {
+              "default": {
+                "func": "now",
+                "args": null
+              }
+            }
+          },
+          "barWeight": {
+            "type": "number",
+            "config": {
+              "default": 20
+            }
+          },
+          "heavyCollars": {
+            "type": "boolean",
+            "config": {
+              "default": false
+            }
+          },
+          "allowNonStandardConfig": {
+            "type": "boolean",
+            "config": {
+              "default": false
+            }
+          }
+        }
+      },
+      "permissions": {
+        "authenticated": {
+          "read": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          },
+          "insert": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          },
+          "update": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          },
+          "postUpdate": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          },
+          "delete": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    "workouts": {
+      "schema": {
+        "type": "record",
+        "config": {},
+        "properties": {
+          "id": {
+            "type": "string",
+            "config": {
+              "nullable": false,
+              "default": {
+                "func": "uuid",
+                "args": null
+              }
+            }
+          },
+          "userId": {
+            "type": "string",
+            "config": {
+              "default": "anon"
+            }
+          },
+          "updatedAt": {
+            "type": "date",
+            "config": {
+              "default": {
+                "func": "now",
+                "args": null
+              }
+            }
+          },
+          "title": {
+            "type": "string",
+            "config": {
+              "default": "Untitled workout"
+            }
+          },
+          "date": {
+            "type": "date",
+            "config": {
+              "default": {
+                "func": "now",
+                "args": null
+              }
+            }
+          },
+          "notes": {
+            "type": "string",
+            "config": {
+              "optional": true
+            }
+          },
+          "bodyweight": {
+            "type": "number",
+            "config": {
+              "optional": true
+            }
+          },
+          "bodyweightUnit": {
+            "type": "string",
+            "config": {
+              "enum": [
+                "kg",
+                "lbs"
+              ],
+              "default": "lbs",
+              "optional": true
+            }
+          }
+        }
+      },
+      "relationships": {
+        "performanceGroups": {
+          "query": {
+            "collectionName": "performanceGroups",
+            "where": [
+              [
+                "workoutId",
+                "=",
+                "$id"
+              ]
+            ]
+          },
+          "cardinality": "many"
+        }
+      },
+      "permissions": {
+        "authenticated": {
+          "read": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          },
+          "insert": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          },
+          "update": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          },
+          "postUpdate": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          },
+          "delete": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    "performanceGroups": {
+      "schema": {
+        "type": "record",
+        "config": {},
+        "properties": {
+          "id": {
+            "type": "string",
+            "config": {
+              "nullable": false,
+              "default": {
+                "func": "uuid",
+                "args": null
+              }
+            }
+          },
+          "userId": {
+            "type": "string",
+            "config": {
+              "default": "anon"
+            }
+          },
+          "updatedAt": {
+            "type": "date",
+            "config": {
+              "default": {
+                "func": "now",
+                "args": null
+              }
+            }
+          },
+          "workoutId": {
+            "type": "string",
+            "config": {}
+          },
+          "label": {
+            "type": "string",
+            "config": {
+              "optional": true,
+              "default": "Superset"
+            }
+          },
+          "workoutOrder": {
+            "type": "number",
+            "config": {}
+          }
+        }
+      },
+      "relationships": {
+        "workout": {
+          "query": {
+            "collectionName": "workouts",
+            "where": [
+              [
+                "id",
+                "=",
+                "$workoutId"
+              ]
+            ]
+          },
+          "cardinality": "one"
+        },
+        "performances": {
+          "query": {
+            "collectionName": "performances",
+            "where": [
+              [
+                "performanceGroupId",
+                "=",
+                "$id"
+              ]
+            ]
+          },
+          "cardinality": "many"
+        }
+      },
+      "permissions": {
+        "authenticated": {
+          "read": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          },
+          "insert": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          },
+          "update": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          },
+          "postUpdate": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          },
+          "delete": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    "performances": {
+      "schema": {
+        "type": "record",
+        "config": {},
+        "properties": {
+          "id": {
+            "type": "string",
+            "config": {
+              "nullable": false,
+              "default": {
+                "func": "uuid",
+                "args": null
+              }
+            }
+          },
+          "userId": {
+            "type": "string",
+            "config": {
+              "default": "anon"
+            }
+          },
+          "updatedAt": {
+            "type": "date",
+            "config": {
+              "default": {
+                "func": "now",
+                "args": null
+              }
+            }
+          },
+          "performanceGroupId": {
+            "type": "string",
+            "config": {}
+          },
+          "exerciseId": {
+            "type": "string",
+            "config": {}
+          },
+          "workoutId": {
+            "type": "string",
+            "config": {}
+          },
+          "groupOrder": {
+            "type": "number",
+            "config": {}
+          },
+          "note": {
+            "type": "string",
+            "config": {
+              "optional": true
+            }
+          },
+          "weightUnit": {
+            "type": "string",
+            "config": {
+              "enum": [
+                "kg",
+                "lbs"
+              ],
+              "default": "lbs"
+            }
+          }
+        }
+      },
+      "relationships": {
+        "performanceGroup": {
+          "query": {
+            "collectionName": "performanceGroups",
+            "where": [
+              [
+                "id",
+                "=",
+                "$performanceGroupId"
+              ]
+            ]
+          },
+          "cardinality": "one"
+        },
+        "exercise": {
+          "query": {
+            "collectionName": "exercises",
+            "where": [
+              [
+                "id",
+                "=",
+                "$exerciseId"
+              ]
+            ]
+          },
+          "cardinality": "one"
+        },
+        "workout": {
+          "query": {
+            "collectionName": "workouts",
+            "where": [
+              [
+                "id",
+                "=",
+                "$workoutId"
+              ]
+            ]
+          },
+          "cardinality": "one"
+        },
+        "sets": {
+          "query": {
+            "collectionName": "performanceSets",
+            "where": [
+              [
+                "performanceId",
+                "=",
+                "$id"
+              ]
+            ]
+          },
+          "cardinality": "many"
+        }
+      },
+      "permissions": {
+        "authenticated": {
+          "read": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          },
+          "insert": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          },
+          "update": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          },
+          "postUpdate": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          },
+          "delete": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    "performanceSets": {
+      "schema": {
+        "type": "record",
+        "config": {},
+        "properties": {
+          "id": {
+            "type": "string",
+            "config": {
+              "nullable": false,
+              "default": {
+                "func": "uuid",
+                "args": null
+              }
+            }
+          },
+          "userId": {
+            "type": "string",
+            "config": {
+              "default": "anon"
+            }
+          },
+          "updatedAt": {
+            "type": "date",
+            "config": {
+              "default": {
+                "func": "now",
+                "args": null
+              }
+            }
+          },
+          "performanceId": {
+            "type": "string",
+            "config": {}
+          },
+          "weight": {
+            "type": "number",
+            "config": {
+              "optional": true
+            }
+          },
+          "reps": {
+            "type": "number",
+            "config": {
+              "optional": true
+            }
+          },
+          "durationSeconds": {
+            "type": "number",
+            "config": {
+              "optional": true
+            }
+          },
+          "note": {
+            "type": "string",
+            "config": {
+              "optional": true
+            }
+          },
+          "performanceOrder": {
+            "type": "number",
+            "config": {}
+          }
+        }
+      },
+      "relationships": {
+        "performance": {
+          "query": {
+            "collectionName": "performances",
+            "where": [
+              [
+                "id",
+                "=",
+                "$performanceId"
+              ]
+            ]
+          },
+          "cardinality": "one"
+        }
+      },
+      "permissions": {
+        "authenticated": {
+          "read": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          },
+          "insert": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          },
+          "update": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          },
+          "postUpdate": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          },
+          "delete": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    "exercises": {
+      "schema": {
+        "type": "record",
+        "config": {},
+        "properties": {
+          "id": {
+            "type": "string",
+            "config": {
+              "nullable": false,
+              "default": {
+                "func": "uuid",
+                "args": null
+              }
+            }
+          },
+          "userId": {
+            "type": "string",
+            "config": {
+              "default": "anon"
+            }
+          },
+          "updatedAt": {
+            "type": "date",
+            "config": {
+              "default": {
+                "func": "now",
+                "args": null
+              }
+            }
+          },
+          "name": {
+            "type": "string",
+            "config": {}
+          },
+          "executionType": {
+            "type": "string",
+            "config": {
+              "enum": [
+                "reps",
+                "time"
+              ],
+              "default": "reps"
+            }
+          },
+          "loadType": {
+            "type": "string",
+            "config": {
+              "enum": [
+                "weighted",
+                "bodyweight",
+                "assisted"
+              ],
+              "default": "weighted"
+            }
+          },
+          "muscleGroups": {
+            "type": "set",
+            "items": {
+              "type": "string",
+              "config": {}
+            },
+            "config": {
+              "default": {
+                "func": "Set.empty",
+                "args": null
+              }
+            }
+          }
+        }
+      },
+      "permissions": {
+        "authenticated": {
+          "read": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          },
+          "insert": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          },
+          "update": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          },
+          "postUpdate": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          },
+          "delete": {
+            "filter": [
+              [
+                "userId",
+                "=",
+                "$token.sub"
+              ]
+            ]
+          }
+        }
+      }
+    }
+  },
+  "roles": {
+    "anonymous": {
+      "match": {
+        "x-triplit-token-type": "anon"
+      }
+    },
+    "authenticated": {
+      "match": {
+        "sub": "$sub"
+      }
+    }
+  }
+}

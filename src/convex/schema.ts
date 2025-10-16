@@ -1,27 +1,36 @@
 import { defineSchema, defineTable } from 'convex/server';
 import { v } from 'convex/values';
-import { authTables } from '@convex-dev/auth/server';
 
 // Weight units: 'kg' | 'lbs'
 // Gender classes: 'male' | 'female'
 // Exercise load types: 'weighted' | 'bodyweight' | 'assisted'
 // Exercise execution types: 'reps' | 'time'
 
-export default defineSchema({
-	...authTables,
+export const weightUnit = v.union(v.literal('kg'), v.literal('lbs'));
 
+export const genderClass = v.union(v.literal('male'), v.literal('female'));
+
+export const exerciseLoadType = v.union(
+	v.literal('weighted'),
+	v.literal('bodyweight'),
+	v.literal('assisted')
+);
+
+export const exerciseExecutionType = v.union(v.literal('reps'), v.literal('time'));
+
+export default defineSchema({
 	weightConverter: defineTable({
 		userId: v.id('users'),
-		unit: v.string(), // 'kg' | 'lbs'
+		unit: weightUnit, // 'kg' | 'lbs'
 		round: v.boolean(),
 		updatedAt: v.number()
 	}).index('by_userId', ['userId']),
 
 	coefficientCalculator: defineTable({
 		userId: v.id('users'),
-		genderClass: v.string(), // 'male' | 'female'
-		totalUnit: v.string(), // 'kg' | 'lbs'
-		bodyweightUnit: v.string(), // 'kg' | 'lbs'
+		genderClass: genderClass, // 'male' | 'female'
+		totalUnit: weightUnit, // 'kg' | 'lbs'
+		bodyweightUnit: weightUnit, // 'kg' | 'lbs'
 		updatedAt: v.number()
 	}).index('by_userId', ['userId']),
 

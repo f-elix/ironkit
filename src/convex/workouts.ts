@@ -46,7 +46,7 @@ export const getById = query({
 			.collect();
 
 		// Get all exercise IDs
-		const exerciseIds = [...new Set(performances.map((p) => p.exerciseId))];
+		const exerciseIds = Array.from(new Set(performances.map((p) => p.exerciseId)));
 		const exercises = await Promise.all(exerciseIds.map((id) => ctx.db.get(id)));
 		const exerciseMap = new Map(exercises.filter((e) => e !== null).map((e) => [e!._id, e]));
 

@@ -5,14 +5,16 @@
 	import { watchOffline } from '$lib/ui/watchOffline';
 	import { watchSWUpdate } from '$lib/ui/watchSWUpdate';
 	import { setupViewTransitions } from '$lib/ui/setupViewTransitions';
-	import { setConvexAuth } from '$lib/db/ConvexAuth.svelte';
+	import { createSvelteAuthClient } from '@mmailaender/convex-better-auth-svelte/svelte';
+	import { authClient } from '$lib/auth-client';
 
 	let { children } = $props();
+
+	createSvelteAuthClient({ authClient });
 
 	setupViewTransitions();
 	watchOffline();
 	watchSWUpdate();
-	setConvexAuth();
 </script>
 
 <Head />

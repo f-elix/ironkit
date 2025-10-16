@@ -15,6 +15,7 @@ const config = {
 			}
 		},
 		alias: {
+			$convex: 'src/convex',
 			$triplit: 'triplit',
 			$routes: 'src/routes'
 		}

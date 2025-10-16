@@ -1,6 +1,8 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 import { getAuthUserId } from '@convex-dev/auth/server';
+import { weightUnit } from './schema';
+import { genderClass } from './schema';
 
 export const get = query({
 	args: {},
@@ -21,9 +23,9 @@ export const get = query({
 
 export const upsert = mutation({
 	args: {
-		genderClass: v.string(),
-		totalUnit: v.string(),
-		bodyweightUnit: v.string()
+		genderClass: genderClass,
+		totalUnit: weightUnit,
+		bodyweightUnit: weightUnit
 	},
 	handler: async (ctx, args) => {
 		const userId = await getAuthUserId(ctx);

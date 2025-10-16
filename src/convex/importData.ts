@@ -1,31 +1,26 @@
 import { internalMutation } from './_generated/server';
 import { v } from 'convex/values';
+import exercises from './snapshot-1760579946447/collections/exercises.json' with { type: 'json' };
+import workouts from './snapshot-1760579946447/collections/workouts.json' with { type: 'json' };
+import performanceGroups from './snapshot-1760579946447/collections/performanceGroups.json' with { type: 'json' };
+import performances from './snapshot-1760579946447/collections/performances.json' with { type: 'json' };
+import performanceSets from './snapshot-1760579946447/collections/performanceSets.json' with { type: 'json' };
+import weightConverter from './snapshot-1760579946447/collections/weightConverter.json' with { type: 'json' };
+import coefficientCalculator from './snapshot-1760579946447/collections/coefficientCalculator.json' with { type: 'json' };
+import loadPercentageCalculator from './snapshot-1760579946447/collections/loadPercentageCalculator.json' with { type: 'json' };
+import plateCalculator from './snapshot-1760579946447/collections/plateCalculator.json' with { type: 'json' };
 
 export const importFromTriplit = internalMutation({
-	args: {
-		data: v.object({
-			weightConverter: v.array(v.any()),
-			coefficientCalculator: v.array(v.any()),
-			loadPercentageCalculator: v.array(v.any()),
-			plateCalculator: v.array(v.any()),
-			exercises: v.array(v.any()),
-			workouts: v.array(v.any()),
-			performanceGroups: v.array(v.any()),
-			performances: v.array(v.any()),
-			performanceSets: v.array(v.any())
-		}),
-		userId: v.id('users')
-	},
-	handler: async (ctx, args) => {
+	handler: async (ctx) => {
 		const idMap = new Map<string, string>();
 
 		console.log('Starting import...');
 
 		// Import exercises first (no dependencies)
-		console.log(`Importing ${args.data.exercises.length} exercises...`);
-		for (const exercise of args.data.exercises) {
+		console.log(`Importing ${exercises.length} exercises...`);
+		for (const exercise of exercises) {
 			const newId = await ctx.db.insert('exercises', {
-				userId: args.userId,
+				userId: exercise.userId,
 				name: exercise.name,
 				executionType: exercise.executionType,
 				loadType: exercise.loadType,
@@ -36,12 +31,12 @@ export const importFromTriplit = internalMutation({
 		}
 
 		// Import workouts (no dependencies)
-		console.log(`Importing ${args.data.workouts.length} workouts...`);
-		for (const workout of args.data.workouts) {
+		console.log(`Importing ${workouts.length} workouts...`);
+		for (const workout of workouts) {
 			const newId = await ctx.db.insert('workouts', {
-				userId: args.userId,
+				userId: workout.userId as any,
 				title: workout.title || 'Untitled workout',
-				date: workout.date instanceof Date ? workout.date.getTime() : workout.date,
+				date: new Date(workout.date as string).getTime(),
 				notes: workout.notes,
 				bodyweight: workout.bodyweight,
 				bodyweightUnit: workout.bodyweightUnit,
@@ -51,15 +46,15 @@ export const importFromTriplit = internalMutation({
 		}
 
 		// Import performance groups (depends on workouts)
-		console.log(`Importing ${args.data.performanceGroups.length} performance groups...`);
-		for (const group of args.data.performanceGroups) {
+		console.log(`Importing ${performanceGroups.length} performance groups...`);
+		for (const group of performanceGroups) {
 			const workoutId = idMap.get(group.workoutId);
 			if (!workoutId) {
 				console.warn(`Skipping performance group ${group.id} - workout not found`);
 				continue;
 			}
 			const newId = await ctx.db.insert('performanceGroups', {
-				userId: args.userId,
+				userId: group.userId as any,
 				workoutId: workoutId as any,
 				label: group.label,
 				workoutOrder: group.workoutOrder || 0,
@@ -69,8 +64,8 @@ export const importFromTriplit = internalMutation({
 		}
 
 		// Import performances (depends on workouts, performanceGroups, exercises)
-		console.log(`Importing ${args.data.performances.length} performances...`);
-		for (const perf of args.data.performances) {
+		console.log(`Importing ${performances.length} performances...`);
+		for (const perf of performances) {
 			const workoutId = idMap.get(perf.workoutId);
 			const performanceGroupId = idMap.get(perf.performanceGroupId);
 			const exerciseId = idMap.get(perf.exerciseId);
@@ -81,7 +76,7 @@ export const importFromTriplit = internalMutation({
 			}
 
 			const newId = await ctx.db.insert('performances', {
-				userId: args.userId,
+				userId: perf.userId as any,
 				performanceGroupId: performanceGroupId as any,
 				exerciseId: exerciseId as any,
 				workoutId: workoutId as any,
@@ -94,8 +89,8 @@ export const importFromTriplit = internalMutation({
 		}
 
 		// Import performance sets (depends on performances)
-		console.log(`Importing ${args.data.performanceSets.length} performance sets...`);
-		for (const set of args.data.performanceSets) {
+		console.log(`Importing ${performanceSets.length} performance sets...`);
+		for (const set of performanceSets) {
 			const performanceId = idMap.get(set.performanceId);
 			if (!performanceId) {
 				console.warn(`Skipping performance set ${set.id} - performance not found`);
@@ -103,7 +98,7 @@ export const importFromTriplit = internalMutation({
 			}
 
 			await ctx.db.insert('performanceSets', {
-				userId: args.userId,
+				userId: set.userId as any,
 				performanceId: performanceId as any,
 				weight: set.weight,
 				reps: set.reps,
@@ -116,18 +111,18 @@ export const importFromTriplit = internalMutation({
 
 		// Import calculator settings
 		console.log('Importing calculator settings...');
-		for (const item of args.data.weightConverter) {
+		for (const item of weightConverter) {
 			await ctx.db.insert('weightConverter', {
-				userId: args.userId,
+				userId: item.userId as any,
 				unit: item.unit || 'kg',
 				round: item.round || false,
 				updatedAt: Date.now()
 			});
 		}
 
-		for (const item of args.data.coefficientCalculator) {
+		for (const item of coefficientCalculator) {
 			await ctx.db.insert('coefficientCalculator', {
-				userId: args.userId,
+				userId: item.userId as any,
 				genderClass: item.genderClass || 'male',
 				totalUnit: item.totalUnit || 'kg',
 				bodyweightUnit: item.bodyweightUnit || 'kg',
@@ -135,18 +130,18 @@ export const importFromTriplit = internalMutation({
 			});
 		}
 
-		for (const item of args.data.loadPercentageCalculator) {
+		for (const item of loadPercentageCalculator) {
 			await ctx.db.insert('loadPercentageCalculator', {
-				userId: args.userId,
+				userId: item.userId as any,
 				unit: item.unit || 'kg',
 				round: item.round || false,
 				updatedAt: Date.now()
 			});
 		}
 
-		for (const item of args.data.plateCalculator) {
+		for (const item of plateCalculator) {
 			await ctx.db.insert('plateCalculator', {
-				userId: args.userId,
+				userId: item.userId as any,
 				barWeight: item.barWeight || 20,
 				heavyCollars: item.heavyCollars || false,
 				allowNonStandardConfig: item.allowNonStandardConfig || false,
