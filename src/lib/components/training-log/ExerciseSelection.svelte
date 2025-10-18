@@ -1,8 +1,8 @@
 <script lang="ts">
 	import * as Command from '$lib/shadcn/command';
 	import * as Dialog from '$lib/shadcn/dialog';
-	import { useConvexQuery } from '$lib/db/convexHelpers.svelte';
 	import { api } from '$convex/_generated/api';
+	import { useQuery } from 'convex-svelte';
 	import ExerciseInfoDialog from '$lib/components/training-log/ExerciseInfoDialog.svelte';
 	import type { Snippet } from 'svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
@@ -16,7 +16,7 @@
 		trigger?: Snippet;
 	} = $props();
 
-	const exercisesQuery = useConvexQuery(api.exercises.list, {});
+	const exercisesQuery = useQuery(api.exercises.list, {});
 
 	let exercises = $derived(exercisesQuery.data ?? []);
 	let value = $state('');

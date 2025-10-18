@@ -3,11 +3,11 @@
 	import { DEFAULT_WORKOUT_TITLE } from '$lib/constants';
 	import { formatDate } from '$lib/ui/formatDate';
 	import AddWorkout from '$lib/components/training-log/AddWorkout.svelte';
-	import { useConvexQuery } from '$lib/db/convexHelpers.svelte';
+	import { useQuery } from 'convex-svelte';
 	import { api } from '$convex/_generated/api';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 
-	const query = useConvexQuery(api.workouts.list, {});
+	const query = useQuery(api.workouts.list, {});
 
 	let workouts = $derived(query.data ?? []);
 </script>

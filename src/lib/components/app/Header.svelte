@@ -1,12 +1,13 @@
 <script lang="ts">
 	import LogoSymbol from '$lib/components/svg/LogoSymbol.svelte';
-	import { convexAuthContext } from '$lib/db/ConvexAuth.svelte';
 	import Button from '$lib/shadcn/button/button.svelte';
 	import LogOutIcon from '@lucide/svelte/icons/log-out';
 	import LogInIcon from '@lucide/svelte/icons/log-in';
 	import { resolve } from '$app/paths';
+	import { useAuth } from '@mmailaender/convex-better-auth-svelte/svelte';
+	import { authClient } from '$lib/auth-client';
 
-	const auth = convexAuthContext.get();
+	const auth = useAuth();
 
 	let isAuthenticated = $derived(auth.isAuthenticated);
 </script>
@@ -19,7 +20,7 @@
 		<LogoSymbol class="size-6 sm:size-8" />
 	</a>
 	{#if isAuthenticated}
-		<Button variant="ghost" size="sm" onclick={auth.signOut}>
+		<Button variant="ghost" size="sm" onclick={async () => await authClient.signOut()}>
 			<LogOutIcon />
 			Logout
 		</Button>

@@ -14,11 +14,12 @@
 	} from '$lib/plateCalculator';
 	import { buttonVariants } from '$lib/shadcn/button';
 	import ToolLayout from '$lib/components/app/ToolLayout.svelte';
-	import { useConvexQuery, useConvexMutation } from '$lib/db/convexHelpers.svelte';
+	import { useQuery, useConvexClient } from 'convex-svelte';
 	import { api } from '$convex/_generated/api';
 
-	const query = useConvexQuery(api.plateCalculator.get, {});
-	const upsertMutation = useConvexMutation(api.plateCalculator.upsert);
+	const query = useQuery(api.plateCalculator.get, {});
+	const client = useConvexClient();
+	const upsertMutation = (data) => client.mutation(api.plateCalculator.upsert, data);
 
 	let plateCalculator = $derived(query.data);
 	let heavyCollars = $derived(plateCalculator?.heavyCollars ?? false);

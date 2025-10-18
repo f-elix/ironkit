@@ -9,11 +9,12 @@
 	import ToolLayout from '$lib/components/app/ToolLayout.svelte';
 	import ResultCopyOnClick from '$lib/components/ui/ResultCopyOnClick.svelte';
 	import { DEFAULT_WEIGHT_UNIT } from '$lib/constants';
-	import { useConvexQuery, useConvexMutation } from '$lib/db/convexHelpers.svelte';
+	import { useQuery, useConvexClient } from 'convex-svelte';
 	import { api } from '$convex/_generated/api';
 
-	const query = useConvexQuery(api.weightConverter.get, {});
-	const upsertMutation = useConvexMutation(api.weightConverter.upsert);
+	const query = useQuery(api.weightConverter.get, {});
+	const client = useConvexClient();
+	const upsertMutation = (data) => client.mutation(api.weightConverter.upsert, data);
 
 	let weightConverter = $derived(query.data);
 	let unit = $derived(weightConverter?.unit ?? DEFAULT_WEIGHT_UNIT);

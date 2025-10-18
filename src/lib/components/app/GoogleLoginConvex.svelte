@@ -1,17 +1,20 @@
 <script lang="ts">
-	import { convex } from '$lib/db/convex';
-	import { api } from '$convex/_generated/api';
 	import Button from '$lib/shadcn/button/button.svelte';
+	import { authClient } from '$lib/auth-client';
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 
 	const handleGoogleSignIn = async () => {
-		try {
-			// Start OAuth flow with Convex Auth
-			await convex.mutation(api.auth.signIn, {
+		await authClient.signIn.social(
+			{
 				provider: 'google'
-			});
-		} catch (error) {
-			console.error('Error signing in with Google:', error);
-		}
+			},
+			{
+				onSuccess: () => {
+					goto(resolve('/'));
+				}
+			}
+		);
 	};
 </script>
 

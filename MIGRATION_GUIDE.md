@@ -27,7 +27,7 @@ import { useQuery, useQueryOne } from '@triplit/svelte';
 import { userId } from '$lib/db/userId';
 
 // NEW (Convex)
-import { useConvexQuery, useConvexMutation } from '$lib/db/convexHelpers.svelte';
+import { useConvexQuery, useConvexMutation } from 'convex-svelte';
 import { api } from '$convex/_generated/api';
 ```
 
