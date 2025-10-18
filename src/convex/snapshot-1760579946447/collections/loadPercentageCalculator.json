@@ -1,1 +1,9 @@
-[{"id":"i7-72V9BxbwFmjYnb8S5G","userId":"00d62602-33fa-4709-bd8d-b76dca9e1f28","updatedAt":"2025-04-27T01:36:41.059Z","unit":"lbs","round":false}]
+[
+	{
+		"id": "i7-72V9BxbwFmjYnb8S5G",
+		"userId": "00d62602-33fa-4709-bd8d-b76dca9e1f28",
+		"updatedAt": "2025-04-27T01:36:41.059Z",
+		"unit": "lbs",
+		"round": false
+	}
+]

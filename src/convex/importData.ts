@@ -1,5 +1,4 @@
 import { internalMutation } from './_generated/server';
-import { v, type VId } from 'convex/values';
 import exercises from './snapshot-1760579946447/collections/exercises.json' with { type: 'json' };
 import workouts from './snapshot-1760579946447/collections/workouts.json' with { type: 'json' };
 import performanceGroups from './snapshot-1760579946447/collections/performanceGroups.json' with { type: 'json' };
@@ -14,7 +13,7 @@ export const importFromTriplit = internalMutation({
 	handler: async (ctx) => {
 		const idMap = new Map<string, string>();
 
-		const userIdMap = new Map<string, VId<'users'>>();
+		const userIdMap = new Map<string, string>();
 		userIdMap.set('7a09f20c-f538-4795-a3b6-93d0221453b9', 'k97b4zeqr4ztcpk2x6q3z4jqfs7spxvx');
 		userIdMap.set('00d62602-33fa-4709-bd8d-b76dca9e1f28', 'k97592991w28wtnz15k6be8he17sqc29');
 
@@ -197,6 +196,6 @@ export const importFromTriplit = internalMutation({
 		}
 
 		console.log('Import complete!');
-		return { success: true, idMap: Object.fromEntries(idMap) };
+		return { success: true };
 	}
 });

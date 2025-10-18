@@ -18,78 +18,75 @@ export const exerciseLoadType = v.union(
 
 export const exerciseExecutionType = v.union(v.literal('reps'), v.literal('time'));
 
+const baseSchema = () => ({
+	userId: v.string(),
+	updatedAt: v.number()
+});
+
 export default defineSchema({
 	weightConverter: defineTable({
-		userId: v.id('users'),
-		unit: weightUnit, // 'kg' | 'lbs'
-		round: v.boolean(),
-		updatedAt: v.number()
+		...baseSchema(),
+		unit: weightUnit,
+		round: v.boolean()
 	}).index('by_userId', ['userId']),
 
 	coefficientCalculator: defineTable({
-		userId: v.id('users'),
-		genderClass: genderClass, // 'male' | 'female'
-		totalUnit: weightUnit, // 'kg' | 'lbs'
-		bodyweightUnit: weightUnit, // 'kg' | 'lbs'
-		updatedAt: v.number()
+		...baseSchema(),
+		genderClass: genderClass,
+		totalUnit: weightUnit,
+		bodyweightUnit: weightUnit
 	}).index('by_userId', ['userId']),
 
 	loadPercentageCalculator: defineTable({
-		userId: v.id('users'),
-		unit: v.string(), // 'kg' | 'lbs'
-		round: v.boolean(),
-		updatedAt: v.number()
+		...baseSchema(),
+		unit: weightUnit,
+		round: v.boolean()
 	}).index('by_userId', ['userId']),
 
 	plateCalculator: defineTable({
-		userId: v.id('users'),
+		...baseSchema(),
 		barWeight: v.number(),
 		heavyCollars: v.boolean(),
-		allowNonStandardConfig: v.boolean(),
-		updatedAt: v.number()
+		allowNonStandardConfig: v.boolean()
 	}).index('by_userId', ['userId']),
 
 	exercises: defineTable({
-		userId: v.id('users'),
+		...baseSchema(),
 		name: v.string(),
-		executionType: v.string(), // 'reps' | 'time'
-		loadType: v.string(), // 'weighted' | 'bodyweight' | 'assisted'
-		muscleGroups: v.array(v.string()),
-		updatedAt: v.number()
+		executionType: exerciseExecutionType,
+		loadType: exerciseLoadType,
+		muscleGroups: v.array(v.string())
 	}).index('by_userId', ['userId']),
 
 	workouts: defineTable({
-		userId: v.id('users'),
+		...baseSchema(),
 		title: v.string(),
-		date: v.number(), // timestamp
+		date: v.number(),
 		notes: v.optional(v.string()),
 		bodyweight: v.optional(v.number()),
-		bodyweightUnit: v.optional(v.string()), // 'kg' | 'lbs'
-		updatedAt: v.number()
+		bodyweightUnit: v.optional(weightUnit)
 	})
 		.index('by_userId', ['userId'])
 		.index('by_userId_date', ['userId', 'date']),
 
 	performanceGroups: defineTable({
-		userId: v.id('users'),
+		...baseSchema(),
 		workoutId: v.id('workouts'),
 		label: v.optional(v.string()),
-		workoutOrder: v.number(),
-		updatedAt: v.number()
+		workoutOrder: v.number()
 	})
 		.index('by_userId', ['userId'])
 		.index('by_workoutId', ['workoutId'])
 		.index('by_workoutId_order', ['workoutId', 'workoutOrder']),
 
 	performances: defineTable({
-		userId: v.id('users'),
+		...baseSchema(),
 		performanceGroupId: v.id('performanceGroups'),
 		exerciseId: v.id('exercises'),
 		workoutId: v.id('workouts'),
 		groupOrder: v.number(),
 		note: v.optional(v.string()),
-		weightUnit: v.string(), // 'kg' | 'lbs'
-		updatedAt: v.number()
+		weightUnit: weightUnit
 	})
 		.index('by_userId', ['userId'])
 		.index('by_performanceGroupId', ['performanceGroupId'])
@@ -97,14 +94,13 @@ export default defineSchema({
 		.index('by_workoutId', ['workoutId']),
 
 	performanceSets: defineTable({
-		userId: v.id('users'),
+		...baseSchema(),
 		performanceId: v.id('performances'),
 		weight: v.optional(v.number()),
 		reps: v.optional(v.number()),
 		durationSeconds: v.optional(v.number()),
 		note: v.optional(v.string()),
-		performanceOrder: v.number(),
-		updatedAt: v.number()
+		performanceOrder: v.number()
 	})
 		.index('by_userId', ['userId'])
 		.index('by_performanceId', ['performanceId'])
