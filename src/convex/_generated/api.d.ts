@@ -14,7 +14,7 @@ import type * as exercises from "../exercises.js";
 import type * as http from "../http.js";
 import type * as importData from "../importData.js";
 import type * as loadPercentageCalculator from "../loadPercentageCalculator.js";
-import type * as model_requireUserId from "../model/requireUserId.js";
+import type * as model_requireUser from "../model/requireUser.js";
 import type * as performanceGroups from "../performanceGroups.js";
 import type * as performanceSets from "../performanceSets.js";
 import type * as performances from "../performances.js";
@@ -43,7 +43,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   importData: typeof importData;
   loadPercentageCalculator: typeof loadPercentageCalculator;
-  "model/requireUserId": typeof model_requireUserId;
+  "model/requireUser": typeof model_requireUser;
   performanceGroups: typeof performanceGroups;
   performanceSets: typeof performanceSets;
   performances: typeof performances;

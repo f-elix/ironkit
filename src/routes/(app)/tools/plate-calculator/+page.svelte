@@ -19,7 +19,6 @@
 
 	const query = useQuery(api.plateCalculator.get, {});
 	const client = useConvexClient();
-	const upsertMutation = (data) => client.mutation(api.plateCalculator.upsert, data);
 
 	let plateCalculator = $derived(query.data);
 	let heavyCollars = $derived(plateCalculator?.heavyCollars ?? false);
@@ -28,10 +27,8 @@
 
 	const barWeightGroup = $state({
 		set current(v) {
-			upsertMutation.mutate({
-				barWeight: v,
-				heavyCollars,
-				allowNonStandardConfig
+			client.mutation(api.plateCalculator.upsert, {
+				barWeight: v
 			});
 		},
 		get current() {
@@ -111,9 +108,7 @@
 					id="allow-non-standard-configuration"
 					checked={allowNonStandardConfig}
 					onCheckedChange={(v) => {
-						upsertMutation.mutate({
-							barWeight,
-							heavyCollars,
+						client.mutation(api.plateCalculator.upsert, {
 							allowNonStandardConfig: v
 						});
 					}}
@@ -130,10 +125,8 @@
 					id="heavy-collars"
 					checked={heavyCollars}
 					onCheckedChange={(v) => {
-						upsertMutation.mutate({
-							barWeight,
-							heavyCollars: v,
-							allowNonStandardConfig
+						client.mutation(api.plateCalculator.upsert, {
+							heavyCollars: v
 						});
 					}}
 				/>
