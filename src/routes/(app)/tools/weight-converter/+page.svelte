@@ -14,7 +14,6 @@
 
 	const query = useQuery(api.weightConverter.get, {});
 	const client = useConvexClient();
-	const upsertMutation = (data) => client.mutation(api.weightConverter.upsert, data);
 
 	let weightConverter = $derived(query.data);
 	let unit = $derived(weightConverter?.unit ?? DEFAULT_WEIGHT_UNIT);
@@ -59,8 +58,7 @@
 					id="round-to-nearest"
 					checked={round}
 					onCheckedChange={(v) => {
-						upsertMutation.mutate({
-							unit,
+						client.mutation(api.weightConverter.upsert, {
 							round: v
 						});
 					}}
@@ -72,9 +70,8 @@
 					<UnitSelector
 						value={unit}
 						onValueChange={(v) => {
-							upsertMutation.mutate({
-								unit: v,
-								round
+							client.mutation(api.weightConverter.upsert, {
+								unit: v
 							});
 						}}
 					/>

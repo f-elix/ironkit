@@ -1,53 +1,41 @@
 import { v } from 'convex/values';
-import { mutation, query } from './_generated/server';
-import { getAuthUserId } from '@convex-dev/auth/server';
+import { mutation, MutationCtx, query } from './_generated/server';
 import { weightUnit } from './schema';
+import { requireUser } from './model/requireUserId';
+import { Doc } from './_generated/dataModel';
+import { DEFAULT_WEIGHT_UNIT } from '../lib/constants';
 
 export const get = query({
 	args: {},
 	handler: async (ctx) => {
-		const userId = await getAuthUserId(ctx);
-		if (!userId) {
-			return null;
-		}
-
-		const converter = await ctx.db
+		const userId = await requireUser(ctx);
+		const result = await ctx.db
 			.query('weightConverter')
 			.withIndex('by_userId', (q) => q.eq('userId', userId))
 			.first();
-
-		return converter;
+		return result;
 	}
 });
 
 export const upsert = mutation({
 	args: {
-		unit: weightUnit,
-		round: v.boolean()
+		unit: v.optional(weightUnit),
+		round: v.optional(v.boolean())
 	},
-	handler: async (ctx, args) => {
-		const userId = await getAuthUserId(ctx);
-		if (!userId) {
-			throw new Error('Not authenticated');
-		}
-
+	handler: async (ctx, data) => {
+		const userId = await requireUser(ctx);
 		const existing = await ctx.db
 			.query('weightConverter')
 			.withIndex('by_userId', (q) => q.eq('userId', userId))
 			.first();
 
 		if (existing) {
-			await ctx.db.patch(existing._id, {
-				unit: args.unit,
-				round: args.round,
-				updatedAt: Date.now()
-			});
-			return existing._id;
+			return ctx.db.patch(existing._id, { ...data, updatedAt: Date.now() });
 		} else {
 			const id = await ctx.db.insert('weightConverter', {
 				userId,
-				unit: args.unit,
-				round: args.round,
+				unit: data.unit ?? DEFAULT_WEIGHT_UNIT,
+				round: data.round ?? false,
 				updatedAt: Date.now()
 			});
 			return id;

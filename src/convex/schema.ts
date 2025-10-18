@@ -1,11 +1,6 @@
 import { defineSchema, defineTable } from 'convex/server';
 import { v } from 'convex/values';
 
-// Weight units: 'kg' | 'lbs'
-// Gender classes: 'male' | 'female'
-// Exercise load types: 'weighted' | 'bodyweight' | 'assisted'
-// Exercise execution types: 'reps' | 'time'
-
 export const weightUnit = v.union(v.literal('kg'), v.literal('lbs'));
 
 export const genderClass = v.union(v.literal('male'), v.literal('female'));
