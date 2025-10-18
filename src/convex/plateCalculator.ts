@@ -1,10 +1,10 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
-import { requireUser } from './model/requireUser';
+import { getAuthUser } from './auth';
 
 export const get = query({
 	handler: async (ctx) => {
-		const { _id } = await requireUser(ctx);
+		const { _id } = await getAuthUser(ctx);
 		return ctx.db
 			.query('plateCalculator')
 			.withIndex('by_userId', (q) => q.eq('userId', _id))
@@ -19,7 +19,7 @@ export const upsert = mutation({
 		allowNonStandardConfig: v.optional(v.boolean())
 	},
 	handler: async (ctx, data) => {
-		const { _id } = await requireUser(ctx);
+		const { _id } = await getAuthUser(ctx);
 		const existing = await ctx.db
 			.query('plateCalculator')
 			.withIndex('by_userId', (q) => q.eq('userId', _id))
@@ -29,16 +29,14 @@ export const upsert = mutation({
 				...data,
 				updatedAt: Date.now()
 			});
-			return existing._id;
 		} else {
-			const id = await ctx.db.insert('plateCalculator', {
+			await ctx.db.insert('plateCalculator', {
 				userId: _id,
 				barWeight: data.barWeight ?? 20,
 				heavyCollars: data.heavyCollars ?? false,
 				allowNonStandardConfig: data.allowNonStandardConfig ?? false,
 				updatedAt: Date.now()
 			});
-			return id;
 		}
 	}
 });

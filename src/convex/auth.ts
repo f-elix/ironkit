@@ -38,3 +38,5 @@ export const createAuth = (
 		]
 	});
 };
+
+export const { getAuthUser } = authComponent;

@@ -1,14 +1,13 @@
 import { v } from 'convex/values';
-import { mutation, MutationCtx, query } from './_generated/server';
+import { mutation, query } from './_generated/server';
 import { weightUnit } from './schema';
-import { requireUser } from './model/requireUser';
-import { Doc } from './_generated/dataModel';
+import { getAuthUser } from './auth';
 import { DEFAULT_WEIGHT_UNIT } from '../lib/constants';
-import { toolSingletonQuery } from './model/toolSingletonQuery';
+import { getAuthUserId } from '@convex-dev/auth/server';
 
 export const get = query({
 	handler: async (ctx) => {
-		const { _id } = await requireUser(ctx);
+		const { _id } = await getAuthUser(ctx);
 		return ctx.db
 			.query('weightConverter')
 			.withIndex('by_userId', (q) => q.eq('userId', _id))
@@ -22,7 +21,10 @@ export const upsert = mutation({
 		round: v.optional(v.boolean())
 	},
 	handler: async (ctx, data) => {
-		const { _id } = await requireUser(ctx);
+		const _id = await getAuthUserId(ctx);
+		if (!_id) {
+			throw new Error('Not authenticated');
+		}
 		const existing = await ctx.db
 			.query('weightConverter')
 			.withIndex('by_userId', (q) => q.eq('userId', _id))

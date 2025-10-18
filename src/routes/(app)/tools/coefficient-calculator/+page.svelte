@@ -7,12 +7,10 @@
 	import ToolLayout from '$lib/components/app/ToolLayout.svelte';
 	import { useQuery, useConvexClient } from 'convex-svelte';
 	import { api } from '$convex/_generated/api';
-	import type { GenderClass } from '$lib/types';
 	import LargeRadioButtons from '$lib/components/ui/LargeRadioButtons.svelte';
 
 	const query = useQuery(api.coefficientCalculator.get, {});
 	const client = useConvexClient();
-	const upsertMutation = (data) => client.mutation(api.coefficientCalculator.upsert, data);
 
 	let coefficientCalculator = $derived(query.data);
 	let bodyweightUnit = $derived(coefficientCalculator?.bodyweightUnit ?? DEFAULT_WEIGHT_UNIT);
@@ -72,10 +70,9 @@
 				<UnitSelector
 					value={totalUnit}
 					onValueChange={(v) => {
-						upsertMutation({
-							genderClass,
-							totalUnit: v,
-							bodyweightUnit
+						totalUnit = v;
+						client.mutation(api.coefficientCalculator.upsert, {
+							totalUnit: v
 						});
 					}}
 				/>
@@ -86,9 +83,8 @@
 				<UnitSelector
 					value={bodyweightUnit}
 					onValueChange={(v) => {
-						upsertMutation({
-							genderClass,
-							totalUnit,
+						bodyweightUnit = v;
+						client.mutation(api.coefficientCalculator.upsert, {
 							bodyweightUnit: v
 						});
 					}}
@@ -102,10 +98,9 @@
 				}))}
 				value={genderClass}
 				onValueChange={(v) => {
-					upsertMutation({
-						genderClass: v as GenderClass,
-						totalUnit,
-						bodyweightUnit
+					genderClass = v;
+					client.mutation(api.coefficientCalculator.upsert, {
+						genderClass: v
 					});
 				}}
 			/>
