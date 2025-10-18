@@ -1,13 +1,14 @@
+// @ts-nocheck
 import { internalMutation } from './_generated/server';
-import exercises from './snapshot-1760579946447/collections/exercises.json' with { type: 'json' };
-import workouts from './snapshot-1760579946447/collections/workouts.json' with { type: 'json' };
-import performanceGroups from './snapshot-1760579946447/collections/performanceGroups.json' with { type: 'json' };
-import performances from './snapshot-1760579946447/collections/performances.json' with { type: 'json' };
-import performanceSets from './snapshot-1760579946447/collections/performanceSets.json' with { type: 'json' };
-import weightConverter from './snapshot-1760579946447/collections/weightConverter.json' with { type: 'json' };
-import coefficientCalculator from './snapshot-1760579946447/collections/coefficientCalculator.json' with { type: 'json' };
-import loadPercentageCalculator from './snapshot-1760579946447/collections/loadPercentageCalculator.json' with { type: 'json' };
-import plateCalculator from './snapshot-1760579946447/collections/plateCalculator.json' with { type: 'json' };
+import exercises from './triplit-data/exercises.json' with { type: 'json' };
+import workouts from './triplit-data/workouts.json' with { type: 'json' };
+import performanceGroups from './triplit-data/performanceGroups.json' with { type: 'json' };
+import performances from './triplit-data/performances.json' with { type: 'json' };
+import performanceSets from './triplit-data/performanceSets.json' with { type: 'json' };
+import weightConverter from './triplit-data/weightConverter.json' with { type: 'json' };
+import coefficientCalculator from './triplit-data/coefficientCalculator.json' with { type: 'json' };
+import loadPercentageCalculator from './triplit-data/loadPercentageCalculator.json' with { type: 'json' };
+import plateCalculator from './triplit-data/plateCalculator.json' with { type: 'json' };
 
 export const importFromTriplit = internalMutation({
 	handler: async (ctx) => {

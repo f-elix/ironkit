@@ -1,6 +1,7 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 import { getAuthUserId } from '@convex-dev/auth/server';
+import { exerciseExecutionType, exerciseLoadType } from './schema';
 
 export const list = query({
 	args: {},
@@ -39,8 +40,8 @@ export const getById = query({
 export const create = mutation({
 	args: {
 		name: v.string(),
-		executionType: v.string(),
-		loadType: v.string(),
+		executionType: exerciseExecutionType,
+		loadType: exerciseLoadType,
 		muscleGroups: v.array(v.string())
 	},
 	handler: async (ctx, args) => {
@@ -66,8 +67,8 @@ export const update = mutation({
 	args: {
 		id: v.id('exercises'),
 		name: v.optional(v.string()),
-		executionType: v.optional(v.string()),
-		loadType: v.optional(v.string()),
+		executionType: v.optional(exerciseExecutionType),
+		loadType: v.optional(exerciseLoadType),
 		muscleGroups: v.optional(v.array(v.string()))
 	},
 	handler: async (ctx, args) => {
