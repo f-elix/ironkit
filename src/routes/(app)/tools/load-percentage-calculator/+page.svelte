@@ -8,13 +8,14 @@
 	import { Slider } from '$lib/shadcn/slider';
 	import UnitSelector from '$lib/components/ui/UnitSelector.svelte';
 	import { roundWeightToNearest } from '$lib/math/roundWeightToNearest';
-	import { useQuery, useConvexClient } from 'convex-svelte';
 	import { api } from '$convex/_generated/api';
 	import { DEFAULT_WEIGHT_UNIT } from '$lib/constants';
+	import { useQueryMutation } from '$lib/useQueryMutation';
 
-	const query = useQuery(api.loadPercentageCalculator.get, {});
-	const client = useConvexClient();
-	const upsertMutation = (data) => client.mutation(api.loadPercentageCalculator.upsert, data);
+	const [query, mutate] = useQueryMutation({
+		query: api.loadPercentageCalculator.get,
+		mutation: api.loadPercentageCalculator.upsert
+	});
 
 	let loadPercentageCalculator = $derived(query.data);
 	let unit = $derived(loadPercentageCalculator?.unit ?? DEFAULT_WEIGHT_UNIT);
@@ -70,8 +71,7 @@
 					id="round-to-nearest"
 					checked={round}
 					onCheckedChange={(v) => {
-						upsertMutation({
-							unit,
+						mutate({
 							round: v
 						});
 					}}
@@ -83,9 +83,8 @@
 					<UnitSelector
 						value={unit}
 						onValueChange={(v) => {
-							upsertMutation({
-								unit: v,
-								round
+							mutate({
+								unit: v
 							});
 						}}
 					/>

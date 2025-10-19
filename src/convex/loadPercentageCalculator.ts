@@ -2,9 +2,10 @@ import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 import { getAuthUserId } from '@convex-dev/auth/server';
 import { weightUnit } from './schema';
+import { getAuthUser } from './auth';
+import { DEFAULT_WEIGHT_UNIT } from '../lib/constants';
 
 export const get = query({
-	args: {},
 	handler: async (ctx) => {
 		const userId = await getAuthUserId(ctx);
 		if (!userId) {
@@ -22,35 +23,28 @@ export const get = query({
 
 export const upsert = mutation({
 	args: {
-		unit: weightUnit,
-		round: v.boolean()
+		unit: v.optional(weightUnit),
+		round: v.optional(v.boolean())
 	},
 	handler: async (ctx, args) => {
-		const userId = await getAuthUserId(ctx);
-		if (!userId) {
-			throw new Error('Not authenticated');
-		}
-
+		const { _id } = await getAuthUser(ctx);
 		const existing = await ctx.db
 			.query('loadPercentageCalculator')
-			.withIndex('by_userId', (q) => q.eq('userId', userId))
+			.withIndex('by_userId', (q) => q.eq('userId', _id))
 			.first();
-
 		if (existing) {
 			await ctx.db.patch(existing._id, {
-				unit: args.unit,
-				round: args.round,
+				unit: args.unit ?? DEFAULT_WEIGHT_UNIT,
+				round: args.round ?? false,
 				updatedAt: Date.now()
 			});
-			return existing._id;
 		} else {
-			const id = await ctx.db.insert('loadPercentageCalculator', {
-				userId,
-				unit: args.unit,
-				round: args.round,
+			await ctx.db.insert('loadPercentageCalculator', {
+				userId: _id,
+				unit: args.unit ?? DEFAULT_WEIGHT_UNIT,
+				round: args.round ?? false,
 				updatedAt: Date.now()
 			});
-			return id;
 		}
 	}
 });
