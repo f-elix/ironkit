@@ -5,12 +5,14 @@
 	import { DEFAULT_WEIGHT_UNIT, DEFAULT_GENDER_CLASS, GENDER_CLASSES } from '$lib/constants';
 	import { Label } from '$lib/shadcn/label';
 	import ToolLayout from '$lib/components/app/ToolLayout.svelte';
-	import { useQuery, useConvexClient } from 'convex-svelte';
+	import { useQueryMutation } from '$lib/useQueryMutation';
 	import { api } from '$convex/_generated/api';
 	import LargeRadioButtons from '$lib/components/ui/LargeRadioButtons.svelte';
 
-	const query = useQuery(api.coefficientCalculator.get, {});
-	const client = useConvexClient();
+	const [query, mutate] = useQueryMutation({
+		query: api.coefficientCalculator.get,
+		mutation: api.coefficientCalculator.upsert
+	});
 
 	let coefficientCalculator = $derived(query.data);
 	let bodyweightUnit = $derived(coefficientCalculator?.bodyweightUnit ?? DEFAULT_WEIGHT_UNIT);
@@ -70,8 +72,7 @@
 				<UnitSelector
 					value={totalUnit}
 					onValueChange={(v) => {
-						totalUnit = v;
-						client.mutation(api.coefficientCalculator.upsert, {
+						mutate({
 							totalUnit: v
 						});
 					}}
@@ -83,8 +84,7 @@
 				<UnitSelector
 					value={bodyweightUnit}
 					onValueChange={(v) => {
-						bodyweightUnit = v;
-						client.mutation(api.coefficientCalculator.upsert, {
+						mutate({
 							bodyweightUnit: v
 						});
 					}}
@@ -98,8 +98,7 @@
 				}))}
 				value={genderClass}
 				onValueChange={(v) => {
-					genderClass = v;
-					client.mutation(api.coefficientCalculator.upsert, {
+					mutate({
 						genderClass: v
 					});
 				}}

@@ -14,11 +14,13 @@
 	} from '$lib/plateCalculator';
 	import { buttonVariants } from '$lib/shadcn/button';
 	import ToolLayout from '$lib/components/app/ToolLayout.svelte';
-	import { useQuery, useConvexClient } from 'convex-svelte';
 	import { api } from '$convex/_generated/api';
+	import { useQueryMutation } from '$lib/useQueryMutation';
 
-	const query = useQuery(api.plateCalculator.get, {});
-	const client = useConvexClient();
+	const [query, mutate] = useQueryMutation({
+		query: api.plateCalculator.get,
+		mutation: api.plateCalculator.upsert
+	});
 
 	let plateCalculator = $derived(query.data);
 	let heavyCollars = $derived(plateCalculator?.heavyCollars ?? false);
@@ -27,7 +29,7 @@
 
 	const barWeightGroup = $state({
 		set current(v) {
-			client.mutation(api.plateCalculator.upsert, {
+			mutate({
 				barWeight: v
 			});
 		},
@@ -108,7 +110,7 @@
 					id="allow-non-standard-configuration"
 					checked={allowNonStandardConfig}
 					onCheckedChange={(v) => {
-						client.mutation(api.plateCalculator.upsert, {
+						mutate({
 							allowNonStandardConfig: v
 						});
 					}}
@@ -125,7 +127,7 @@
 					id="heavy-collars"
 					checked={heavyCollars}
 					onCheckedChange={(v) => {
-						client.mutation(api.plateCalculator.upsert, {
+						mutate({
 							heavyCollars: v
 						});
 					}}

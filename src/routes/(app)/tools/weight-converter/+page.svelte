@@ -9,11 +9,13 @@
 	import ToolLayout from '$lib/components/app/ToolLayout.svelte';
 	import ResultCopyOnClick from '$lib/components/ui/ResultCopyOnClick.svelte';
 	import { DEFAULT_WEIGHT_UNIT } from '$lib/constants';
-	import { useQuery, useConvexClient } from 'convex-svelte';
 	import { api } from '$convex/_generated/api';
+	import { useQueryMutation } from '$lib/useQueryMutation';
 
-	const query = useQuery(api.weightConverter.get, {});
-	const client = useConvexClient();
+	const [query, mutate] = useQueryMutation({
+		query: api.weightConverter.get,
+		mutation: api.weightConverter.upsert
+	});
 
 	let weightConverter = $derived(query.data);
 	let unit = $derived(weightConverter?.unit ?? DEFAULT_WEIGHT_UNIT);
@@ -58,7 +60,7 @@
 					id="round-to-nearest"
 					checked={round}
 					onCheckedChange={(v) => {
-						client.mutation(api.weightConverter.upsert, {
+						mutate({
 							round: v
 						});
 					}}
@@ -70,7 +72,7 @@
 					<UnitSelector
 						value={unit}
 						onValueChange={(v) => {
-							client.mutation(api.weightConverter.upsert, {
+							mutate({
 								unit: v
 							});
 						}}
