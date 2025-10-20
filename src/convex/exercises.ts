@@ -2,18 +2,17 @@ import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 import { getAuthUserId } from '@convex-dev/auth/server';
 import { exerciseExecutionType, exerciseLoadType } from './schema';
+import { getAuthUser } from './auth';
 
 export const list = query({
 	args: {},
 	handler: async (ctx) => {
-		const userId = await getAuthUserId(ctx);
-		if (!userId) {
-			return [];
-		}
+		const { _id: userId } = await getAuthUser(ctx);
 
 		const exercises = await ctx.db
 			.query('exercises')
-			.withIndex('by_userId', (q) => q.eq('userId', userId))
+			.withIndex('by_userId_name', (q) => q.eq('userId', userId))
+			.order('asc')
 			.collect();
 
 		return exercises;

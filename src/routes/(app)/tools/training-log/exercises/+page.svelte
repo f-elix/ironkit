@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { triplit } from '$lib/db/triplit';
-	import { useQuery } from '@triplit/svelte';
 	import ExerciseInfoDialog from '$lib/components/training-log/ExerciseInfoDialog.svelte';
 	import { computeCommandScore, Dialog } from 'bits-ui';
 	import { buttonVariants } from '$lib/shadcn/button';
@@ -14,9 +12,12 @@
 	import { muscleGroups as muscleGroupsList } from '$lib/data/muscleGroups';
 	import Badge from '$lib/shadcn/badge/badge.svelte';
 	import ExerciseHistoryDialog from '$lib/components/training-log/ExerciseHistoryDialog.svelte';
-	const allExercisesQuery = useQuery(triplit, triplit.query('exercises').Order('name', 'ASC'));
+	import { api } from '$convex/_generated/api';
+	import { useQuery } from 'convex-svelte';
 
-	let allExercises = $derived(allExercisesQuery.results);
+	const allExercisesQuery = useQuery(api.exercises.list, {});
+
+	let allExercises = $derived(allExercisesQuery.data);
 
 	let search = $state('');
 
@@ -47,7 +48,7 @@
 			</Label>
 			{#if exercises?.length}
 				<ul class="flex flex-col gap-4">
-					{#each exercises as exercise (exercise.id)}
+					{#each exercises as exercise (exercise._id)}
 						{@const name = exercise.name}
 						{@const targetMuscleGroups = Array.from(exercise.muscleGroups)}
 						{@const loadType = exercise.loadType}

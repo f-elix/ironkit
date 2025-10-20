@@ -51,7 +51,7 @@ export default defineSchema({
 		executionType: exerciseExecutionType,
 		loadType: exerciseLoadType,
 		muscleGroups: v.array(v.string())
-	}).index('by_userId', ['userId']),
+	}).index('by_userId_name', ['userId', 'name']),
 
 	workouts: defineTable({
 		...baseSchema(),

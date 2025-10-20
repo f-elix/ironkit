@@ -2,18 +2,17 @@ import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 import { getAuthUserId } from '@convex-dev/auth/server';
 import { weightUnit } from './schema';
+import { getAuthUser } from './auth';
+import { DEFAULT_WEIGHT_UNIT } from '../lib/constants';
 
 export const list = query({
 	args: {},
 	handler: async (ctx) => {
-		const userId = await getAuthUserId(ctx);
-		if (!userId) {
-			return [];
-		}
+		const { _id } = await getAuthUser(ctx);
 
 		const workouts = await ctx.db
 			.query('workouts')
-			.withIndex('by_userId_date', (q) => q.eq('userId', userId))
+			.withIndex('by_userId_date', (q) => q.eq('userId', _id))
 			.order('desc')
 			.collect();
 
@@ -90,25 +89,67 @@ export const create = mutation({
 		date: v.number(),
 		notes: v.optional(v.string()),
 		bodyweight: v.optional(v.number()),
-		bodyweightUnit: v.optional(weightUnit)
+		bodyweightUnit: v.optional(weightUnit),
+		templateWorkoutId: v.optional(v.id('workouts'))
 	},
 	handler: async (ctx, args) => {
-		const userId = await getAuthUserId(ctx);
-		if (!userId) {
-			throw new Error('Not authenticated');
-		}
-
-		const id = await ctx.db.insert('workouts', {
+		const { _id: userId } = await getAuthUser(ctx);
+		const newWorkoutId = await ctx.db.insert('workouts', {
 			userId,
 			title: args.title,
 			date: args.date,
 			notes: args.notes,
 			bodyweight: args.bodyweight,
-			bodyweightUnit: args.bodyweightUnit,
+			bodyweightUnit: args.bodyweightUnit ?? DEFAULT_WEIGHT_UNIT,
 			updatedAt: Date.now()
 		});
-
-		return id;
+		if (args.templateWorkoutId) {
+			const template = await ctx.db.get(args.templateWorkoutId);
+			if (!template || template.userId !== userId) {
+				throw new Error('Template workout not found');
+			}
+			const performanceGroups = await ctx.db
+				.query('performanceGroups')
+				.withIndex('by_workoutId', (q) => q.eq('workoutId', template._id))
+				.collect();
+			for (const group of performanceGroups) {
+				const newGroupId = await ctx.db.insert('performanceGroups', {
+					userId,
+					label: group.label,
+					workoutId: newWorkoutId,
+					workoutOrder: group.workoutOrder,
+					updatedAt: Date.now()
+				});
+				const performances = await ctx.db
+					.query('performances')
+					.withIndex('by_performanceGroupId', (q) => q.eq('performanceGroupId', group._id))
+					.collect();
+				for (const perf of performances) {
+					const newPerformanceId = await ctx.db.insert('performances', {
+						userId,
+						performanceGroupId: newGroupId,
+						exerciseId: perf.exerciseId,
+						groupOrder: perf.groupOrder,
+						workoutId: newWorkoutId,
+						updatedAt: Date.now(),
+						weightUnit: perf.weightUnit
+					});
+					const sets = await ctx.db
+						.query('performanceSets')
+						.withIndex('by_performanceId', (q) => q.eq('performanceId', perf._id))
+						.collect();
+					for (const set of sets) {
+						await ctx.db.insert('performanceSets', {
+							userId,
+							performanceId: newPerformanceId,
+							performanceOrder: set.performanceOrder,
+							updatedAt: Date.now()
+						});
+					}
+				}
+			}
+		}
+		return newWorkoutId;
 	}
 });
 
@@ -122,26 +163,16 @@ export const update = mutation({
 		bodyweightUnit: v.optional(weightUnit)
 	},
 	handler: async (ctx, args) => {
-		const userId = await getAuthUserId(ctx);
-		if (!userId) {
-			throw new Error('Not authenticated');
-		}
-
+		const { _id } = await getAuthUser(ctx);
 		const workout = await ctx.db.get(args.id);
-		if (!workout || workout.userId !== userId) {
+		if (!workout || workout.userId !== _id) {
 			throw new Error('Workout not found');
 		}
-
 		await ctx.db.patch(args.id, {
-			...(args.title !== undefined && { title: args.title }),
-			...(args.date !== undefined && { date: args.date }),
-			...(args.notes !== undefined && { notes: args.notes }),
-			...(args.bodyweight !== undefined && { bodyweight: args.bodyweight }),
-			...(args.bodyweightUnit !== undefined && { bodyweightUnit: args.bodyweightUnit }),
+			...workout,
+			...args,
 			updatedAt: Date.now()
 		});
-
-		return args.id;
 	}
 });
 

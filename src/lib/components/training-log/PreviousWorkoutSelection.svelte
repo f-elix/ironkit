@@ -6,17 +6,17 @@
 	import CaretDoubleDown from '@lucide/svelte/icons/chevrons-down';
 	import { formatDate } from '$lib/ui/formatDate';
 	import Label from '$lib/shadcn/label/label.svelte';
-	import type { Workout } from '$lib/db/types';
+	import type { Doc } from '$convex/_generated/dataModel';
 
 	let {
 		workouts = [],
 		selectedWorkout = $bindable()
-	}: { workouts: Workout[]; selectedWorkout?: Maybe<Workout> } = $props();
+	}: { workouts: Doc<'workouts'>[]; selectedWorkout?: Maybe<Doc<'workouts'>> } = $props();
 
 	let items = $derived(
 		workouts.map((workout) => ({
-			value: workout.id,
-			label: `${workout.title} - ${formatDate(workout.date)}`
+			value: workout._id,
+			label: `${workout.title} - ${formatDate(new Date(workout.date))}`
 		}))
 	);
 
@@ -39,7 +39,7 @@
 		}}
 		onValueChange={(value) => {
 			searchValue = '';
-			selectedWorkout = workouts.find((workout) => workout.id === value);
+			selectedWorkout = workouts.find((workout) => workout._id === value);
 		}}
 	>
 		<Label class="flex flex-col items-start gap-2">
