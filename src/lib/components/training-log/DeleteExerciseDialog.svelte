@@ -1,44 +1,36 @@
 <script lang="ts">
-	import type { Exercise } from '$lib/db/types';
 	import * as Dialog from '$lib/shadcn/dialog';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
 	import { Button, buttonVariants } from '$lib/shadcn/button';
-	import { triplit } from '$lib/db/triplit';
+	import type { Doc } from '$convex/_generated/dataModel';
+	import { useConvexClient } from 'convex-svelte';
+	import { api } from '$convex/_generated/api';
 
-	let { exercise }: { exercise: Exercise } = $props();
+	let { exercise }: { exercise: Doc<'exercises'> } = $props();
 
-	const onDelete = async () => {
-		const performances = await triplit.fetch(
-			triplit.query('performances').Where('exerciseId', '=', exercise.id).Include('sets')
-		);
-		const performanceGroupIds = performances.map((performance) => performance.performanceGroupId);
-		await triplit.transact(async (tx) => {
-			for (const performance of performances) {
-				for (const set of performance.sets) {
-					await tx.delete('performanceSets', set.id);
-				}
-				await tx.delete('performances', performance.id);
-			}
+	const client = useConvexClient();
 
-			await tx.delete('exercises', exercise.id);
-		});
-		const performanceGroups = await triplit.fetch(
-			triplit
-				.query('performanceGroups')
-				.Where('id', 'in', performanceGroupIds)
-				.Include('performances')
-		);
-		await triplit.transact(async (tx) => {
-			for (const performanceGroup of performanceGroups) {
-				if (performanceGroup.performances.length === 0) {
-					await tx.delete('performanceGroups', performanceGroup.id);
+	let open = $state(false);
+
+	const onDelete = () => {
+		client.mutation(
+			api.exercises.remove,
+			{ id: exercise._id },
+			{
+				optimisticUpdate: (localStore) => {
+					localStore.setQuery(
+						api.exercises.list,
+						{},
+						localStore.getQuery(api.exercises.list, {})?.filter((e) => e._id !== exercise._id) ?? []
+					);
 				}
 			}
-		});
+		);
+		open = false;
 	};
 </script>
 
-<Dialog.Root>
+<Dialog.Root bind:open>
 	<Dialog.Trigger
 		class={buttonVariants({ variant: 'destructive', size: 'icon', class: 'size-7' })}
 		aria-label="Delete exercise"

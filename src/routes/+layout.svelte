@@ -7,6 +7,8 @@
 	import { setupViewTransitions } from '$lib/ui/setupViewTransitions';
 	import { createSvelteAuthClient } from '@mmailaender/convex-better-auth-svelte/svelte';
 	import { authClient } from '$lib/auth-client';
+	import { useAuth } from '@mmailaender/convex-better-auth-svelte/svelte';
+	import Spinner from '$lib/shadcn/spinner/spinner.svelte';
 
 	let { children } = $props();
 
@@ -15,11 +17,19 @@
 	setupViewTransitions();
 	watchOffline();
 	watchSWUpdate();
+
+	const auth = useAuth();
 </script>
 
-<Head />
-<Toaster closeButton richColors theme="dark" />
-<aside class="bg-sidebar-primary hidden p-2 text-center md:block">
-	<p class="font-medium">This app is optimized for mobile. The desktop version is coming soon.</p>
-</aside>
-{@render children()}
+{#if auth.isLoading}
+	<div class="flex h-dvh flex-col items-center justify-center">
+		<Spinner class="size-10" />
+	</div>
+{:else}
+	<Head />
+	<Toaster closeButton richColors theme="dark" />
+	<aside class="bg-sidebar-primary hidden p-2 text-center md:block">
+		<p class="font-medium">This app is optimized for mobile. The desktop version is coming soon.</p>
+	</aside>
+	{@render children()}
+{/if}

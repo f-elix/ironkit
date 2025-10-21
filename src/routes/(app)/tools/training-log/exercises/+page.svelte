@@ -39,9 +39,11 @@
 	let exercises = $derived(search ? (filteredExercises ?? []) : (allExercises ?? []));
 </script>
 
-<div class="flex grow flex-col gap-4">
-	{#if allExercises?.length}
-		<div class="flex flex-col gap-8 px-4">
+<div class="flex grow flex-col">
+	{#if allExercisesQuery.isLoading}
+		<div class="flex grow flex-col items-center pt-10">Loading...</div>
+	{:else if allExercises?.length}
+		<div class="flex flex-col gap-4 px-4">
 			<Label>
 				<span class="sr-only">Search exercises</span>
 				<Input placeholder="Search exercises" bind:value={search} />

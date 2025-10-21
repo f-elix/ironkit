@@ -6,7 +6,7 @@
 
 <div class="flex h-dvh flex-col overflow-y-auto">
 	<Header />
-	<div style="view-transition-name: main;" class="flex grow flex-col">
+	<main style="view-transition-name: main;" class="flex grow flex-col">
 		{@render children()}
-	</div>
+	</main>
 </div>

@@ -96,17 +96,61 @@ export const update = mutation({
 export const remove = mutation({
 	args: { id: v.id('exercises') },
 	handler: async (ctx, args) => {
-		const userId = await getAuthUserId(ctx);
-		if (!userId) {
-			throw new Error('Not authenticated');
-		}
-
+		const { _id: userId } = await getAuthUser(ctx);
 		const exercise = await ctx.db.get(args.id);
 		if (!exercise || exercise.userId !== userId) {
 			throw new Error('Exercise not found');
 		}
-
+		// Delete all performances and sets associated with this exercise
+		const performances = await ctx.db
+			.query('performances')
+			.withIndex('by_exerciseId', (q) => q.eq('exerciseId', args.id))
+			.collect();
+		const sets = (
+			await Promise.all(
+				performances.map(async (performance) => {
+					return ctx.db
+						.query('performanceSets')
+						.withIndex('by_performanceId', (q) => q.eq('performanceId', performance._id))
+						.collect();
+				})
+			)
+		).flat();
+		for (const set of sets) {
+			await ctx.db.delete(set._id);
+		}
+		for (const performance of performances) {
+			await ctx.db.delete(performance._id);
+		}
+		// Delete all performance groups that are now empty
+		const performanceGroupIds = [
+			...new Set(performances.map((performance) => performance.performanceGroupId))
+		];
+		// Find all performances still in a performance group from which we have deleted a performance
+		const performancesStillInGroups = (
+			await Promise.all(
+				performanceGroupIds.map(async (performanceGroupId) => {
+					return ctx.db
+						.query('performances')
+						.withIndex('by_performanceGroupId', (q) =>
+							q.eq('performanceGroupId', performanceGroupId)
+						)
+						.collect();
+				})
+			)
+		).flat();
+		// Find all performance groups that are now empty
+		const emptyPerformanceGroupIds = performanceGroupIds.filter(
+			(performanceGroupId) =>
+				!performancesStillInGroups.some(
+					(performance) => performance.performanceGroupId === performanceGroupId
+				)
+		);
+		// Delete all performance groups that are now empty
+		for (const performanceGroupId of emptyPerformanceGroupIds) {
+			await ctx.db.delete(performanceGroupId);
+		}
+		// Delete the exercise
 		await ctx.db.delete(args.id);
-		return args.id;
 	}
 });
