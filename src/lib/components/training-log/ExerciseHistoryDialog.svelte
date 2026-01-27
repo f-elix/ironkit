@@ -5,8 +5,12 @@
 	import * as Tabs from '$lib/shadcn/tabs';
 	import History from '@lucide/svelte/icons/history';
 	import PastPerformancesList from '$lib/components/training-log/PastPerformancesList.svelte';
+	import type { Id } from '$convex/_generated/dataModel';
 
-	let { exerciseId, currentWorkout }: { exerciseId: string; currentWorkout?: Maybe<Workout> } =
+	let {
+		exerciseId,
+		currentWorkout
+	}: { exerciseId: Id<'exercises'>; currentWorkout?: Maybe<Workout> } = $props();
 		$props();
 
 	const allTimeId = 'allTime';

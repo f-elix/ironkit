@@ -1,18 +1,26 @@
 [
-	{
-		"id": "09z1joTOnx9azCvrF4QWg",
-		"userId": "00d62602-33fa-4709-bd8d-b76dca9e1f28",
-		"updatedAt": "2025-04-25T19:55:43.899Z",
-		"genderClass": "male",
-		"totalUnit": "kg",
-		"bodyweightUnit": "kg"
-	},
-	{
-		"id": "SsbHgZIBWQrmJjvHx6QfM",
-		"userId": "7a09f20c-f538-4795-a3b6-93d0221453b9",
-		"updatedAt": "2025-04-26T19:11:44.777Z",
-		"genderClass": "male",
-		"totalUnit": "lbs",
-		"bodyweightUnit": "lbs"
-	}
+  {
+    "id": "09z1joTOnx9azCvrF4QWg",
+    "userId": "00d62602-33fa-4709-bd8d-b76dca9e1f28",
+    "updatedAt": "2025-04-25T19:55:43.899Z",
+    "genderClass": "male",
+    "totalUnit": "kg",
+    "bodyweightUnit": "kg"
+  },
+  {
+    "id": "SsbHgZIBWQrmJjvHx6QfM",
+    "userId": "7a09f20c-f538-4795-a3b6-93d0221453b9",
+    "updatedAt": "2025-04-26T19:11:44.777Z",
+    "genderClass": "male",
+    "totalUnit": "lbs",
+    "bodyweightUnit": "lbs"
+  },
+  {
+    "id": "gw41CpU5jcjCjhJfGaxtO",
+    "userId": "00d62602-33fa-4709-bd8d-b76dca9e1f28",
+    "updatedAt": "2025-04-27T01:37:48.978Z",
+    "genderClass": "male",
+    "totalUnit": "lbs",
+    "bodyweightUnit": "lbs"
+  }
 ]

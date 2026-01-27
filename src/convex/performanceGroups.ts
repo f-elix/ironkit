@@ -34,6 +34,9 @@ export const getById = query({
 			return null;
 		}
 
+		// Get workout for this group
+		const workout = await ctx.db.get(group.workoutId);
+
 		// Get performances for this group
 		const performances = await ctx.db
 			.query('performances')
@@ -56,7 +59,8 @@ export const getById = query({
 				return {
 					...perf,
 					exercise: exerciseMap.get(perf.exerciseId) || null,
-					sets: sets.sort((a, b) => a.performanceOrder - b.performanceOrder)
+					sets: sets.sort((a, b) => a.performanceOrder - b.performanceOrder),
+					workout
 				};
 			})
 		);

@@ -2,32 +2,17 @@
 	import type { Workout } from '$lib/db/types';
 	import { Button, buttonVariants } from '$lib/shadcn/button';
 	import * as Dialog from '$lib/shadcn/dialog';
-	import { triplit } from '$lib/db/triplit';
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { useConvexClient } from 'convex-svelte';
+	import { api } from '$convex/_generated/api';
 
 	let { workout, open = $bindable() }: { workout: Workout; open: boolean } = $props();
 
+	const client = useConvexClient();
+
 	const onDelete = async () => {
-		const workoutId = workout.id;
-		const performanceGroups = await triplit.fetch(
-			triplit
-				.query('performanceGroups')
-				.Where('workoutId', '=', workoutId)
-				.Include('performances', (rel) => rel('performances').Include('sets'))
-		);
-		await triplit.transact(async (tx) => {
-			await tx.delete('workouts', workoutId);
-			for (const performanceGroup of performanceGroups) {
-				for (const performance of performanceGroup.performances) {
-					for (const set of performance.sets) {
-						await tx.delete('performanceSets', set.id);
-					}
-					await tx.delete('performances', performance.id);
-				}
-				await tx.delete('performanceGroups', performanceGroup.id);
-			}
-		});
+		await client.mutation(api.workouts.remove, { id: workout._id });
 		goto(resolve('/(app)/tools/training-log'));
 	};
 </script>

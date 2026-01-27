@@ -7,12 +7,13 @@
 	import type { Snippet } from 'svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import Separator from '$lib/shadcn/separator/separator.svelte';
+	import type { Id } from '$convex/_generated/dataModel';
 
 	let {
 		onExerciseAdded,
 		trigger
 	}: {
-		onExerciseAdded?: (exerciseId: string) => Promise<void> | void;
+		onExerciseAdded?: (exerciseId: Id<'exercises'>) => Promise<void> | void;
 		trigger?: Snippet;
 	} = $props();
 
@@ -40,8 +41,8 @@
 						<p class="text-muted-foreground text-sm">No exercises found</p>
 						<ExerciseInfoDialog
 							name={value}
-							onExerciseCreated={(newExercise) => {
-								onExerciseSelected(newExercise.id);
+							onExerciseCreated={(newExerciseId) => {
+								onExerciseSelected(newExerciseId);
 								open = false;
 							}}
 						/>
@@ -50,8 +51,8 @@
 						<ExerciseInfoDialog
 							name={value}
 							triggerSize="sm"
-							onExerciseCreated={(newExercise) => {
-								onExerciseSelected(newExercise.id);
+							onExerciseCreated={(newExerciseId) => {
+								onExerciseSelected(newExerciseId);
 								open = false;
 							}}
 						/>
@@ -80,8 +81,8 @@
 		{/snippet}
 		{#snippet button()}
 			<ExerciseInfoDialog
-				onExerciseCreated={(newExercise) => {
-					onExerciseSelected(newExercise.id);
+				onExerciseCreated={(newExerciseId) => {
+					onExerciseSelected(newExerciseId);
 				}}
 			/>
 		{/snippet}

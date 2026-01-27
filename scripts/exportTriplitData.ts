@@ -1,6 +1,6 @@
 import { TriplitClient } from '@triplit/client';
 import { schema } from '../triplit/schema.js';
-import { writeFileSync } from 'fs';
+import { readdirSync, rmSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { loadEnv } from 'vite';
 
@@ -33,13 +33,26 @@ const collectionNames = [
 	'performanceSets'
 ] as const;
 
+const cleanPreviousExport = () => {
+	const exportPath = join(process.cwd(), 'data-export.json');
+	rmSync(exportPath, { force: true });
+
+	const dataDir = join(process.cwd(), 'src/convex/triplit-data');
+	for (const entry of readdirSync(dataDir)) {
+		if (entry.endsWith('.json')) {
+			rmSync(join(dataDir, entry), { force: true });
+		}
+	}
+};
+
 async function exportData() {
+	cleanPreviousExport();
+
 	const exportData: Record<string, any[]> = {};
 
 	for (const collectionName of collectionNames) {
 		console.log(`\nExporting ${collectionName}...`);
 		try {
-			// Try to fetch from server first
 			const results = await triplit.http.fetch({ collectionName });
 			exportData[collectionName] = results;
 			console.log(`  ✓ Exported ${results.length} items from ${collectionName}`);
@@ -53,7 +66,6 @@ async function exportData() {
 	writeFileSync(outputPath, JSON.stringify(exportData, null, 2));
 	console.log(`\n✓ Export complete! Data saved to: ${outputPath}`);
 
-	// Print summary
 	console.log('\n--- Export Summary ---');
 	for (const [collection, items] of Object.entries(exportData)) {
 		console.log(`${collection}: ${items.length} items`);

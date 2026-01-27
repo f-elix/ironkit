@@ -1,28 +1,27 @@
-import { triplit } from '$lib/db/triplit';
 import type { PerformanceGroup } from '$lib/db/types';
-import { userId } from '$lib/db/userId';
+import { DEFAULT_WEIGHT_UNIT } from '$lib/constants';
+import { api } from '$convex/_generated/api';
+import type { Id } from '$convex/_generated/dataModel';
+import type { ConvexClient } from 'convex/browser';
 
 export const addExerciseToPeformanceGroup = async (
+	client: ConvexClient,
 	performanceGroup: PerformanceGroup,
-	exerciseId: string,
+	exerciseId: Id<'exercises'>,
 	groupOrder: number
 ) => {
-	const result = await triplit.transact(async (tx) => {
-		const performance = await tx.insert('performances', {
-			userId: userId(),
-			performanceGroupId: performanceGroup.id,
-			exerciseId,
-			groupOrder,
-			workoutId: performanceGroup.workoutId
-		});
-
-		const performanceSet = await tx.insert('performanceSets', {
-			userId: userId(),
-			performanceId: performance.id,
-			performanceOrder: 0
-		});
-
-		return { performance, performanceSet };
+	const performanceId = await client.mutation(api.performances.create, {
+		performanceGroupId: performanceGroup._id,
+		exerciseId,
+		groupOrder,
+		workoutId: performanceGroup.workoutId,
+		weightUnit: DEFAULT_WEIGHT_UNIT
 	});
-	return result;
+
+	const performanceSetId = await client.mutation(api.performanceSets.create, {
+		performanceId,
+		performanceOrder: 0
+	});
+
+	return { performanceId, performanceSetId };
 };

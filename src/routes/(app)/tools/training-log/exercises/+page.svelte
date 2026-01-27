@@ -96,7 +96,7 @@
 												</Dialog.Trigger>
 											{/snippet}
 										</ExerciseInfoDialog>
-										<ExerciseHistoryDialog exerciseId={exercise.id} />
+										<ExerciseHistoryDialog exerciseId={exercise._id} />
 									</div>
 								</div>
 							</article>

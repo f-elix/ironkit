@@ -1,37 +1,16 @@
 <script lang="ts">
 	import PerformanceSetSummary from '$lib/components/training-log/PerformanceSetSummary.svelte';
-	import { triplit } from '$lib/db/triplit';
 	import Badge from '$lib/shadcn/badge/badge.svelte';
-	import { or } from '@triplit/client';
-	import { useQueryOne } from '@triplit/svelte';
+	import { useQuery } from 'convex-svelte';
+	import { api } from '$convex/_generated/api';
 
-	let { performanceGroupId }: { performanceGroupId: string } = $props();
+	import type { Id } from '$convex/_generated/dataModel';
 
-	const query = useQueryOne(
-		triplit,
-		triplit
-			.query('performanceGroups')
-			.Where('id', '=', performanceGroupId)
-			.Include('performances', (performancesRel) => {
-				return performancesRel('performances')
-					.Order('groupOrder', 'ASC')
-					.Include('exercise')
-					.Include('sets', (setsRel) => {
-						return setsRel('sets')
-							.Where(
-								or([
-									['weight', '>', 0],
-									['reps', '>', 0],
-									['durationSeconds', '>', 0]
-								])
-							)
-							.Order('performanceOrder', 'ASC');
-					})
-					.Include('workout');
-			})
-	);
+	let { performanceGroupId }: { performanceGroupId: Id<'performanceGroups'> } = $props();
 
-	let performanceGroup = $derived(query.result);
+	const query = useQuery(api.performanceGroups.getById, { id: performanceGroupId });
+
+	let performanceGroup = $derived(query.data);
 	let label = $derived(performanceGroup?.label);
 	let performances = $derived(performanceGroup?.performances ?? []);
 </script>
@@ -40,9 +19,15 @@
 	{#if label && performances.length > 1}
 		<Badge>{label}</Badge>
 	{/if}
-	{#each performances as performance (performance.id)}
+	{#each performances as performance (performance._id)}
 		{@const exercise = performance.exercise}
-		{@const sets = performance.sets ?? []}
+		{@const sets =
+			performance.sets?.filter(
+				(set) =>
+					(set.weight && set.weight > 0) ||
+					(set.reps && set.reps > 0) ||
+					(set.durationSeconds && set.durationSeconds > 0)
+			) ?? []}
 		{@const note = performance.note}
 		<div class="flex w-full flex-col gap-4">
 			<div>
@@ -55,7 +40,7 @@
 			</div>
 			{#if sets.length}
 				<ol class="flex flex-col gap-2">
-					{#each sets as set, i (set.id)}
+					{#each sets as set, i (set._id)}
 						<li>
 							<PerformanceSetSummary {set} {performance} order={i + 1} />
 						</li>

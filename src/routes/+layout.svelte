@@ -9,10 +9,13 @@
 	import { authClient } from '$lib/auth-client';
 	import { useAuth } from '@mmailaender/convex-better-auth-svelte/svelte';
 	import Spinner from '$lib/shadcn/spinner/spinner.svelte';
+	import { setupConvex } from 'convex-svelte';
+	import { PUBLIC_CONVEX_URL } from '$env/static/public';
 
 	let { children } = $props();
 
 	createSvelteAuthClient({ authClient });
+	setupConvex(PUBLIC_CONVEX_URL);
 
 	setupViewTransitions();
 	watchOffline();
