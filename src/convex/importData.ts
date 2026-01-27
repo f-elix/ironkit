@@ -1,5 +1,6 @@
 // @ts-nocheck
 import { internalMutation } from './_generated/server';
+import { v } from 'convex/values';
 import exercises from './triplit-data/exercises.json' with { type: 'json' };
 import workouts from './triplit-data/workouts.json' with { type: 'json' };
 import performanceGroups from './triplit-data/performanceGroups.json' with { type: 'json' };
@@ -20,6 +21,9 @@ export const importFromTriplit = internalMutation({
 
 		console.log('Starting import...');
 
+		const normalizeMuscleGroups = (value: unknown) =>
+			Array.isArray(value) ? value : [];
+
 		// Import exercises first (no dependencies)
 		console.log(`Importing ${exercises.length} exercises...`);
 		for (const exercise of exercises) {
@@ -33,7 +37,7 @@ export const importFromTriplit = internalMutation({
 				name: exercise.name,
 				executionType: exercise.executionType,
 				loadType: exercise.loadType,
-				muscleGroups: exercise.muscleGroups || [],
+				muscleGroups: normalizeMuscleGroups(exercise.muscleGroups),
 				updatedAt: Date.now()
 			});
 			idMap.set(exercise.id, newId);
@@ -198,5 +202,28 @@ export const importFromTriplit = internalMutation({
 
 		console.log('Import complete!');
 		return { success: true };
+	}
+});
+
+export const clearTable = internalMutation({
+	args: {
+		table: v.union(
+			v.literal('performanceSets'),
+			v.literal('performances'),
+			v.literal('performanceGroups'),
+			v.literal('workouts'),
+			v.literal('exercises'),
+			v.literal('weightConverter'),
+			v.literal('coefficientCalculator'),
+			v.literal('loadPercentageCalculator'),
+			v.literal('plateCalculator')
+		)
+	},
+	handler: async (ctx, args) => {
+		const docs = await ctx.db.query(args.table).collect();
+		for (const doc of docs) {
+			await ctx.db.delete(doc._id);
+		}
+		return { deleted: docs.length };
 	}
 });
