@@ -1,16 +1,31 @@
 <script lang="ts">
+	import { useAuth } from '@mmailaender/convex-better-auth-svelte/svelte';
+	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import Button from '$lib/shadcn/button/button.svelte';
-	import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
+	import Logo from '$lib/components/svg/Logo.svelte';
 	import GoogleLoginConvex from '$lib/components/app/GoogleLoginConvex.svelte';
+
+	const auth = useAuth();
+
+	// Redirect to home if already authenticated
+	$effect(() => {
+		if (auth.isAuthenticated) {
+			goto(resolve('/'));
+		}
+	});
 </script>
 
-<div class="flex h-dvh flex-col p-4">
-	<Button variant="outline" size="icon" href={resolve('/')} aria-label="Back to home">
-		<ArrowLeftIcon />
-	</Button>
-	<div class="flex grow flex-col items-center justify-center gap-4">
-		<h1 class="text-center text-xl font-semibold">Sign in below</h1>
-		<GoogleLoginConvex />
+{#if !auth.isAuthenticated}
+	<div class="flex h-dvh flex-col items-center justify-center p-4">
+		<div class="flex flex-col items-center gap-6">
+			<div class="w-32">
+				<Logo />
+			</div>
+			<h1 class="text-2xl font-bold">Welcome to Ironkit</h1>
+			<p class="text-muted-foreground text-center">
+				Sign in to start tracking your workouts
+			</p>
+			<GoogleLoginConvex />
+		</div>
 	</div>
-</div>
+{/if}

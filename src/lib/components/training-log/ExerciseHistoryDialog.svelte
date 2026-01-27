@@ -11,7 +11,6 @@
 		exerciseId,
 		currentWorkout
 	}: { exerciseId: Id<'exercises'>; currentWorkout?: Maybe<Workout> } = $props();
-		$props();
 
 	const allTimeId = 'allTime';
 	const upToWorkoutId = 'upToWorkout';

@@ -1,6 +1,6 @@
 # Agent Instructions
 
-Mortgage broker portal web app for managing client opportunities.
+Collection of tools for lifters, with an extensive training log.
 
 ## Package Manager
 
