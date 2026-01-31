@@ -4,17 +4,20 @@
 	import Button from '$lib/shadcn/button/button.svelte';
 	import Plus from '@lucide/svelte/icons/circle-plus';
 	import Minus from '@lucide/svelte/icons/circle-minus';
-	import { triplit } from '$lib/db/triplit';
 	import Label from '$lib/shadcn/label/label.svelte';
 	import Textarea from '$lib/shadcn/textarea/textarea.svelte';
 	import { scale } from 'svelte/transition';
 	import { expoOut } from 'svelte/easing';
 	import { flip } from 'svelte/animate';
+	import { useConvexClient } from 'convex-svelte';
+	import { api } from '$convex/_generated/api';
+	import type { Id } from '$convex/_generated/dataModel';
 
 	type Performance = WorkoutWithRelations['performanceGroups'][number]['performances'][number];
 
 	let { performance }: { performance: Performance } = $props();
 
+	const client = useConvexClient();
 	let sets = $derived(performance.sets);
 	let unit = $derived(performance.weightUnit);
 	let exercise = $derived(performance.exercise);
@@ -23,20 +26,19 @@
 		const performanceOrder = nextOrder
 			? (nextOrder - currentOrder) / 2 + currentOrder
 			: currentOrder + 1;
-		triplit.insert('performanceSets', {
-			userId: performance.userId,
-			performanceId: performance.id,
+		client.mutation(api.performanceSets.create, {
+			performanceId: performance._id,
 			performanceOrder
 		});
 	};
 
-	const deleteSet = (setId: string) => {
-		triplit.delete('performanceSets', setId);
+	const deleteSet = (setId: Id<'performanceSets'>) => {
+		client.mutation(api.performanceSets.remove, { id: setId });
 	};
 </script>
 
 <ol class="flex flex-col gap-6">
-	{#each sets as set, i (set.id)}
+	{#each sets as set, i (set._id)}
 		<li
 			class="flex origin-top flex-col gap-2"
 			in:scale={{ duration: 500, easing: expoOut, start: 0.5, opacity: 0.5 }}
@@ -57,7 +59,7 @@
 							variant="link"
 							class="ml-auto"
 							onclick={() => {
-								deleteSet(set.id);
+								deleteSet(set._id);
 							}}
 							aria-label="Remove set"
 						>
@@ -74,7 +76,8 @@
 					placeholder="Set note (RIR, RPE, etc.)"
 					value={set.note}
 					oninput={(event) => {
-						triplit.update('performanceSets', set.id, {
+						client.mutation(api.performanceSets.update, {
+							id: set._id,
 							note: event.currentTarget.value
 						});
 					}}

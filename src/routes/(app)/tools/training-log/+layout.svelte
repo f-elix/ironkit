@@ -4,9 +4,7 @@
 	import { resolve } from '$app/paths';
 	import { expoOut } from 'svelte/easing';
 	import { crossfade } from 'svelte/transition';
-	import type { Pathname } from '$app/types';
-
-	const navItems: { label: string; href: Pathname }[] = [
+	const navItems = [
 		{
 			label: 'Workouts',
 			href: '/tools/training-log'
@@ -15,7 +13,7 @@
 			label: 'Exercises',
 			href: '/tools/training-log/exercises'
 		}
-	];
+	] as const;
 
 	let { children } = $props();
 

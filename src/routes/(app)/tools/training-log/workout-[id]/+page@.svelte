@@ -2,16 +2,17 @@
 	import { page } from '$app/state';
 	import PerformanceGroups from '$lib/components/training-log/PerformanceGroups.svelte';
 	import WorkoutHeader from '$lib/components/training-log/WorkoutHeader.svelte';
-	import { triplit } from '$lib/db/triplit';
 	import Button from '$lib/shadcn/button/button.svelte';
-	import { useQuery } from '@triplit/svelte';
+	import { useQuery } from 'convex-svelte';
 	import Check from '@lucide/svelte/icons/check';
 	import { resolve } from '$app/paths';
+	import { api } from '$convex/_generated/api';
+	import type { Id } from '$convex/_generated/dataModel';
 
-	const workoutId = page.params.id as string;
-	const query = useQuery(triplit, triplit.query('workouts').Where('id', '=', workoutId));
+	const workoutId = page.params.id as Id<'workouts'>;
+	const query = useQuery(api.workouts.getById, { id: workoutId });
 
-	let workout = $derived(query.results?.[0]);
+	let workout = $derived(query.data);
 </script>
 
 {#if workout}

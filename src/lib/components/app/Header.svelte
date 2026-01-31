@@ -1,14 +1,15 @@
 <script lang="ts">
 	import LogoSymbol from '$lib/components/svg/LogoSymbol.svelte';
-	import { authContext } from '$lib/db/Auth.svelte';
 	import Button from '$lib/shadcn/button/button.svelte';
 	import LogOutIcon from '@lucide/svelte/icons/log-out';
 	import LogInIcon from '@lucide/svelte/icons/log-in';
 	import { resolve } from '$app/paths';
+	import { useAuth } from '@mmailaender/convex-better-auth-svelte/svelte';
+	import { authClient } from '$lib/auth-client';
 
-	const auth = authContext.get();
+	const auth = useAuth();
 
-	let user = $derived(auth.user);
+	let isAuthenticated = $derived(auth.isAuthenticated);
 </script>
 
 <header
@@ -18,8 +19,8 @@
 	<a href={resolve('/')} aria-label="Home" class="w-6">
 		<LogoSymbol class="size-6 sm:size-8" />
 	</a>
-	{#if user}
-		<Button variant="ghost" size="sm" onclick={auth.signOut}>
+	{#if isAuthenticated}
+		<Button variant="ghost" size="sm" onclick={async () => await authClient.signOut()}>
 			<LogOutIcon />
 			Logout
 		</Button>

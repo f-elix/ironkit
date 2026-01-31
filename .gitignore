@@ -26,3 +26,7 @@ vite.config.ts.timestamp-*
 .eslintcache
 
 ideas
+
+# Convex
+.convex/
+convex/_generated/

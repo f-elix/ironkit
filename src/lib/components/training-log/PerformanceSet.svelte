@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { exerciseLoadType } from '$lib/db/exerciseLoadType';
-	import { triplit } from '$lib/db/triplit';
 	import type { Exercise, PerformanceSet } from '$lib/db/types';
 	import Input from '$lib/shadcn/input/input.svelte';
 	import Label from '$lib/shadcn/label/label.svelte';
 	import type { WeightUnit } from '$lib/types';
+	import { useConvexClient } from 'convex-svelte';
+	import { api } from '$convex/_generated/api';
 
 	let {
 		set,
@@ -12,6 +13,7 @@
 		exercise
 	}: { set: PerformanceSet; unit: WeightUnit; exercise: Maybe<Exercise> } = $props();
 
+	const client = useConvexClient();
 	const executionType = exercise?.executionType ?? 'reps';
 	const loadType = exerciseLoadType(exercise) ?? 'weighted';
 	const weight = set.weight;
@@ -21,17 +23,17 @@
 	const onWeightChange = (event: Event) => {
 		const value = (event.target as HTMLInputElement).value;
 		const valueAsNumber = parseFloat(value);
-		triplit.update('performanceSets', set.id, { weight: valueAsNumber || 0 });
+		client.mutation(api.performanceSets.update, { id: set._id, weight: valueAsNumber || 0 });
 	};
 
 	const onRepsChange = (event: Event) => {
 		const value = (event.target as HTMLInputElement).valueAsNumber || 0;
-		triplit.update('performanceSets', set.id, { reps: value });
+		client.mutation(api.performanceSets.update, { id: set._id, reps: value });
 	};
 
 	const onTimeChange = (event: Event) => {
 		const value = (event.target as HTMLInputElement).valueAsNumber || 0;
-		triplit.update('performanceSets', set.id, { durationSeconds: value });
+		client.mutation(api.performanceSets.update, { id: set._id, durationSeconds: value });
 	};
 </script>
 

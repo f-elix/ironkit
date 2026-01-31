@@ -5,10 +5,8 @@
 	import Input from '$lib/shadcn/input/input.svelte';
 	import LargeRadioButtons from '$lib/components/ui/LargeRadioButtons.svelte';
 	import MuscleGroupSelection from '$lib/components/training-log/MuscleGroupSelection.svelte';
-	import { triplit } from '$lib/db/triplit';
 	import type { Exercise } from '$lib/db/types';
 	import type { Snippet } from 'svelte';
-	import { userId } from '$lib/db/userId';
 	import {
 		DEFAULT_EXERCISE_EXECUTION_TYPE,
 		DEFAULT_EXERCISE_LOAD_TYPE,
@@ -16,6 +14,9 @@
 		EXERCISE_LOAD_TYPES
 	} from '$lib/constants';
 	import { exerciseLoadType } from '$lib/db/exerciseLoadType';
+	import { useConvexClient } from 'convex-svelte';
+	import { api } from '$convex/_generated/api';
+	import type { Id } from '$convex/_generated/dataModel';
 
 	let {
 		exercise,
@@ -28,9 +29,10 @@
 		trigger?: Snippet;
 		name?: string;
 		triggerSize?: 'default' | 'sm';
-		onExerciseCreated?: (exercise: Exercise) => void;
+		onExerciseCreated?: (exerciseId: Id<'exercises'>) => void;
 	} = $props();
 
+	const client = useConvexClient();
 	let open = $state(false);
 
 	const title = exercise ? 'Edit exercise' : 'Create exercise';
@@ -53,21 +55,21 @@
 
 	const onSave = async () => {
 		if (exercise) {
-			await triplit.update('exercises', exercise.id, {
+			await client.mutation(api.exercises.update, {
+				id: exercise._id,
 				name: name ?? '',
 				executionType: executionType,
 				loadType: loadType,
-				muscleGroups: new Set(muscleGroups)
+				muscleGroups
 			});
 		} else {
-			const newExercise = await triplit.insert('exercises', {
-				userId: userId(),
+			const newExerciseId = await client.mutation(api.exercises.create, {
 				name: name ?? '',
 				executionType: executionType,
 				loadType: loadType,
 				muscleGroups: muscleGroups
 			});
-			onExerciseCreated?.(newExercise);
+			onExerciseCreated?.(newExerciseId);
 		}
 		open = false;
 		resetState();

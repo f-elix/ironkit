@@ -5,14 +5,16 @@
 	import { DEFAULT_WEIGHT_UNIT, DEFAULT_GENDER_CLASS, GENDER_CLASSES } from '$lib/constants';
 	import { Label } from '$lib/shadcn/label';
 	import ToolLayout from '$lib/components/app/ToolLayout.svelte';
-	import { useQuery } from '@triplit/svelte';
-	import { triplit } from '$lib/db/triplit';
-	import type { GenderClass } from '$lib/types';
+	import { useQueryMutation } from '$lib/useQueryMutation';
+	import { api } from '$convex/_generated/api';
 	import LargeRadioButtons from '$lib/components/ui/LargeRadioButtons.svelte';
-	import { userId } from '$lib/db/userId';
 
-	const query = useQuery(triplit, triplit.query('coefficientCalculator'));
-	let coefficientCalculator = $derived(query.results?.[0]);
+	const [query, mutate] = useQueryMutation({
+		query: api.coefficientCalculator.get,
+		mutation: api.coefficientCalculator.upsert
+	});
+
+	let coefficientCalculator = $derived(query.data);
 	let bodyweightUnit = $derived(coefficientCalculator?.bodyweightUnit ?? DEFAULT_WEIGHT_UNIT);
 	let totalUnit = $derived(coefficientCalculator?.totalUnit ?? DEFAULT_WEIGHT_UNIT);
 	let genderClass = $derived(coefficientCalculator?.genderClass ?? DEFAULT_GENDER_CLASS);
@@ -70,9 +72,7 @@
 				<UnitSelector
 					value={totalUnit}
 					onValueChange={(v) => {
-						triplit.insert('coefficientCalculator', {
-							...coefficientCalculator,
-							userId: coefficientCalculator?.userId ?? userId(),
+						mutate({
 							totalUnit: v
 						});
 					}}
@@ -84,9 +84,7 @@
 				<UnitSelector
 					value={bodyweightUnit}
 					onValueChange={(v) => {
-						triplit.insert('coefficientCalculator', {
-							...coefficientCalculator,
-							userId: coefficientCalculator?.userId ?? userId(),
+						mutate({
 							bodyweightUnit: v
 						});
 					}}
@@ -100,10 +98,8 @@
 				}))}
 				value={genderClass}
 				onValueChange={(v) => {
-					triplit.insert('coefficientCalculator', {
-						...coefficientCalculator,
-						userId: coefficientCalculator?.userId ?? userId(),
-						genderClass: v as GenderClass
+					mutate({
+						genderClass: v
 					});
 				}}
 			/>

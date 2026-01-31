@@ -15,7 +15,7 @@
 	} = $props();
 
 	let title = $derived(workout.title);
-	let date = $derived(workout.date);
+	let date = $derived(workout.date ? new Date(workout.date) : undefined);
 	let notes = $derived(workout.notes);
 	let bodyweight = $derived(workout.bodyweight);
 	let bodyweightUnit = $derived(workout.bodyweightUnit);

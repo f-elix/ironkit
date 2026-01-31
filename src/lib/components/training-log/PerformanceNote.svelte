@@ -1,15 +1,18 @@
 <script lang="ts">
 	import { Textarea } from '$lib/shadcn/textarea';
-	import { triplit } from '$lib/db/triplit';
 	import Label from '$lib/shadcn/label/label.svelte';
+	import { useConvexClient } from 'convex-svelte';
+	import { api } from '$convex/_generated/api';
 
 	import type { Performance } from '$lib/db/types';
 
 	let { performance }: { performance: Performance } = $props();
 
+	const client = useConvexClient();
+
 	const onNoteChange = (event: Event) => {
 		const note = (event.target as HTMLTextAreaElement).value;
-		triplit.update('performances', performance.id, { note });
+		client.mutation(api.performances.update, { id: performance._id, note });
 	};
 </script>
 

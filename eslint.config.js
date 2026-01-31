@@ -54,6 +54,6 @@ export default ts.config(
 		}
 	},
 	{
-		ignores: ['src/lib/shadcn']
+		ignores: ['src/lib/shadcn', 'src/convex/_generated', 'src/convex/importData.ts', 'scripts']
 	}
 );

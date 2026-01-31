@@ -1,28 +1,29 @@
 <script lang="ts">
 	import * as Command from '$lib/shadcn/command';
 	import * as Dialog from '$lib/shadcn/dialog';
-	import { triplit } from '$lib/db/triplit';
-	import { useQuery } from '@triplit/svelte';
+	import { api } from '$convex/_generated/api';
+	import { useQuery } from 'convex-svelte';
 	import ExerciseInfoDialog from '$lib/components/training-log/ExerciseInfoDialog.svelte';
 	import type { Snippet } from 'svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import Separator from '$lib/shadcn/separator/separator.svelte';
+	import type { Id } from '$convex/_generated/dataModel';
 
 	let {
 		onExerciseAdded,
 		trigger
 	}: {
-		onExerciseAdded?: (exerciseId: string) => Promise<void> | void;
+		onExerciseAdded?: (exerciseId: Id<'exercises'>) => Promise<void> | void;
 		trigger?: Snippet;
 	} = $props();
 
-	const exercisesQuery = useQuery(triplit, triplit.query('exercises'));
+	const exercisesQuery = useQuery(api.exercises.list, {});
 
-	let exercises = $derived(exercisesQuery.results ?? []);
+	let exercises = $derived(exercisesQuery.data ?? []);
 	let value = $state('');
 	let open = $state(false);
 
-	const onExerciseSelected = async (exerciseId: string) => {
+	const onExerciseSelected = async (exerciseId: Id<'exercises'>) => {
 		await onExerciseAdded?.(exerciseId);
 		open = false;
 		value = '';
@@ -40,8 +41,8 @@
 						<p class="text-muted-foreground text-sm">No exercises found</p>
 						<ExerciseInfoDialog
 							name={value}
-							onExerciseCreated={(newExercise) => {
-								onExerciseSelected(newExercise.id);
+							onExerciseCreated={(newExerciseId) => {
+								onExerciseSelected(newExerciseId);
 								open = false;
 							}}
 						/>
@@ -50,19 +51,19 @@
 						<ExerciseInfoDialog
 							name={value}
 							triggerSize="sm"
-							onExerciseCreated={(newExercise) => {
-								onExerciseSelected(newExercise.id);
+							onExerciseCreated={(newExerciseId) => {
+								onExerciseSelected(newExerciseId);
 								open = false;
 							}}
 						/>
 						<Separator class="my-2" />
-						{#each exercises as exercise (exercise.id)}
+						{#each exercises as exercise (exercise._id)}
 							<Command.Item
 								class="text-lg"
 								value={exercise.name.toLowerCase()}
 								keywords={[...exercise.muscleGroups, exercise.loadType, exercise.executionType]}
 								onSelect={() => {
-									onExerciseSelected(exercise.id);
+									onExerciseSelected(exercise._id);
 								}}
 							>
 								{exercise.name}
@@ -80,8 +81,8 @@
 		{/snippet}
 		{#snippet button()}
 			<ExerciseInfoDialog
-				onExerciseCreated={(newExercise) => {
-					onExerciseSelected(newExercise.id);
+				onExerciseCreated={(newExerciseId) => {
+					onExerciseSelected(newExerciseId);
 				}}
 			/>
 		{/snippet}

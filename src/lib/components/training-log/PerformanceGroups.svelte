@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { triplit } from '$lib/db/triplit';
-	import { useQuery } from '@triplit/svelte';
+	import { useConvexClient, useQuery } from 'convex-svelte';
+	import { api } from '$convex/_generated/api';
 	import ExerciseSelection from '$lib/components/training-log/ExerciseSelection.svelte';
 	import PerformanceGroup from '$lib/components/training-log/PerformanceGroup.svelte';
 	import { Accordion } from 'bits-ui';
@@ -14,27 +14,24 @@
 	import { dragHandle, dragHandleZone, type DndZoneAttributes } from 'svelte-dnd-action';
 	import { flip } from 'svelte/animate';
 	import { expoOut } from 'svelte/easing';
-	import type { PerformanceGroup as PerformanceGroupType } from '$lib/db/types';
+	import type { Doc, Id } from '$convex/_generated/dataModel';
 
-	let { workoutId }: { workoutId: string } = $props();
+	let { workoutId }: { workoutId: Id<'workouts'> } = $props();
 
 	const FLIP_DURATION = 400;
 
-	const query = useQuery(
-		triplit,
-		triplit
-			.query('performanceGroups')
-			.Where('workoutId', '=', workoutId)
-			.Order('workoutOrder', 'ASC')
-	);
+	type PerformanceGroupType = Doc<'performanceGroups'>;
 
-	let performanceGroups = $derived(query.results ?? []);
+	const client = useConvexClient();
+	const query = useQuery(api.performanceGroups.list, { workoutId });
+
+	let performanceGroups = $derived(query.data ?? []);
 	let lastOrder = $derived(performanceGroups?.at(-1)?.workoutOrder ?? 0);
 	let selectedPerformanceGroupId = $state<string>();
 
-	const onExerciseAdded = async (exerciseId: string) => {
-		const result = await addExerciseToWorkout(workoutId, exerciseId, lastOrder + 1);
-		selectedPerformanceGroupId = result.performanceGroup.id;
+	const onExerciseAdded = async (exerciseId: Id<'exercises'>) => {
+		const result = await addExerciseToWorkout(client, workoutId, exerciseId, lastOrder + 1);
+		selectedPerformanceGroupId = result.performanceGroupId;
 	};
 
 	const onconsider: DndZoneAttributes<PerformanceGroupType>['onconsider'] = async (e) => {
@@ -45,10 +42,15 @@
 	const onfinalize: DndZoneAttributes<PerformanceGroupType>['onfinalize'] = async (e) => {
 		const items = e.detail.items;
 		performanceGroups = items;
-		items.map(async (item, index) => {
-			await triplit.update('performanceGroups', item.id, {
+		performanceGroups = items.map((item, index) => ({
+			...item,
+			workoutOrder: index
+		}));
+		await client.mutation(api.performanceGroups.updateOrder, {
+			updates: items.map((item, index) => ({
+				id: item._id,
 				workoutOrder: index
-			});
+			}))
 		});
 	};
 </script>
@@ -69,24 +71,24 @@
 					{onconsider}
 					{onfinalize}
 				>
-					{#each performanceGroups as performanceGroup (performanceGroup.id)}
+					{#each performanceGroups as performanceGroup (performanceGroup._id)}
 						<li
 							class="flex"
 							animate:flip={{
 								// If the performance group is being edited, don't animate the flip
-								duration: performanceGroup.id === selectedPerformanceGroupId ? 0 : FLIP_DURATION,
+								duration: performanceGroup._id === selectedPerformanceGroupId ? 0 : FLIP_DURATION,
 								easing: expoOut
 							}}
 						>
-							<Accordion.Item value={performanceGroup.id} class="grow">
-								{#if selectedPerformanceGroupId !== performanceGroup.id}
+							<Accordion.Item value={performanceGroup._id} class="grow">
+								{#if selectedPerformanceGroupId !== performanceGroup._id}
 									<Accordion.Trigger
 										class={buttonVariants({
 											variant: 'secondary',
 											class: 'h-auto w-full rounded-r-none'
 										})}
 									>
-										<PerformanceGroupSummary performanceGroupId={performanceGroup.id} />
+										<PerformanceGroupSummary performanceGroupId={performanceGroup._id} />
 									</Accordion.Trigger>
 								{/if}
 								<Accordion.Content forceMount>
@@ -94,13 +96,13 @@
 										{#if open}
 											<!-- Forcemount so that `displayNote` inside the group is reset -->
 											<div {...props}>
-												<PerformanceGroup performanceGroupId={performanceGroup.id} />
+												<PerformanceGroup performanceGroupId={performanceGroup._id} />
 											</div>
 										{/if}
 									{/snippet}
 								</Accordion.Content>
 							</Accordion.Item>
-							{#if selectedPerformanceGroupId !== performanceGroup.id}
+							{#if selectedPerformanceGroupId !== performanceGroup._id}
 								<div
 									class="grid w-10 shrink-0 cursor-grab place-items-center rounded-r-sm bg-gray-900 active:cursor-grabbing"
 									use:dragHandle
