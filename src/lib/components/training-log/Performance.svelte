@@ -8,6 +8,7 @@
 	import { useConvexClient } from 'convex-svelte';
 	import { api } from '$convex/_generated/api';
 	import type { WorkoutWithRelations } from '$lib/db/types';
+	import type { Id } from '$convex/_generated/dataModel';
 
 	type Performance = WorkoutWithRelations['performanceGroups'][number]['performances'][number];
 
@@ -17,7 +18,7 @@
 		showCloseButton
 	}: {
 		performance: Performance;
-		onDelete: (performanceId: string) => void;
+		onDelete: (performanceId: Id<'performances'>) => void;
 		showCloseButton: boolean;
 	} = $props();
 

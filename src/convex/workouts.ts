@@ -4,6 +4,7 @@ import { getAuthUserId } from '@convex-dev/auth/server';
 import { weightUnit } from './schema';
 import { getAuthUser } from './auth';
 import { DEFAULT_WEIGHT_UNIT } from '../lib/constants';
+import type { Doc } from './_generated/dataModel';
 
 export const list = query({
 	args: {},
@@ -52,7 +53,7 @@ export const getById = query({
 
 		// Get all performance sets
 		const performanceIds = performances.map((p) => p._id);
-		const allSets: any[] = [];
+		const allSets: Doc<'performanceSets'>[] = [];
 		for (const perfId of performanceIds) {
 			const sets = await ctx.db
 				.query('performanceSets')

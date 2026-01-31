@@ -25,7 +25,7 @@
 	let label = $derived(performanceGroup?.label);
 	let performances = $derived(performanceGroup?.performances ?? []);
 
-	const onExerciseAdded = async (exerciseId: string) => {
+	const onExerciseAdded = async (exerciseId: Id<'exercises'>) => {
 		if (!performanceGroup) {
 			return;
 		}
@@ -40,11 +40,11 @@
 		await client.mutation(api.performanceGroups.remove, { id: performanceGroup._id });
 	};
 
-	const onPerformanceDelete = (performanceId: string) => {
+	const onPerformanceDelete = (performanceId: Id<'performances'>) => {
 		return client.mutation(api.performances.remove, { id: performanceId });
 	};
 
-	const onDelete = (performanceId: string) => {
+	const onDelete = (performanceId: Id<'performances'>) => {
 		if (performances.length > 1) {
 			onPerformanceDelete(performanceId);
 		} else {

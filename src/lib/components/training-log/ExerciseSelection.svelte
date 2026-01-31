@@ -23,7 +23,7 @@
 	let value = $state('');
 	let open = $state(false);
 
-	const onExerciseSelected = async (exerciseId: string) => {
+	const onExerciseSelected = async (exerciseId: Id<'exercises'>) => {
 		await onExerciseAdded?.(exerciseId);
 		open = false;
 		value = '';

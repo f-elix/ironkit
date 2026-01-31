@@ -11,6 +11,7 @@
 	import { flip } from 'svelte/animate';
 	import { useConvexClient } from 'convex-svelte';
 	import { api } from '$convex/_generated/api';
+	import type { Id } from '$convex/_generated/dataModel';
 
 	type Performance = WorkoutWithRelations['performanceGroups'][number]['performances'][number];
 
@@ -31,7 +32,7 @@
 		});
 	};
 
-	const deleteSet = (setId: string) => {
+	const deleteSet = (setId: Id<'performanceSets'>) => {
 		client.mutation(api.performanceSets.remove, { id: setId });
 	};
 </script>

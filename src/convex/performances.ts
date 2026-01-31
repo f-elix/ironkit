@@ -59,7 +59,9 @@ export const getByExercise = query({
 		filteredPerformances.sort((a, b) => {
 			const workoutA = workoutMap.get(a.workoutId);
 			const workoutB = workoutMap.get(b.workoutId);
-			if (!workoutA || !workoutB) return 0;
+			if (!workoutA || !workoutB) {
+				return 0;
+			}
 			return workoutB.date - workoutA.date;
 		});
 
