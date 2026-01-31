@@ -6,7 +6,7 @@
 	import Separator from '$lib/shadcn/separator/separator.svelte';
 	import Plus from '@lucide/svelte/icons/plus';
 	import ExerciseSelection from '$lib/components/training-log/ExerciseSelection.svelte';
-	import { addExerciseToPeformanceGroup } from '$lib/training-log/addExerciseToPeformanceGroup';
+	import { addExerciseToPerformanceGroup } from '$lib/training-log/addExerciseToPerformanceGroup';
 	import Label from '$lib/shadcn/label/label.svelte';
 	import Input from '$lib/shadcn/input/input.svelte';
 	import Check from '@lucide/svelte/icons/check';
@@ -30,7 +30,7 @@
 			return;
 		}
 		const lastOrder = performances.at(-1)?.groupOrder ?? 0;
-		await addExerciseToPeformanceGroup(client, performanceGroup, exerciseId, lastOrder + 1);
+		await addExerciseToPerformanceGroup(client, performanceGroup, exerciseId, lastOrder + 1);
 	};
 
 	const onGroupDelete = async () => {

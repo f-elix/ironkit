@@ -15,7 +15,7 @@ export const useQueryMutation = <
 	args?: FunctionArgs<Q> | undefined;
 	queryOptions?: Parameters<typeof useQuery>[2];
 	mutation: M;
-	optimisticUpdate?: (data: FunctionReturnType<Q>, newData: FunctionReturnType<M>) => void;
+	optimisticUpdate?: (data: FunctionReturnType<Q>, mutationArgs: FunctionArgs<M>) => void;
 }) => {
 	const client = useConvexClient();
 	return [
@@ -28,7 +28,7 @@ export const useQueryMutation = <
 						return;
 					}
 					if (typeof optimisticUpdate === 'function') {
-						optimisticUpdate(data, args);
+						optimisticUpdate(data, mutationArgs);
 					} else {
 						localStore.setQuery(query, args, {
 							...data,

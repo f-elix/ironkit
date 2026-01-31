@@ -34,8 +34,8 @@ export const upsert = mutation({
 			.first();
 		if (existing) {
 			await ctx.db.patch(existing._id, {
-				unit: args.unit ?? DEFAULT_WEIGHT_UNIT,
-				round: args.round ?? false,
+				unit: args.unit ?? existing.unit ?? DEFAULT_WEIGHT_UNIT,
+				round: args.round ?? existing.round ?? false,
 				updatedAt: Date.now()
 			});
 		} else {

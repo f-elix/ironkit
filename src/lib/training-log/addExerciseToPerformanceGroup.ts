@@ -4,7 +4,7 @@ import { api } from '$convex/_generated/api';
 import type { Id } from '$convex/_generated/dataModel';
 import type { ConvexClient } from 'convex/browser';
 
-export const addExerciseToPeformanceGroup = async (
+export const addExerciseToPerformanceGroup = async (
 	client: ConvexClient,
 	performanceGroup: PerformanceGroup,
 	exerciseId: Id<'exercises'>,

@@ -2,12 +2,14 @@ import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 import { getAuthUserId } from '@convex-dev/auth/server';
 import { exerciseExecutionType, exerciseLoadType } from './schema';
-import { getAuthUser } from './auth';
 
 export const list = query({
 	args: {},
 	handler: async (ctx) => {
-		const { _id: userId } = await getAuthUser(ctx);
+		const userId = await getAuthUserId(ctx);
+		if (!userId) {
+			throw new Error('Not authenticated');
+		}
 
 		const exercises = await ctx.db
 			.query('exercises')
@@ -96,7 +98,10 @@ export const update = mutation({
 export const remove = mutation({
 	args: { id: v.id('exercises') },
 	handler: async (ctx, args) => {
-		const { _id: userId } = await getAuthUser(ctx);
+		const userId = await getAuthUserId(ctx);
+		if (!userId) {
+			throw new Error('Not authenticated');
+		}
 		const exercise = await ctx.db.get(args.id);
 		if (!exercise || exercise.userId !== userId) {
 			throw new Error('Exercise not found');

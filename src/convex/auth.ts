@@ -4,7 +4,10 @@ import { components } from './_generated/api';
 import type { DataModel } from './_generated/dataModel';
 import { betterAuth } from 'better-auth';
 
-const siteUrl = process.env.SITE_URL!;
+const siteUrl = process.env.SITE_URL;
+if (!siteUrl) {
+	throw new Error('SITE_URL environment variable is required');
+}
 
 // The component client has methods needed for integrating Convex with Better Auth,
 // as well as helper methods for general use.
@@ -24,8 +27,20 @@ export const createAuth = (
 		database: authComponent.adapter(ctx),
 		socialProviders: {
 			google: {
-				clientId: process.env.GOOGLE_CLIENT_ID as string,
-				clientSecret: process.env.GOOGLE_CLIENT_SECRET as string
+				clientId: (() => {
+					const id = process.env.GOOGLE_CLIENT_ID;
+					if (!id) {
+						throw new Error('GOOGLE_CLIENT_ID environment variable is required');
+					}
+					return id;
+				})(),
+				clientSecret: (() => {
+					const secret = process.env.GOOGLE_CLIENT_SECRET;
+					if (!secret) {
+						throw new Error('GOOGLE_CLIENT_SECRET environment variable is required');
+					}
+					return secret;
+				})()
 			}
 		},
 		emailAndPassword: {
