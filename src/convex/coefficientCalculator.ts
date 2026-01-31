@@ -4,7 +4,6 @@ import { weightUnit } from './schema';
 import { genderClass } from './schema';
 import { DEFAULT_GENDER_CLASS, DEFAULT_WEIGHT_UNIT } from '../lib/constants';
 import { getAuthUser } from './auth';
-import { getAuthUserId } from '@convex-dev/auth/server';
 
 export const get = query({
 	handler: async (ctx) => {
@@ -23,10 +22,7 @@ export const upsert = mutation({
 		bodyweightUnit: v.optional(weightUnit)
 	},
 	handler: async (ctx, data) => {
-		const _id = await getAuthUserId(ctx);
-		if (!_id) {
-			throw new Error('Not authenticated');
-		}
+		const { _id } = await getAuthUser(ctx);
 		const existing = await ctx.db
 			.query('coefficientCalculator')
 			.withIndex('by_userId', (q) => q.eq('userId', _id))

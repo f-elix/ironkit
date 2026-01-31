@@ -84,6 +84,12 @@ export const create = mutation({
 			throw new Error('Not authenticated');
 		}
 
+		// Verify the user owns the workout
+		const workout = await ctx.db.get(args.workoutId);
+		if (!workout || workout.userId !== userId) {
+			throw new Error('Not authorized');
+		}
+
 		const id = await ctx.db.insert('performanceGroups', {
 			userId,
 			workoutId: args.workoutId,

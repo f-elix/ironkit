@@ -36,6 +36,12 @@ export const create = mutation({
 			throw new Error('Not authenticated');
 		}
 
+		// Verify the user owns the parent performance
+		const performance = await ctx.db.get(args.performanceId);
+		if (!performance || performance.userId !== userId) {
+			throw new Error('Not authorized');
+		}
+
 		const id = await ctx.db.insert('performanceSets', {
 			userId,
 			performanceId: args.performanceId,

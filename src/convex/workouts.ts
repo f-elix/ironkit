@@ -165,13 +165,13 @@ export const update = mutation({
 	},
 	handler: async (ctx, args) => {
 		const { _id } = await getAuthUser(ctx);
-		const workout = await ctx.db.get(args.id);
+		const { id, ...updates } = args;
+		const workout = await ctx.db.get(id);
 		if (!workout || workout.userId !== _id) {
 			throw new Error('Workout not found');
 		}
-		await ctx.db.patch(args.id, {
-			...workout,
-			...args,
+		await ctx.db.patch(id, {
+			...updates,
 			updatedAt: Date.now()
 		});
 	}

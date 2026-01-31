@@ -129,6 +129,51 @@ export const create = mutation({
 	}
 });
 
+export const createWithInitialSet = mutation({
+	args: {
+		performanceGroupId: v.id('performanceGroups'),
+		exerciseId: v.id('exercises'),
+		workoutId: v.id('workouts'),
+		groupOrder: v.number(),
+		note: v.optional(v.string()),
+		weightUnit: weightUnit
+	},
+	handler: async (ctx, args) => {
+		const userId = await getAuthUserId(ctx);
+		if (!userId) {
+			throw new Error('Not authenticated');
+		}
+
+		// Verify the user owns the performance group
+		const performanceGroup = await ctx.db.get(args.performanceGroupId);
+		if (!performanceGroup || performanceGroup.userId !== userId) {
+			throw new Error('Not authorized');
+		}
+
+		// Create the performance
+		const performanceId = await ctx.db.insert('performances', {
+			userId,
+			performanceGroupId: args.performanceGroupId,
+			exerciseId: args.exerciseId,
+			workoutId: args.workoutId,
+			groupOrder: args.groupOrder,
+			note: args.note,
+			weightUnit: args.weightUnit,
+			updatedAt: Date.now()
+		});
+
+		// Create the initial performance set atomically
+		const performanceSetId = await ctx.db.insert('performanceSets', {
+			userId,
+			performanceId,
+			performanceOrder: 0,
+			updatedAt: Date.now()
+		});
+
+		return { performanceId, performanceSetId };
+	}
+});
+
 export const update = mutation({
 	args: {
 		id: v.id('performances'),
