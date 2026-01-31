@@ -1,13 +1,6 @@
-const domain = process.env.CONVEX_SITE_URL;
-if (!domain) {
-	throw new Error('CONVEX_SITE_URL environment variable is required');
-}
+import type { AuthConfig } from 'convex/server';
+import { getAuthConfigProvider } from '@convex-dev/better-auth/auth-config';
 
 export default {
-	providers: [
-		{
-			domain,
-			applicationID: 'convex'
-		}
-	]
-};
+	providers: [getAuthConfigProvider()]
+} satisfies AuthConfig;

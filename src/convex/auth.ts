@@ -2,7 +2,9 @@ import { createClient, type GenericCtx } from '@convex-dev/better-auth';
 import { convex } from '@convex-dev/better-auth/plugins';
 import { components } from './_generated/api';
 import type { DataModel } from './_generated/dataModel';
-import { betterAuth } from 'better-auth';
+import { betterAuth, type BetterAuthOptions } from 'better-auth';
+import type { GenericDataModel, GenericQueryCtx, GenericMutationCtx, GenericActionCtx } from 'convex/server';
+import authConfig from './auth.config';
 
 const siteUrl = process.env.SITE_URL;
 if (!siteUrl) {
@@ -11,20 +13,15 @@ if (!siteUrl) {
 
 // The component client has methods needed for integrating Convex with Better Auth,
 // as well as helper methods for general use.
-export const authComponent = createClient<DataModel>(components.betterAuth);
+export const authComponent = createClient(components.betterAuth);
 
-export const createAuth = (
-	ctx: GenericCtx<DataModel>,
-	{ optionsOnly } = { optionsOnly: false }
-) => {
-	return betterAuth({
-		// disable logging when createAuth is called just to generate options.
-		// this is not required, but there's a lot of noise in logs without it.
-		logger: {
-			disabled: optionsOnly
-		},
+// Type helper to convert app-specific context to generic context
+type AppCtx = GenericQueryCtx<DataModel> | GenericMutationCtx<DataModel> | GenericActionCtx<DataModel>;
+
+export const createAuthOptions = (ctx: AppCtx) => {
+	return {
 		baseURL: siteUrl,
-		database: authComponent.adapter(ctx),
+		database: authComponent.adapter(ctx as GenericCtx<GenericDataModel>),
 		socialProviders: {
 			google: {
 				clientId: (() => {
@@ -49,9 +46,19 @@ export const createAuth = (
 		},
 		plugins: [
 			// The Convex plugin is required for Convex compatibility
-			convex()
+			convex({
+				authConfig,
+				jwksRotateOnTokenGenerationError: true
+			})
 		]
-	});
+	} satisfies BetterAuthOptions;
 };
 
-export const { getAuthUser } = authComponent;
+export const createAuth = (ctx: AppCtx) => {
+	return betterAuth(createAuthOptions(ctx));
+};
+
+// Helper to get the authenticated user with proper typing for this app's DataModel
+export const getAuthUser = (ctx: AppCtx) => {
+	return authComponent.getAuthUser(ctx as GenericCtx<GenericDataModel>);
+};
