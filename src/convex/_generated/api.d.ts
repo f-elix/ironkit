@@ -12,7 +12,6 @@ import type * as auth from "../auth.js";
 import type * as coefficientCalculator from "../coefficientCalculator.js";
 import type * as exercises from "../exercises.js";
 import type * as http from "../http.js";
-import type * as importData from "../importData.js";
 import type * as loadPercentageCalculator from "../loadPercentageCalculator.js";
 import type * as performanceGroups from "../performanceGroups.js";
 import type * as performanceSets from "../performanceSets.js";
@@ -32,7 +31,6 @@ declare const fullApi: ApiFromModules<{
   coefficientCalculator: typeof coefficientCalculator;
   exercises: typeof exercises;
   http: typeof http;
-  importData: typeof importData;
   loadPercentageCalculator: typeof loadPercentageCalculator;
   performanceGroups: typeof performanceGroups;
   performanceSets: typeof performanceSets;
