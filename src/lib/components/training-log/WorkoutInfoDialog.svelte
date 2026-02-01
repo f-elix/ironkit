@@ -11,7 +11,7 @@
 	import Label from '$lib/shadcn/label/label.svelte';
 	import PreviousWorkoutSelection from '$lib/components/training-log/PreviousWorkoutSelection.svelte';
 	import UnitSelector from '$lib/components/ui/UnitSelector.svelte';
-	import { defaultInteractiveWidget } from '$lib/defaultInteractiveWidget';
+	import { setKeyboardOverlaysContent } from '$lib/virtualKeyboard';
 	import { resolve } from '$app/paths';
 	import { useQuery } from 'convex-svelte';
 	import { api } from '$convex/_generated/api';
@@ -76,16 +76,16 @@
 		goto(resolve('/(app)/tools/training-log/workout-[id]', { id: newWorkoutId }));
 	};
 
-	let resetInteractiveWidget: (() => void) | undefined;
+	let cleanupKeyboard: (() => void) | undefined;
 </script>
 
 <Dialog.Root
 	bind:open
 	onOpenChange={(isOpen) => {
 		if (isOpen) {
-			resetInteractiveWidget = defaultInteractiveWidget();
+			cleanupKeyboard = setKeyboardOverlaysContent(true);
 		} else {
-			resetInteractiveWidget?.();
+			cleanupKeyboard?.();
 		}
 	}}
 >

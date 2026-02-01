@@ -56,17 +56,25 @@ self.addEventListener('fetch', (event) => {
 				throw new Error('invalid response from fetch');
 			}
 
-			const isNotExtension = url.protocol === 'http:';
+			const isHttpOrHttps = url.protocol === 'http:' || url.protocol === 'https:';
 			const isSuccess = response.status === 200;
-			if (isNotExtension && isSuccess) {
+			if (isHttpOrHttps && isSuccess) {
 				cache.put(event.request, response.clone());
 			}
 			return response;
 		} catch (err) {
-			const response = await cache.match(event.request);
+			const cachedResponse = await cache.match(event.request);
 
-			if (response) {
-				return response;
+			if (cachedResponse) {
+				return cachedResponse;
+			}
+
+			// For navigation requests, serve the offline fallback page
+			if (event.request.mode === 'navigate') {
+				const offlinePage = await cache.match('/offline.html');
+				if (offlinePage) {
+					return offlinePage;
+				}
 			}
 
 			// if there's no cache, then just error out

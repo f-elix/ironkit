@@ -8,8 +8,11 @@ const showNotification = (newSW: ServiceWorker) => {
 		action: {
 			label: 'Reload',
 			onClick: () => {
+				// Wait for the new service worker to take control before reloading
+				navigator.serviceWorker.addEventListener('controllerchange', () => {
+					window.location.reload();
+				});
 				newSW.postMessage({ type: 'SKIP_WAITING' });
-				window.location.reload();
 			}
 		}
 	});
