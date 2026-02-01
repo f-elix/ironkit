@@ -5,7 +5,7 @@ alwaysApply: false
 ---
 # Project Structure Guide
 
-This is a SvelteKit application with TypeScript, TailwindCSS, and Triplit integration.
+This is a SvelteKit application with TypeScript, TailwindCSS, and Convex integration.
 
 ## Core Files
 - [src/app.html](mdc:src/app.html) - The main HTML template

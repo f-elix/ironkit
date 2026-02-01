@@ -18,8 +18,7 @@
 		"lc": "pnpm lint && pnpm check",
 		"test:unit": "vitest",
 		"test": "pnpm test:unit -- --run",
-		"assets:generate": "pwa-assets-generator --preset minimal-2023 pwa-assets/symbol.svg",
-		"export:triplit": "tsx scripts/exportTriplitData.ts"
+		"assets:generate": "pwa-assets-generator --preset minimal-2023 pwa-assets/symbol.svg"
 	},
 	"devDependencies": {
 		"@eslint/compat": "1.4.0",
@@ -77,7 +76,6 @@
 		"@convex-dev/better-auth": "0.10.10",
 		"@mmailaender/convex-better-auth-svelte": "0.5.0",
 		"@svelte-put/copy": "4.0.0",
-		"@triplit/client": "1.0.50",
 		"add": "2.0.6",
 		"better-auth": "1.4.9",
 		"convex": "1.31.7",
