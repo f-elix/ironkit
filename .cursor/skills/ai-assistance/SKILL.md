@@ -1,7 +1,6 @@
 ---
-description: 
-globs: 
-alwaysApply: false
+name: ai-assistance
+description: Guidelines for AI assistance including documentation standards, component documentation, route documentation, API documentation, and best practices
 ---
 # AI Assistance Guidelines
 

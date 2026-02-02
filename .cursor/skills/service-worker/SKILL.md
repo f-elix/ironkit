@@ -1,7 +1,6 @@
 ---
-description: 
-globs: 
-alwaysApply: false
+name: service-worker
+description: Service worker implementation details including caching strategy, request handling, and cache management for PWA functionality
 ---
 # Service Worker Implementation
 

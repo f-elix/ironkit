@@ -10,8 +10,10 @@
 	let {
 		set,
 		unit,
-		exercise
-	}: { set: PerformanceSet; unit: WeightUnit; exercise: Maybe<Exercise> } = $props();
+		exercise,
+		order
+	}: { set: PerformanceSet; unit: WeightUnit; exercise: Maybe<Exercise>; order?: number } =
+		$props();
 
 	const client = useConvexClient();
 	const executionType = exercise?.executionType ?? 'reps';
@@ -37,35 +39,71 @@
 	};
 </script>
 
-<div class="flex items-center gap-2 whitespace-nowrap">
-	{#if executionType === 'reps'}
-		<Label class="flex items-center">
-			<span class="sr-only">Reps</span>
-			<Input type="number" value={reps} oninput={onRepsChange} min="0" class="w-16" />
-		</Label>
+<!-- Set input row with larger touch targets and focus feedback -->
+<div
+	class="focus-within:bg-primary/5 focus-within:ring-primary/20 bg-muted/30 flex items-center gap-3 rounded-lg p-2 transition-colors focus-within:ring-1"
+>
+	<!-- Set number indicator -->
+	{#if order}
+		<div
+			class="text-muted-foreground bg-muted flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-medium"
+		>
+			{order}
+		</div>
 	{/if}
-	{#if executionType === 'time'}
-		<Label class="flex items-center gap-1">
-			<span class="sr-only">Time</span>
-			<Input type="number" value={durationSeconds} oninput={onTimeChange} min="0" class="w-20" />
-			<span>sec</span>
-		</Label>
-	{/if}
-	<div aria-hidden="true">&times;</div>
-	<Label class="relative flex w-28 items-center">
-		<span class="sr-only">Weight</span>
-		{#if loadType === 'bodyweight'}
-			<div class="absolute left-2 opacity-70">+</div>
+
+	<!-- Input fields container -->
+	<div class="flex flex-1 items-center gap-3">
+		{#if executionType === 'reps'}
+			<Label class="flex flex-1 flex-col gap-1">
+				<span class="text-muted-foreground text-xs font-medium">Reps</span>
+				<Input
+					type="number"
+					value={reps}
+					oninput={onRepsChange}
+					min="0"
+					class="h-11 w-full text-center text-lg font-semibold"
+				/>
+			</Label>
 		{/if}
-		<Input
-			type="text"
-			value={weight}
-			oninput={onWeightChange}
-			step="0.01"
-			inputmode="numeric"
-			pattern="-?[0-9]*[.,]?[0-9]*"
-			class={['w-full pr-8', loadType === 'bodyweight' && 'pl-5']}
-		/>
-		<span class="absolute right-2 opacity-70">{unit}</span>
-	</Label>
+		{#if executionType === 'time'}
+			<Label class="flex flex-1 flex-col gap-1">
+				<span class="text-muted-foreground text-xs font-medium">Time (sec)</span>
+				<Input
+					type="number"
+					value={durationSeconds}
+					oninput={onTimeChange}
+					min="0"
+					class="h-11 w-full text-center text-lg font-semibold"
+				/>
+			</Label>
+		{/if}
+
+		<!-- Separator -->
+		<div class="text-muted-foreground translate-y-2 text-lg" aria-hidden="true">&times;</div>
+
+		<!-- Weight input -->
+		<Label class="relative flex flex-1 flex-col gap-1">
+			<span class="text-muted-foreground text-xs font-medium">
+				{loadType === 'bodyweight' ? `+${unit}` : unit}
+			</span>
+			<div class="relative">
+				{#if loadType === 'bodyweight'}
+					<div class="text-muted-foreground absolute top-1/2 left-3 -translate-y-1/2 text-lg">
+						+
+					</div>
+				{/if}
+				<Input
+					type="text"
+					value={weight}
+					oninput={onWeightChange}
+					inputmode="decimal"
+					pattern="-?[0-9]*[.,]?[0-9]*"
+					class="h-11 w-full text-center text-lg font-semibold {loadType === 'bodyweight'
+						? 'pl-7'
+						: ''}"
+				/>
+			</div>
+		</Label>
+	</div>
 </div>

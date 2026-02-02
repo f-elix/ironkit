@@ -3,8 +3,8 @@
 	import type { Workout } from '$lib/db/types';
 	import { formatDate } from '$lib/ui/formatDate';
 	import PencilIcon from '@lucide/svelte/icons/pencil';
+	import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
 	import { Button } from '$lib/shadcn/button';
-	import XIcon from '@lucide/svelte/icons/x';
 	import { resolve } from '$app/paths';
 	import WorkoutMenu from '$lib/components/training-log/WorkoutMenu.svelte';
 
@@ -21,43 +21,41 @@
 	let bodyweightUnit = $derived(workout.bodyweightUnit);
 </script>
 
-<header class="flex flex-col gap-4">
-	<div class="flex items-center justify-between gap-4">
-		<Button
-			href={resolve('/(app)/tools/training-log')}
-			variant="outline"
-			size="icon"
-			aria-label="Back to training log"
-		>
-			<XIcon />
-		</Button>
-		<WorkoutMenu {workout} />
-	</div>
-	<div class="flex flex-col gap-2">
-		<div class="flex items-start justify-between gap-4">
-			<h1 class="text-2xl leading-6 font-semibold">{title}</h1>
+<!-- Compact workout header with back button -->
+<header class="flex items-center gap-3">
+	<!-- Back button (mobile only - desktop uses sidebar navigation) -->
+	<Button
+		variant="ghost"
+		size="icon"
+		href={resolve('/(app)/tools/training-log')}
+		aria-label="Back to workouts"
+		class="shrink-0 md:hidden"
+	>
+		<ArrowLeftIcon class="size-5" />
+	</Button>
+
+	<div class="flex min-w-0 flex-1 flex-col">
+		<div class="flex items-center gap-2">
+			<h1 class="truncate text-lg font-semibold">{title}</h1>
 			<WorkoutInfoDialog {workout}>
 				{#snippet trigger({ props })}
-					<Button {...props} size="icon" variant="ghost" class="shrink-0">
-						<PencilIcon />
+					<Button {...props} size="icon" variant="ghost" class="size-7 shrink-0">
+						<PencilIcon class="size-3.5" />
 					</Button>
 				{/snippet}
 			</WorkoutInfoDialog>
 		</div>
-		<div class="flex shrink-0 flex-col items-start text-right">
+		<div class="text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs">
 			{#if date}
-				<time class="text-muted-foreground text-sm" datetime={date.toISOString()}>
-					{formatDate(date)}
-				</time>
+				<time datetime={date.toISOString()}>{formatDate(date)}</time>
 			{/if}
 			{#if bodyweight}
-				<p class="text-sm">
-					<span class="font-semibold">Bodyweight:</span>
-					{bodyweight}
-					{bodyweightUnit ?? 'lbs'}
-				</p>
+				<span>{bodyweight} {bodyweightUnit ?? 'lbs'}</span>
 			{/if}
 		</div>
-		<p class="text-sm">{notes}</p>
+		{#if notes}
+			<p class="text-muted-foreground mt-1 text-xs">{notes}</p>
+		{/if}
 	</div>
+	<WorkoutMenu {workout} />
 </header>

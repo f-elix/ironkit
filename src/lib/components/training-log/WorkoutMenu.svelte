@@ -10,8 +10,9 @@
 	import * as DropdownMenu from '$lib/shadcn/dropdown-menu';
 	import EllipsisVertical from '@lucide/svelte/icons/ellipsis-vertical';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
+	import { cn } from '$lib/shadcn/utils';
 
-	let { workout }: { workout: Workout } = $props();
+	let { workout, class: className }: { workout: Workout; class?: string } = $props();
 
 	let deleteDialogOpen = $state(false);
 
@@ -32,7 +33,7 @@
 
 <DropdownMenu.Root>
 	<DropdownMenu.Trigger
-		class={buttonVariants({ variant: 'outline', size: 'icon' })}
+		class={cn(buttonVariants({ variant: 'outline', size: 'icon' }), className)}
 		aria-label="Workout menu"
 	>
 		<EllipsisVertical />

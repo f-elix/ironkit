@@ -74,7 +74,7 @@
 			</Command.Root>
 		</Dialog.Content>
 	</Dialog.Root>
-{:else}
+{:else if !exercisesQuery.isLoading}
 	<EmptyState title="No exercises yet">
 		{#snippet description()}
 			Create your first<br />exercise to get started.
