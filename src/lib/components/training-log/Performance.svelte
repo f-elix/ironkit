@@ -3,10 +3,14 @@
 	import PerformanceSets from '$lib/components/training-log/PerformanceSets.svelte';
 	import UnitSelector from '$lib/components/ui/UnitSelector.svelte';
 	import ExerciseHistoryDialog from '$lib/components/training-log/ExerciseHistoryDialog.svelte';
+	import ExerciseInfoDialog from '$lib/components/training-log/ExerciseInfoDialog.svelte';
 	import DeletePerformanceDialog from '$lib/components/training-log/DeletePerformanceDialog.svelte';
 	import ClosePeformanceButton from '$lib/components/training-log/ClosePeformanceButton.svelte';
 	import { useConvexClient } from 'convex-svelte';
 	import { api } from '$convex/_generated/api';
+	import { Dialog } from 'bits-ui';
+	import { buttonVariants } from '$lib/shadcn/button';
+	import PencilIcon from '@lucide/svelte/icons/pencil';
 	import type { WorkoutWithRelations } from '$lib/db/types';
 	import type { Id } from '$convex/_generated/dataModel';
 
@@ -23,7 +27,8 @@
 	} = $props();
 
 	const client = useConvexClient();
-	let exerciseName = $derived(performance.exercise?.name);
+	let exercise = $derived(performance.exercise);
+	let exerciseName = $derived(exercise?.name);
 	let workout = $derived(performance.workout);
 	let unit = $derived(performance.weightUnit);
 	let bodyweight = $derived(
@@ -33,17 +38,31 @@
 
 <div class="relative flex flex-col gap-6">
 	<div class="flex items-start gap-4">
-		<h3 class="grow text-lg leading-5 font-semibold">
-			{exerciseName}
-			{#if performance.exercise?.loadType === 'bodyweight'}
-				<span class="text-sm opacity-70">
-					- bodyweight
-					{#if bodyweight}
-						({bodyweight})
-					{/if}
-				</span>
+		<div class="flex min-w-0 grow items-center gap-2">
+			<h3 class="truncate text-lg leading-5 font-semibold">
+				{exerciseName}
+				{#if exercise?.loadType === 'bodyweight'}
+					<span class="text-sm opacity-70">
+						- bodyweight
+						{#if bodyweight}
+							({bodyweight})
+						{/if}
+					</span>
+				{/if}
+			</h3>
+			{#if exercise}
+				<ExerciseInfoDialog {exercise}>
+					{#snippet trigger()}
+						<Dialog.Trigger
+							class={buttonVariants({ variant: 'ghost', size: 'icon', class: 'size-7 shrink-0' })}
+							aria-label="Edit {exerciseName}"
+						>
+							<PencilIcon class="size-3.5" />
+						</Dialog.Trigger>
+					{/snippet}
+				</ExerciseInfoDialog>
 			{/if}
-		</h3>
+		</div>
 		<div class="flex gap-2">
 			<DeletePerformanceDialog onConfirm={() => onDelete(performance._id)} />
 			{#if showCloseButton}

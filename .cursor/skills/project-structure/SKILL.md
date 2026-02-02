@@ -1,7 +1,6 @@
 ---
-description: 
-globs: 
-alwaysApply: false
+name: project-structure
+description: Guide to the SvelteKit project structure, core files, configuration, styling, and testing setup
 ---
 # Project Structure Guide
 

@@ -2,9 +2,10 @@
 	import ExerciseInfoDialog from '$lib/components/training-log/ExerciseInfoDialog.svelte';
 	import { computeCommandScore, Dialog } from 'bits-ui';
 	import { buttonVariants } from '$lib/shadcn/button';
+	import Button from '$lib/shadcn/button/button.svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import { Trigger } from '$lib/shadcn/dialog';
-	import PlusIcon from '@lucide/svelte/icons/file-plus';
+	import PlusIcon from '@lucide/svelte/icons/plus';
 	import EditIcon from '@lucide/svelte/icons/pencil';
 	import DeleteExerciseDialog from '$lib/components/training-log/DeleteExerciseDialog.svelte';
 	import Label from '$lib/shadcn/label/label.svelte';
@@ -39,23 +40,23 @@
 	let exercises = $derived(search ? (filteredExercises ?? []) : (allExercises ?? []));
 </script>
 
-<div class="flex grow flex-col">
+<div class="flex grow flex-col p-4 md:p-0">
 	{#if allExercisesQuery.isLoading}
 		<div class="flex grow flex-col items-center pt-10">Loading...</div>
 	{:else if allExercises?.length}
-		<div class="flex flex-col gap-4 px-4">
+		<div class="flex flex-col gap-4">
 			<Label>
 				<span class="sr-only">Search exercises</span>
 				<Input placeholder="Search exercises" bind:value={search} />
 			</Label>
 			{#if exercises?.length}
-				<ul class="flex flex-col gap-4">
+				<ul class="flex flex-col gap-4 pb-20 md:pb-4">
 					{#each exercises as exercise (exercise._id)}
 						{@const name = exercise.name}
 						{@const targetMuscleGroups = Array.from(exercise.muscleGroups)}
 						{@const loadType = exercise.loadType}
 						{@const executionType = exercise.executionType}
-						<li class="bg-muted/30 gap-4 rounded-md border p-4">
+						<li class="bg-card gap-4 rounded-lg border p-4 shadow-sm">
 							<article class="flex flex-col gap-1">
 								<div class="flex justify-between gap-4">
 									<h3 class="text-lg leading-6 font-bold">{name}</h3>
@@ -107,18 +108,39 @@
 				<p class="text-muted-foreground text-center text-sm">No exercises found</p>
 			{/if}
 		</div>
-		<div class="bg-background sticky bottom-0 mt-auto flex flex-col p-4 pb-4">
+		<!-- Desktop: Inline create button -->
+		<div class="mt-auto hidden pt-4 md:block">
 			<ExerciseInfoDialog>
 				{#snippet trigger()}
-					<Trigger class={buttonVariants({ size: 'lg' })}>
+					<Trigger class={buttonVariants({ size: 'lg', class: 'w-full' })}>
 						<PlusIcon />
 						Create exercise
 					</Trigger>
 				{/snippet}
 			</ExerciseInfoDialog>
 		</div>
+
+		<!-- Mobile: Floating Action Button -->
+		<div class="fixed right-4 bottom-16 z-50 md:hidden">
+			<ExerciseInfoDialog>
+				{#snippet trigger()}
+					<Dialog.Trigger>
+						{#snippet child({ props })}
+							<Button
+								{...props}
+								size="icon"
+								class="size-14 rounded-full bg-emerald-500 shadow-lg hover:bg-emerald-600"
+								aria-label="Create exercise"
+							>
+								<PlusIcon class="size-7" />
+							</Button>
+						{/snippet}
+					</Dialog.Trigger>
+				{/snippet}
+			</ExerciseInfoDialog>
+		</div>
 	{:else}
-		<div class="grow px-4 pb-4">
+		<div class="grow pb-4">
 			<EmptyState title="No exercises yet">
 				{#snippet description()}
 					Create your first<br />exercise to get started.

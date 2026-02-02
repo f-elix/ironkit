@@ -15,6 +15,7 @@
 	import { useConvexClient, useQuery } from 'convex-svelte';
 	import { api } from '$convex/_generated/api';
 	import type { Id } from '$convex/_generated/dataModel';
+	import Badge from '$lib/shadcn/badge/badge.svelte';
 
 	let { performanceGroupId }: { performanceGroupId: Id<'performanceGroups'> } = $props();
 
@@ -24,6 +25,27 @@
 	let performanceGroup = $derived(query.data);
 	let label = $derived(performanceGroup?.label);
 	let performances = $derived(performanceGroup?.performances ?? []);
+
+	// Auto-generate group type based on exercise count
+	let autoGroupType = $derived.by(() => {
+		const count = performances.length;
+		if (count === 2) {
+			return 'Superset';
+		}
+		if (count === 3) {
+			return 'Triset';
+		}
+		if (count >= 4) {
+			return 'Circuit';
+		}
+		return null;
+	});
+
+	// Placeholder text for the input
+	let placeholderText = $derived(autoGroupType ? `${autoGroupType} name (optional)` : 'Group name');
+
+	// Display badge text
+	let displayBadge = $derived(label || autoGroupType);
 
 	const onExerciseAdded = async (exerciseId: Id<'exercises'>) => {
 		if (!performanceGroup) {
@@ -64,15 +86,18 @@
 	};
 </script>
 
-<Card.Root class="bg-muted/30 rounded-sm py-0">
+<Card.Root class="bg-card rounded-lg border py-0 shadow-sm">
 	<Card.Content class="flex flex-col gap-4 p-4">
 		{#if performances.length > 1}
 			<div class="flex items-center gap-2">
+				{#if displayBadge && !label}
+					<Badge variant="secondary" class="shrink-0 text-xs">{displayBadge}</Badge>
+				{/if}
 				<Label class="grow">
 					<span class="sr-only">Group title</span>
 					<Input
 						type="text"
-						placeholder="Group title"
+						placeholder={placeholderText}
 						value={label}
 						oninput={onLabelChange}
 						class="text-sm"
@@ -81,9 +106,12 @@
 				<ClosePeformanceButton />
 			</div>
 		{/if}
-		<ul class="divide-border flex flex-col gap-4 divide-y">
-			{#each performances as performance (performance._id)}
-				<li class="flex flex-col gap-2 pb-4 last:pb-0">
+		<ul class="relative flex flex-col gap-4">
+			{#each performances as performance, i (performance._id)}
+				<li class="flex flex-col gap-4">
+					{#if i > 0}
+						<Separator />
+					{/if}
 					<Performance {performance} {onDelete} showCloseButton={performances.length < 2} />
 				</li>
 			{/each}
@@ -94,11 +122,7 @@
 				{#snippet trigger()}
 					<Dialog.Trigger class={buttonVariants({ variant: 'secondary', class: 'w-full' })}>
 						<Plus />
-						{#if performances.length < 2}
-							Add exercise to create superset
-						{:else}
-							Add exercise to superset
-						{/if}
+						Add exercise
 					</Dialog.Trigger>
 				{/snippet}
 			</ExerciseSelection>

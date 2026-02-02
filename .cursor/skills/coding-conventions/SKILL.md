@@ -1,7 +1,6 @@
 ---
-description: 
-globs: 
-alwaysApply: false
+name: coding-conventions
+description: Coding conventions for TypeScript, styling with TailwindCSS, code formatting with Prettier and ESLint, and testing with Vitest
 ---
 # Coding Conventions
 

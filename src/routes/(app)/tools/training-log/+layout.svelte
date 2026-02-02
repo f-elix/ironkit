@@ -4,14 +4,26 @@
 	import { resolve } from '$app/paths';
 	import { expoOut } from 'svelte/easing';
 	import { crossfade } from 'svelte/transition';
+	import * as Sidebar from '$lib/shadcn/sidebar';
+	import { DEFAULT_WORKOUT_TITLE } from '$lib/constants';
+	import { formatDate } from '$lib/ui/formatDate';
+	import { useQuery } from 'convex-svelte';
+	import { api } from '$convex/_generated/api';
+	import DumbbellIcon from '@lucide/svelte/icons/dumbbell';
+	import ListIcon from '@lucide/svelte/icons/list';
+	import PlusIcon from '@lucide/svelte/icons/plus';
+	import AddWorkout from '$lib/components/training-log/AddWorkout.svelte';
+
 	const navItems = [
 		{
 			label: 'Workouts',
-			href: '/tools/training-log'
+			href: '/tools/training-log',
+			icon: DumbbellIcon
 		},
 		{
 			label: 'Exercises',
-			href: '/tools/training-log/exercises'
+			href: '/tools/training-log/exercises',
+			icon: ListIcon
 		}
 	] as const;
 
@@ -25,28 +37,144 @@
 	beforeNavigate((nav) => {
 		isTrainingLogNav = nav.to?.url.pathname.includes(resolve('/(app)/tools/training-log')) ?? false;
 	});
+
+	// Query workouts for sidebar (desktop only)
+	const workoutsQuery = useQuery(api.workouts.list, {});
+	let workouts = $derived(workoutsQuery.data ?? []);
+
+	// Check if we're on a workout detail page
+	let isWorkoutDetailPage = $derived(page.url.pathname.includes('/workout-'));
+	let currentWorkoutId = $derived(
+		isWorkoutDetailPage ? page.url.pathname.split('/workout-')[1] : null
+	);
+
+	// Check if we're on the exercises page
+	let isExercisesPage = $derived(page.url.pathname.endsWith('/exercises'));
 </script>
 
-<nav class="grid grid-cols-2 gap-2 px-4">
-	{#each navItems as item}
-		{@const active = page.url.pathname === item.href}
-		<a href={resolve(item.href)} class="relative rounded-md px-4 py-2 text-center">
-			{#if active}
-				<div
-					class="bg-muted absolute inset-0 rounded-md"
-					in:send={{ key: 'nav-link-bg' }}
-					out:receive={{ key: 'nav-link-bg' }}
-				></div>
-			{/if}
-			<span class="relative z-10">
-				{item.label}
-			</span>
-		</a>
-	{/each}
-</nav>
-<div
-	class="mt-4 flex grow flex-col"
-	style="view-transition-name: {isTrainingLogNav ? 'training-log' : ''};"
->
-	{@render children()}
+<!-- Desktop Layout with Sidebar -->
+<div class="hidden md:contents">
+	<Sidebar.Provider>
+		<Sidebar.Root variant="inset" class="border-r-0">
+			<Sidebar.Header class="border-b p-4">
+				<h2 class="text-lg font-semibold">Training Log</h2>
+			</Sidebar.Header>
+			<Sidebar.Content>
+				<!-- Navigation -->
+				<Sidebar.Group>
+					<Sidebar.GroupLabel>Navigation</Sidebar.GroupLabel>
+					<Sidebar.GroupContent>
+						<Sidebar.Menu>
+							{#each navItems as item}
+								{@const Icon = item.icon}
+								{@const isActive =
+									item.href === '/tools/training-log'
+										? page.url.pathname === resolve(item.href) || isWorkoutDetailPage
+										: page.url.pathname === resolve(item.href)}
+								<Sidebar.MenuItem>
+									<Sidebar.MenuButton {isActive}>
+										{#snippet child({ props })}
+											<a href={resolve(item.href)} {...props}>
+												<Icon class="size-4" />
+												<span>{item.label}</span>
+											</a>
+										{/snippet}
+									</Sidebar.MenuButton>
+								</Sidebar.MenuItem>
+							{/each}
+						</Sidebar.Menu>
+					</Sidebar.GroupContent>
+				</Sidebar.Group>
+
+				<!-- Workouts List (only show when not on exercises page) -->
+				{#if !isExercisesPage}
+					<Sidebar.Group class="flex-1">
+						<Sidebar.GroupLabel>Workouts</Sidebar.GroupLabel>
+						<Sidebar.GroupContent>
+							<Sidebar.Menu>
+								{#each workouts as workout (workout._id)}
+									{@const title = workout.title ?? DEFAULT_WORKOUT_TITLE}
+									{@const date = new Date(workout.date)}
+									{@const isActive = currentWorkoutId === workout._id}
+									<Sidebar.MenuItem>
+										<Sidebar.MenuButton {isActive}>
+											{#snippet child({ props })}
+												<a
+													href={resolve('/(app)/tools/training-log/workout-[id]', {
+														id: workout._id
+													})}
+													{...props}
+													class="{props.class} flex-col items-start gap-0.5"
+												>
+													<span class="font-medium">{title}</span>
+													<span class="text-muted-foreground text-xs">{formatDate(date)}</span>
+												</a>
+											{/snippet}
+										</Sidebar.MenuButton>
+									</Sidebar.MenuItem>
+								{/each}
+							</Sidebar.Menu>
+						</Sidebar.GroupContent>
+					</Sidebar.Group>
+				{/if}
+			</Sidebar.Content>
+			<Sidebar.Footer class="border-t p-2">
+				<AddWorkout variant="ghost" class="w-full justify-start">
+					<PlusIcon class="size-4" />
+					<span>New Workout</span>
+				</AddWorkout>
+			</Sidebar.Footer>
+		</Sidebar.Root>
+		<Sidebar.Inset class="overflow-y-auto">
+			<div
+				class="flex grow flex-col p-4"
+				style="view-transition-name: {isTrainingLogNav ? 'training-log' : ''};"
+			>
+				{@render children()}
+			</div>
+		</Sidebar.Inset>
+	</Sidebar.Provider>
+</div>
+
+<!-- Mobile Layout -->
+<div class="flex flex-col md:hidden" style="height: calc(100dvh - 4rem);">
+	<!-- Main content area -->
+	<div
+		class="flex grow flex-col overflow-y-auto"
+		style="view-transition-name: {isTrainingLogNav ? 'training-log' : ''};"
+	>
+		{@render children()}
+	</div>
+
+	<!-- Bottom Navigation - only show on workouts list and exercises pages -->
+	{#if !isWorkoutDetailPage}
+		<nav
+			class="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky bottom-0 z-50 w-full border-t backdrop-blur-lg"
+			style="view-transition-name: training-log-nav;"
+		>
+			<div class="grid grid-cols-2">
+				{#each navItems as item}
+					{@const Icon = item.icon}
+					{@const isActive = page.url.pathname === resolve(item.href)}
+					<a
+						href={resolve(item.href)}
+						class={[
+							'relative flex flex-col items-center gap-1 py-2 transition-colors',
+							isActive ? 'text-primary' : 'text-muted-foreground'
+						]}
+					>
+						{#if isActive}
+							<div
+								class="bg-primary/10 absolute inset-x-6 inset-y-1 rounded-full"
+								in:send={{ key: 'nav-link-bg' }}
+								out:receive={{ key: 'nav-link-bg' }}
+							></div>
+						{/if}
+						<Icon class="relative z-10 size-5" />
+						<span class="relative z-10 text-xs font-medium">{item.label}</span>
+					</a>
+				{/each}
+			</div>
+		</nav>
+	{/if}
 </div>

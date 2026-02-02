@@ -37,7 +37,7 @@
 	};
 </script>
 
-<ol class="flex flex-col gap-6">
+<ol class="flex flex-col gap-3">
 	{#each sets as set, i (set._id)}
 		<li
 			class="flex origin-top flex-col gap-2"
@@ -45,35 +45,32 @@
 			out:scale={{ duration: 300, easing: expoOut, start: 0.5, opacity: 0 }}
 			animate:flip={{ duration: 500, easing: expoOut }}
 		>
-			<div class="flex items-center justify-between gap-2">
-				<div class="flex w-full items-center gap-2">
-					<div
-						class="bg-primary text-primary-foreground grid size-5 place-items-center rounded-full text-center text-sm font-medium"
-					>
-						{i + 1}
-					</div>
-					<PerformanceSet {set} {unit} {exercise} />
-					{#if sets.length > 1}
-						<Button
-							size="sm"
-							variant="link"
-							class="ml-auto"
-							onclick={() => {
-								deleteSet(set._id);
-							}}
-							aria-label="Remove set"
-						>
-							<Minus class="text-destructive" />
-						</Button>
-					{/if}
+			<!-- Set input row with integrated order number -->
+			<div class="flex items-center gap-2">
+				<div class="flex-1">
+					<PerformanceSet {set} {unit} {exercise} order={i + 1} />
 				</div>
+				{#if sets.length > 1}
+					<Button
+						size="icon"
+						variant="ghost"
+						class="size-8 shrink-0"
+						onclick={() => {
+							deleteSet(set._id);
+						}}
+						aria-label="Remove set {i + 1}"
+					>
+						<Minus class="text-destructive size-4" />
+					</Button>
+				{/if}
 			</div>
-			<Label class="flex flex-col gap-2">
+
+			<Label class="pr-10">
 				<span class="sr-only">Set note</span>
 				<Textarea
 					rows={1}
 					class="min-h-none text-sm font-normal"
-					placeholder="Set note (RIR, RPE, etc.)"
+					placeholder="Note (RIR, RPE, etc.)"
 					value={set.note}
 					oninput={(event) => {
 						client.mutation(api.performanceSets.update, {
@@ -83,19 +80,22 @@
 					}}
 				/>
 			</Label>
-			<div class="flex gap-2">
-				<Button
-					size="sm"
-					variant="secondary"
-					class="h-7 flex-1"
-					onclick={() => {
-						addSet(set.performanceOrder, sets[i + 1]?.performanceOrder);
-					}}
-				>
-					<Plus />
-					Add set
-				</Button>
-			</div>
 		</li>
 	{/each}
+
+	<!-- Add set button at the end -->
+	<li>
+		<Button
+			size="sm"
+			variant="secondary"
+			class="w-full"
+			onclick={() => {
+				const lastSet = sets.at(-1);
+				addSet(lastSet?.performanceOrder ?? 0, undefined);
+			}}
+		>
+			<Plus class="size-4" />
+			Add set
+		</Button>
+	</li>
 </ol>
