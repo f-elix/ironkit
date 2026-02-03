@@ -22,7 +22,7 @@
 <Button
 	variant="secondary"
 	size="lg"
-	class="aspect-[4/3] h-auto w-full flex-col items-center border bg-gray-900 px-2 text-center whitespace-normal lg:text-xl"
+	class="bg-secondary aspect-[4/3] h-auto w-full flex-col items-center border px-2 text-center whitespace-normal lg:text-xl"
 	{href}
 	{onclick}
 >

@@ -109,7 +109,7 @@
 	<!-- Bottom Navigation - only show on workouts list and exercises pages -->
 	{#if !isWorkoutDetailPage}
 		<nav
-			class="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky bottom-0 z-50 w-full border-t backdrop-blur-lg"
+			class="bg-card sticky bottom-0 z-50 w-full border-t"
 			style="view-transition-name: training-log-nav;"
 		>
 			<div class="grid grid-cols-2">
@@ -120,18 +120,20 @@
 						href={resolve(item.href)}
 						class={[
 							'relative flex flex-col items-center gap-1 py-2 transition-colors',
-							isActive ? 'text-primary' : 'text-muted-foreground'
+							isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
 						]}
 					>
 						{#if isActive}
 							<div
-								class="bg-primary/10 absolute inset-x-6 inset-y-1 rounded-full"
+								class="bg-primary absolute inset-x-8 top-0 h-0.5"
 								in:send={{ key: 'nav-link-bg' }}
 								out:receive={{ key: 'nav-link-bg' }}
 							></div>
 						{/if}
 						<Icon class="relative z-10 size-5" />
-						<span class="relative z-10 text-xs font-medium">{item.label}</span>
+						<span class="relative z-10 text-xs font-medium tracking-wide uppercase"
+							>{item.label}</span
+						>
 					</a>
 				{/each}
 			</div>

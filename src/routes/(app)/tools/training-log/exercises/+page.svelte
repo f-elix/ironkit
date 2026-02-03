@@ -129,7 +129,7 @@
 							<Button
 								{...props}
 								size="icon"
-								class="size-14 rounded-full bg-emerald-500 shadow-lg hover:bg-emerald-600"
+								class="bg-primary text-primary-foreground hover:bg-primary/90 size-14 rounded-full shadow-lg"
 								aria-label="Create exercise"
 							>
 								<PlusIcon class="size-7" />
