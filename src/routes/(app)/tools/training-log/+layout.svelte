@@ -5,14 +5,12 @@
 	import { expoOut } from 'svelte/easing';
 	import { crossfade } from 'svelte/transition';
 	import * as Sidebar from '$lib/shadcn/sidebar';
-	import { DEFAULT_WORKOUT_TITLE } from '$lib/constants';
-	import { formatDate } from '$lib/ui/formatDate';
-	import { useQuery } from 'convex-svelte';
-	import { api } from '$convex/_generated/api';
 	import DumbbellIcon from '@lucide/svelte/icons/dumbbell';
 	import ListIcon from '@lucide/svelte/icons/list';
 	import PlusIcon from '@lucide/svelte/icons/plus';
 	import AddWorkout from '$lib/components/training-log/AddWorkout.svelte';
+	import Button from '$lib/shadcn/button/button.svelte';
+	import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
 
 	const navItems = [
 		{
@@ -38,31 +36,25 @@
 		isTrainingLogNav = nav.to?.url.pathname.includes(resolve('/(app)/tools/training-log')) ?? false;
 	});
 
-	// Query workouts for sidebar (desktop only)
-	const workoutsQuery = useQuery(api.workouts.list, {});
-	let workouts = $derived(workoutsQuery.data ?? []);
-
 	// Check if we're on a workout detail page
 	let isWorkoutDetailPage = $derived(page.url.pathname.includes('/workout-'));
-	let currentWorkoutId = $derived(
-		isWorkoutDetailPage ? page.url.pathname.split('/workout-')[1] : null
-	);
-
-	// Check if we're on the exercises page
-	let isExercisesPage = $derived(page.url.pathname.endsWith('/exercises'));
 </script>
 
 <!-- Desktop Layout with Sidebar -->
 <div class="hidden md:contents">
 	<Sidebar.Provider>
 		<Sidebar.Root variant="inset" class="border-r-0">
-			<Sidebar.Header class="border-b p-4">
-				<h2 class="text-lg font-semibold">Training Log</h2>
+			<Sidebar.Header class="border-b p-2">
+				<div class="flex items-center gap-4">
+					<Button variant="outline" size="icon" href={resolve('/')} aria-label="Back to home">
+						<ArrowLeftIcon />
+					</Button>
+					<h2 class="text-lg font-semibold">Training Log</h2>
+				</div>
 			</Sidebar.Header>
 			<Sidebar.Content>
 				<!-- Navigation -->
 				<Sidebar.Group>
-					<Sidebar.GroupLabel>Navigation</Sidebar.GroupLabel>
 					<Sidebar.GroupContent>
 						<Sidebar.Menu>
 							{#each navItems as item}
@@ -85,47 +77,15 @@
 						</Sidebar.Menu>
 					</Sidebar.GroupContent>
 				</Sidebar.Group>
-
-				<!-- Workouts List (only show when not on exercises page) -->
-				{#if !isExercisesPage}
-					<Sidebar.Group class="flex-1">
-						<Sidebar.GroupLabel>Workouts</Sidebar.GroupLabel>
-						<Sidebar.GroupContent>
-							<Sidebar.Menu>
-								{#each workouts as workout (workout._id)}
-									{@const title = workout.title ?? DEFAULT_WORKOUT_TITLE}
-									{@const date = new Date(workout.date)}
-									{@const isActive = currentWorkoutId === workout._id}
-									<Sidebar.MenuItem>
-										<Sidebar.MenuButton {isActive}>
-											{#snippet child({ props })}
-												<a
-													href={resolve('/(app)/tools/training-log/workout-[id]', {
-														id: workout._id
-													})}
-													{...props}
-													class="{props.class} flex-col items-start gap-0.5"
-												>
-													<span class="font-medium">{title}</span>
-													<span class="text-muted-foreground text-xs">{formatDate(date)}</span>
-												</a>
-											{/snippet}
-										</Sidebar.MenuButton>
-									</Sidebar.MenuItem>
-								{/each}
-							</Sidebar.Menu>
-						</Sidebar.GroupContent>
-					</Sidebar.Group>
-				{/if}
 			</Sidebar.Content>
-			<Sidebar.Footer class="border-t p-2">
+			<Sidebar.Footer class="mt-auto border-t p-2">
 				<AddWorkout variant="ghost" class="w-full justify-start">
 					<PlusIcon class="size-4" />
 					<span>New Workout</span>
 				</AddWorkout>
 			</Sidebar.Footer>
 		</Sidebar.Root>
-		<Sidebar.Inset class="overflow-y-auto">
+		<Sidebar.Inset>
 			<div
 				class="flex grow flex-col p-4"
 				style="view-transition-name: {isTrainingLogNav ? 'training-log' : ''};"

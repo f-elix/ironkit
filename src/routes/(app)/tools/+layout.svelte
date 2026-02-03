@@ -15,7 +15,7 @@
 </script>
 
 {#if !isWorkoutDetailPage}
-	<div class="flex items-center justify-between gap-4 p-4">
+	<div class="flex items-center justify-between gap-4 p-4 md:hidden">
 		<Button variant="outline" size="icon" href={resolve('/')} aria-label="Back to home">
 			<ArrowLeftIcon />
 		</Button>
