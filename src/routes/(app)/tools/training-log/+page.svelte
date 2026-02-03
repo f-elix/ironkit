@@ -108,7 +108,7 @@
 			<div class="fixed right-4 bottom-16 z-50">
 				<AddWorkout
 					size="icon"
-					class="size-14 rounded-full bg-emerald-500 shadow-lg hover:bg-emerald-600"
+					class="bg-primary text-primary-foreground hover:bg-primary/90 size-14 rounded-full shadow-lg"
 				>
 					<PlusIcon class="size-7" />
 				</AddWorkout>
