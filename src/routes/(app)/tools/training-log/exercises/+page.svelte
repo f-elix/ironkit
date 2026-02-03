@@ -50,7 +50,7 @@
 				<Input placeholder="Search exercises" bind:value={search} />
 			</Label>
 			{#if exercises?.length}
-				<ul class="flex flex-col gap-4 pb-20 md:pb-4">
+				<ul class="grid gap-4 pb-20 md:grid-cols-2 md:pb-4 lg:grid-cols-3">
 					{#each exercises as exercise (exercise._id)}
 						{@const name = exercise.name}
 						{@const targetMuscleGroups = Array.from(exercise.muscleGroups)}

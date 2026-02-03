@@ -13,10 +13,10 @@
 </script>
 
 <header
-	class="bg-sidebar text-sidebar-foreground flex items-center justify-between gap-2 px-4 py-2 sm:py-4"
+	class="text-sidebar-foreground bg-sidebar top-0 z-50 flex items-center justify-between gap-2 px-4 py-2 sm:py-4 md:sticky"
 	style="view-transition-name: main-header;"
 >
-	<a href={resolve('/')} aria-label="Home" class="w-6">
+	<a href={resolve('/')} aria-label="Home">
 		<LogoSymbol class="size-6 sm:size-8" />
 	</a>
 	{#if isAuthenticated}
