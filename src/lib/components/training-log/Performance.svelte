@@ -38,18 +38,20 @@
 
 <div class="relative flex flex-col gap-6">
 	<div class="flex items-start gap-4">
-		<div class="flex min-w-0 grow items-center gap-2">
-			<h3 class="truncate text-lg leading-5 font-semibold">
-				{exerciseName}
+		<div class="flex min-w-0 grow items-baseline gap-1">
+			<div class="flex flex-col items-start gap-0.5">
+				<h3 class="text-lg leading-5 font-semibold">
+					{exerciseName}
+				</h3>
 				{#if exercise?.loadType === 'bodyweight'}
-					<span class="text-sm opacity-70">
-						- bodyweight
+					<h4 class="text-sm opacity-70">
+						Bodyweight
 						{#if bodyweight}
 							({bodyweight})
 						{/if}
-					</span>
+					</h4>
 				{/if}
-			</h3>
+			</div>
 			{#if exercise}
 				<ExerciseInfoDialog {exercise}>
 					{#snippet trigger()}
