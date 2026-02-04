@@ -20,7 +20,7 @@
 	<span class="sr-only">Note</span>
 	<Textarea
 		value={performance.note}
-		oninput={onNoteChange}
+		onblur={onNoteChange}
 		placeholder="Note"
 		class="p-2 text-sm leading-4 font-normal"
 	/>

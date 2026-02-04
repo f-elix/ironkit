@@ -20,20 +20,27 @@
 	let performanceGroups = $derived(query.data ?? []);
 	let lastOrder = $derived(performanceGroups?.at(-1)?.workoutOrder ?? 0);
 	let selectedPerformanceGroupId = $state<string>();
+	let dragSnapshot = $state<typeof performanceGroups | null>(null);
 
 	const onExerciseAdded = async (exerciseId: Id<'exercises'>) => {
 		const result = await addExerciseToWorkout(client, workoutId, exerciseId, lastOrder + 1);
 		selectedPerformanceGroupId = result.performanceGroupId;
 	};
 
+	const onDragStart: DragDropEvents['dragstart'] = () => {
+		dragSnapshot = $state.snapshot(performanceGroups);
+	};
+
 	const onDragEnd: DragDropEvents['dragend'] = async (event) => {
+		if (!dragSnapshot) {
+			return;
+		}
+
 		const reorderedGroups = move(
-			performanceGroups.map((item) => {
-				return {
-					...item,
-					id: item._id
-				};
-			}),
+			dragSnapshot.map((item) => ({
+				...item,
+				id: item._id
+			})),
 			// Type assertion needed due to version mismatch between @dnd-kit-svelte and @dnd-kit/helpers
 			event as unknown as Parameters<typeof move>[1]
 		);
@@ -44,12 +51,14 @@
 				workoutOrder: index
 			}))
 		});
+
+		dragSnapshot = null;
 	};
 </script>
 
 <div class="flex grow flex-col gap-4 pb-20 md:pb-4">
 	{#if performanceGroups.length}
-		<DragDropProvider {onDragEnd}>
+		<DragDropProvider {onDragStart} {onDragEnd}>
 			<Accordion.Root type="single" bind:value={selectedPerformanceGroupId}>
 				{#snippet child({ props })}
 					<ol {...props} class="flex flex-col gap-4 outline-none">
