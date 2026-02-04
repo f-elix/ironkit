@@ -13,8 +13,14 @@
 		unit,
 		exercise,
 		order
-	}: { set: PerformanceSet; unit: WeightUnit; exercise: Maybe<Exercise>; order?: number } =
-		$props();
+	}: {
+		set: PerformanceSet;
+		unit: WeightUnit;
+		exercise: Maybe<Exercise>;
+		order?: number;
+	} = $props();
+
+	let repsInputRef = $state<Maybe<HTMLInputElement>>(null);
 
 	const client = useConvexClient();
 	const executionType = exercise?.executionType ?? 'reps';
@@ -38,6 +44,12 @@
 		const value = (event.target as HTMLInputElement).valueAsNumber || 0;
 		client.mutation(api.performanceSets.update, { id: set._id, durationSeconds: value });
 	};
+
+	$effect(() => {
+		if (repsInputRef && !repsInputRef.value) {
+			repsInputRef?.focus();
+		}
+	});
 </script>
 
 <!-- Set input row with larger touch targets and focus feedback -->
@@ -57,7 +69,7 @@
 		<!-- Input fields container -->
 		<div class="flex flex-1 items-center gap-3">
 			<Label class="flex flex-1 flex-col gap-1">
-				<span class="text-muted-foreground text-[10px] font-medium">
+				<span class="text-muted-foreground text-xs font-medium">
 					{#if executionType === 'reps'}
 						Reps
 					{:else}
@@ -70,13 +82,14 @@
 					oninput={executionType === 'reps' ? onRepsChange : onTimeChange}
 					min="0"
 					class="h-11 w-full text-center text-lg font-semibold"
+					bind:ref={repsInputRef}
 				/>
 			</Label>
 			<!-- Separator -->
 			<div class="text-muted-foreground translate-y-2 text-lg" aria-hidden="true">&times;</div>
 			<!-- Weight input -->
 			<Label class="relative flex flex-1 flex-col gap-1">
-				<span class="text-muted-foreground text-[10px] font-medium">
+				<span class="text-muted-foreground text-xs font-medium">
 					{loadType === 'bodyweight' ? `+${unit}` : unit}
 				</span>
 				<div class="relative">

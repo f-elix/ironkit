@@ -107,7 +107,7 @@
 	};
 </script>
 
-<div class="flex w-full flex-col items-start gap-3 py-2 text-left whitespace-normal">
+<div class="flex w-full flex-col items-start gap-3 text-left whitespace-normal">
 	{#if displayBadge && isMultiExercise}
 		<Badge variant="secondary" class="text-xs">{displayBadge}</Badge>
 	{/if}
@@ -149,7 +149,7 @@
 			{@const note = performance.note}
 			<div class="flex w-full flex-col gap-3">
 				<div>
-					<p class="text-base font-semibold">
+					<p class="flex h-7 items-center text-lg leading-5 font-semibold">
 						{exercise?.name}
 					</p>
 					{#if note}

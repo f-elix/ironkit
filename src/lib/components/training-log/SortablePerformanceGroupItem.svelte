@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { useSortable } from '@dnd-kit-svelte/svelte/sortable';
 	import { Accordion } from 'bits-ui';
-	import { buttonVariants } from '$lib/shadcn/button';
 	import PerformanceGroupSummary from '$lib/components/training-log/PerformanceGroupSummary.svelte';
 	import PerformanceGroup from '$lib/components/training-log/PerformanceGroup.svelte';
 	import type { Id } from '$convex/_generated/dataModel';
@@ -34,12 +33,7 @@
 >
 	<Accordion.Item value={performanceGroupId} class="grow">
 		{#if !isSelected}
-			<Accordion.Trigger
-				class={buttonVariants({
-					variant: 'secondary',
-					class: ['bg-card hover:bg-accent/80 h-auto w-full ']
-				})}
-			>
+			<Accordion.Trigger class="bg-card hover:bg-accent/80 w-full rounded-lg p-3 transition-colors">
 				<PerformanceGroupSummary {performanceGroupId} />
 			</Accordion.Trigger>
 		{/if}

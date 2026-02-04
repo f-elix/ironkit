@@ -86,7 +86,7 @@
 	};
 </script>
 
-<Card.Root class="bg-card rounded-lg border py-0 shadow-sm">
+<Card.Root class="bg-card rounded-lg border-0 py-0 shadow-sm">
 	<Card.Content class="flex flex-col gap-3 p-3">
 		{#if performances.length > 1}
 			<div class="flex items-center gap-2">
