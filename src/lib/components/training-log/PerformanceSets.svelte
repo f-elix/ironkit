@@ -4,8 +4,6 @@
 	import Button from '$lib/shadcn/button/button.svelte';
 	import Plus from '@lucide/svelte/icons/circle-plus';
 	import Minus from '@lucide/svelte/icons/circle-minus';
-	import Label from '$lib/shadcn/label/label.svelte';
-	import Textarea from '$lib/shadcn/textarea/textarea.svelte';
 	import { scale } from 'svelte/transition';
 	import { expoOut } from 'svelte/easing';
 	import { flip } from 'svelte/animate';
