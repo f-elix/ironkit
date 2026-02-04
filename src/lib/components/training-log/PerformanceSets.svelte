@@ -46,7 +46,7 @@
 			animate:flip={{ duration: 500, easing: expoOut }}
 		>
 			<!-- Set input row with integrated order number -->
-			<div class="flex items-center gap-2">
+			<div class="flex items-center gap-1">
 				<div class="flex-1">
 					<PerformanceSet {set} {unit} {exercise} order={i + 1} />
 				</div>
@@ -64,22 +64,6 @@
 					</Button>
 				{/if}
 			</div>
-
-			<Label class="pr-10">
-				<span class="sr-only">Set note</span>
-				<Textarea
-					rows={1}
-					class="min-h-none text-sm font-normal"
-					placeholder="Note (RIR, RPE, etc.)"
-					value={set.note}
-					oninput={(event) => {
-						client.mutation(api.performanceSets.update, {
-							id: set._id,
-							note: event.currentTarget.value
-						});
-					}}
-				/>
-			</Label>
 		</li>
 	{/each}
 
