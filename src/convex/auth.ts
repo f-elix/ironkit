@@ -3,7 +3,12 @@ import { convex } from '@convex-dev/better-auth/plugins';
 import { components } from './_generated/api';
 import type { DataModel } from './_generated/dataModel';
 import { betterAuth, type BetterAuthOptions } from 'better-auth';
-import type { GenericDataModel, GenericQueryCtx, GenericMutationCtx, GenericActionCtx } from 'convex/server';
+import type {
+	GenericDataModel,
+	GenericQueryCtx,
+	GenericMutationCtx,
+	GenericActionCtx
+} from 'convex/server';
 import authConfig from './auth.config';
 
 const siteUrl = process.env.SITE_URL;
@@ -16,7 +21,10 @@ if (!siteUrl) {
 export const authComponent = createClient(components.betterAuth);
 
 // Type helper to convert app-specific context to generic context
-type AppCtx = GenericQueryCtx<DataModel> | GenericMutationCtx<DataModel> | GenericActionCtx<DataModel>;
+type AppCtx =
+	| GenericQueryCtx<DataModel>
+	| GenericMutationCtx<DataModel>
+	| GenericActionCtx<DataModel>;
 
 export const createAuthOptions = (ctx: AppCtx) => {
 	return {

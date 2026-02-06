@@ -10,8 +10,10 @@
 	import { api } from '$convex/_generated/api';
 	import type { Id } from '$convex/_generated/dataModel';
 
-	let { exerciseId, currentWorkout }: { exerciseId: Id<'exercises'>; currentWorkout?: Maybe<Workout> } =
-		$props();
+	let {
+		exerciseId,
+		currentWorkout
+	}: { exerciseId: Id<'exercises'>; currentWorkout?: Maybe<Workout> } = $props();
 
 	const query = useQuery(api.performances.getByExercise, {
 		exerciseId,

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import PerformanceSet from '$lib/components/training-log/PerformanceSet.svelte';
+	import SwipeToDelete from '$lib/components/ui/SwipeToDelete.svelte';
 	import type { WorkoutWithRelations } from '$lib/db/types';
 	import Button from '$lib/shadcn/button/button.svelte';
 	import Plus from '@lucide/svelte/icons/circle-plus';
@@ -43,19 +44,18 @@
 			out:scale={{ duration: 300, easing: expoOut, start: 0.5, opacity: 0 }}
 			animate:flip={{ duration: 500, easing: expoOut }}
 		>
-			<!-- Set input row with integrated order number -->
 			<div class="flex items-center gap-1">
-				<div class="flex-1">
-					<PerformanceSet {set} {unit} {exercise} order={i + 1} />
+				<div class="flex-1 overflow-hidden rounded-lg">
+					<SwipeToDelete ondelete={() => deleteSet(set._id)} disabled={sets.length <= 1}>
+						<PerformanceSet {set} {unit} {exercise} order={i + 1} />
+					</SwipeToDelete>
 				</div>
 				{#if sets.length > 1}
 					<Button
 						size="icon"
 						variant="ghost"
-						class="size-8 shrink-0"
-						onclick={() => {
-							deleteSet(set._id);
-						}}
+						class="touch:hidden size-8 shrink-0"
+						onclick={() => deleteSet(set._id)}
 						aria-label="Remove set {i + 1}"
 					>
 						<Minus class="text-destructive size-4" />
