@@ -1,17 +1,38 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
-	import { DEFAULT_WORKOUT_TITLE } from '$lib/constants';
-	import { formatDate } from '$lib/ui/formatDate';
 	import AddWorkout from '$lib/components/training-log/AddWorkout.svelte';
-	import { useQuery } from 'convex-svelte';
+	import WorkoutButton from '$lib/components/training-log/WorkoutButton.svelte';
+	import { useConvexClient, useQuery } from 'convex-svelte';
 	import { api } from '$convex/_generated/api';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import DumbbellIcon from '@lucide/svelte/icons/dumbbell';
 	import PlusIcon from '@lucide/svelte/icons/plus';
+	import SwipeToDelete from '$lib/components/ui/SwipeToDelete.svelte';
+	import type { Id } from '$convex/_generated/dataModel';
+	import { flip } from 'svelte/animate';
+	import { expoOut } from 'svelte/easing';
+	import { scale } from 'svelte/transition';
 
 	const query = useQuery(api.workouts.list, {});
 
+	const client = useConvexClient();
+
 	let workouts = $derived(query.data ?? []);
+
+	const deleteWorkout = (workoutId: Id<'workouts'>) => {
+		client.mutation(
+			api.workouts.remove,
+			{ id: workoutId },
+			{
+				optimisticUpdate: (localStore) => {
+					localStore.setQuery(
+						api.workouts.list,
+						{},
+						localStore.getQuery(api.workouts.list, {})?.filter((w) => w._id !== workoutId) ?? []
+					);
+				}
+			}
+		);
+	};
 </script>
 
 <!-- Desktop: Split layout with empty state (2/3) and workout list (1/3) -->
@@ -37,18 +58,10 @@
 		<div class="basis-1/3 overflow-y-auto pl-4">
 			<ul class="flex flex-col gap-3">
 				{#each workouts as workout (workout._id)}
-					{@const title = workout.title ?? DEFAULT_WORKOUT_TITLE}
-					{@const date = workout.date ? new Date(workout.date) : undefined}
-					<li>
-						<a
-							href={resolve('/(app)/tools/training-log/workout-[id]', { id: workout._id })}
-							class="bg-card hover:border-primary/50 flex flex-col rounded-lg border p-3 shadow-sm transition-all hover:shadow-md active:scale-[0.98]"
-						>
-							<span class="font-medium">{title}</span>
-							{#if date}
-								<span class="text-muted-foreground text-xs">{formatDate(date)}</span>
-							{/if}
-						</a>
+					<li
+						class="hover:border-primary/50 overflow-hidden rounded-lg border transition-all active:scale-[0.98]"
+					>
+						<WorkoutButton {workout} />
 					</li>
 				{/each}
 			</ul>
@@ -76,31 +89,15 @@
 		<div class="flex grow flex-col gap-4">
 			<ul class="flex flex-col gap-4 pb-20">
 				{#each workouts as workout (workout._id)}
-					{@const title = workout.title ?? DEFAULT_WORKOUT_TITLE}
-					{@const date = workout.date ? new Date(workout.date) : undefined}
-					{@const note = workout.notes}
-					{@const bodyweight = workout.bodyweight}
-					{@const bodyweightUnit = workout.bodyweightUnit}
-					<li>
-						<a
-							href={resolve('/(app)/tools/training-log/workout-[id]', { id: workout._id })}
-							class="bg-card hover:border-primary/50 flex flex-col rounded-lg border p-4 shadow-sm transition-all hover:shadow-md active:scale-[0.98]"
-						>
-							<span class="text-lg font-bold">{title}</span>
-							{#if date}
-								<span class="text-muted-foreground text-sm">{formatDate(date)}</span>
-							{/if}
-							{#if bodyweight}
-								<span class="text-sm">
-									<span class="font-medium">Bodyweight:</span>
-									{bodyweight}
-									{bodyweightUnit}
-								</span>
-							{/if}
-							{#if note}
-								<span class="mt-2 text-sm">{note}</span>
-							{/if}
-						</a>
+					<li
+						animate:flip={{ duration: 500, easing: expoOut }}
+						in:scale={{ duration: 500, easing: expoOut, start: 0.5, opacity: 0.5 }}
+						out:scale={{ duration: 300, easing: expoOut, start: 0.5, opacity: 0 }}
+						class="overflow-hidden rounded-lg border transition-transform active:scale-[0.98]"
+					>
+						<SwipeToDelete ondelete={() => deleteWorkout(workout._id)}>
+							<WorkoutButton {workout} />
+						</SwipeToDelete>
 					</li>
 				{/each}
 			</ul>

@@ -22,9 +22,7 @@
 				<Logo />
 			</div>
 			<h1 class="text-2xl font-bold">Welcome to Ironkit</h1>
-			<p class="text-muted-foreground text-center">
-				Sign in to start tracking your workouts
-			</p>
+			<p class="text-muted-foreground text-center">Sign in to start tracking your workouts</p>
 			<GoogleLoginConvex />
 		</div>
 	</div>

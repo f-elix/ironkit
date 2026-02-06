@@ -35,7 +35,11 @@ export function setKeyboardOverlaysContent(overlays: boolean): () => void {
 
 	if (overlays) {
 		// Remove resizes-content to let keyboard overlay
-		const newContent = original.replace(INTERACTIVE_WIDGET_CONTENT, '').replace(/,\s*,/g, ',').replace(/,\s*$/, '').trim();
+		const newContent = original
+			.replace(INTERACTIVE_WIDGET_CONTENT, '')
+			.replace(/,\s*,/g, ',')
+			.replace(/,\s*$/, '')
+			.trim();
 		meta.setAttribute('content', newContent);
 	} else {
 		// Add resizes-content to resize viewport

@@ -84,7 +84,8 @@
 		"convex-svelte": "0.0.12",
 		"pnpm": "10.11.0",
 		"powerlifting-formulas": "0.2.3",
-		"runed": "0.34.0"
+		"runed": "0.34.0",
+		"svelte-gestures": "^5.2.2"
 	},
 	"packageManager": "pnpm@10.18.3"
 }
