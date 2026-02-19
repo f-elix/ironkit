@@ -9,11 +9,9 @@
 	import Button from '$lib/shadcn/button/button.svelte';
 	import { goto } from '$app/navigation';
 	import Label from '$lib/shadcn/label/label.svelte';
-	import PreviousWorkoutSelection from '$lib/components/training-log/PreviousWorkoutSelection.svelte';
 	import UnitSelector from '$lib/components/ui/UnitSelector.svelte';
 	import { setKeyboardOverlaysContent } from '$lib/virtualKeyboard';
 	import { resolve } from '$app/paths';
-	import { useQuery } from 'convex-svelte';
 	import { api } from '$convex/_generated/api';
 	import type { Doc } from '$convex/_generated/dataModel';
 	import { useConvexClient } from 'convex-svelte';
@@ -26,9 +24,6 @@
 	} = $props();
 
 	const client = useConvexClient();
-	const previousWorkoutsQuery = useQuery(api.workouts.list, {});
-	let previousWorkouts = $derived(previousWorkoutsQuery.data ?? []);
-	let showPreviousWorkoutSelection = $derived(!workout && previousWorkouts.length);
 
 	const dialogTitle = workout ? 'Edit workout' : 'Create workout';
 	const buttonText = workout ? 'Save changes' : 'Create';
@@ -36,8 +31,7 @@
 
 	let open = $state(false);
 
-	let templateWorkout = $state<Maybe<Doc<'workouts'>>>(null);
-	let title = $derived(workout?.title ?? templateWorkout?.title);
+	let title = $state(workout?.title ?? '');
 	let notes = $state(workout?.notes);
 	let date = $state(
 		workoutDate
@@ -70,8 +64,7 @@
 			notes: notes?.trim() ?? '',
 			date: date.toDate(TIMEZONE).getTime(),
 			bodyweight,
-			bodyweightUnit,
-			templateWorkoutId: templateWorkout?._id
+			bodyweightUnit
 		});
 		goto(resolve('/(app)/tools/training-log/workout-[id]', { id: newWorkoutId }));
 	};
@@ -97,12 +90,6 @@
 	<Dialog.Content class="p-5">
 		<Dialog.Title class="text-left">{dialogTitle}</Dialog.Title>
 		<form class="flex flex-col gap-4" onsubmit={onSave}>
-			{#if showPreviousWorkoutSelection}
-				<PreviousWorkoutSelection
-					workouts={previousWorkouts}
-					bind:selectedWorkout={templateWorkout}
-				/>
-			{/if}
 			<Label class="flex flex-col gap-2">
 				Workout name
 				<Input type="text" bind:value={title} />

@@ -10,6 +10,10 @@ export const addExerciseToPerformanceGroup = async (
 	exerciseId: Id<'exercises'>,
 	groupOrder: number
 ) => {
+	if (!performanceGroup.workoutId) {
+		throw new Error('Cannot add workout exercise to a program workout group');
+	}
+
 	// Use atomic mutation to create both performance and initial set in one transaction
 	const { performanceId, performanceSetId } = await client.mutation(
 		api.performances.createWithInitialSet,

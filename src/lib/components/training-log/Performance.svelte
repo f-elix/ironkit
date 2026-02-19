@@ -31,9 +31,30 @@
 	let exerciseName = $derived(exercise?.name);
 	let workout = $derived(performance.workout);
 	let unit = $derived(performance.weightUnit);
+	let sets = $derived(performance.sets ?? []);
 	let bodyweight = $derived(
 		workout?.bodyweight ? `${workout?.bodyweight} ${workout?.bodyweightUnit}` : ''
 	);
+	let programTargetSummary = $derived.by(() => {
+		const executionType = exercise?.executionType ?? 'reps';
+		const plannedValues = sets
+			.slice()
+			.sort((a, b) => a.performanceOrder - b.performanceOrder)
+			.map((set) =>
+				executionType === 'time' ? set.programTargetDurationSeconds : set.programTargetReps
+			)
+			.filter((value): value is number => value != null);
+
+		if (!plannedValues.length) {
+			return '';
+		}
+		const unitLabel = executionType === 'time' ? 'sec' : 'reps';
+		const uniqueValues = [...new Set(plannedValues)];
+		if (uniqueValues.length === 1) {
+			return `${plannedValues.length} set${plannedValues.length > 1 ? 's' : ''} x ${uniqueValues[0]} ${unitLabel}`;
+		}
+		return `${plannedValues.length} set${plannedValues.length > 1 ? 's' : ''} (${plannedValues.join('/')} ${unitLabel})`;
+	});
 </script>
 
 <div class="relative flex flex-col gap-6">
@@ -50,6 +71,9 @@
 							({bodyweight})
 						{/if}
 					</h4>
+				{/if}
+				{#if programTargetSummary}
+					<p class="text-primary text-xs font-medium">Planned: {programTargetSummary}</p>
 				{/if}
 			</div>
 			{#if exercise}

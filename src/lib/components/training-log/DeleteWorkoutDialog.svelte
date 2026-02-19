@@ -7,25 +7,50 @@
 	import { useConvexClient } from 'convex-svelte';
 	import { api } from '$convex/_generated/api';
 
-	let { workout, open = $bindable() }: { workout: Workout; open: boolean } = $props();
+	let {
+		workout,
+		open = $bindable(),
+		title = 'Delete workout',
+		description = 'Are you sure you want to delete this workout? This action cannot be undone.',
+		confirmLabel = 'Confirm',
+		isDeleting = false,
+		onConfirmDelete
+	}: {
+		workout?: Workout;
+		open: boolean;
+		title?: string;
+		description?: string;
+		confirmLabel?: string;
+		isDeleting?: boolean;
+		onConfirmDelete?: () => Promise<void> | void;
+	} = $props();
 
 	const client = useConvexClient();
 
 	const onDelete = async () => {
+		if (onConfirmDelete) {
+			await onConfirmDelete();
+			open = false;
+			return;
+		}
+		if (!workout) {
+			return;
+		}
 		await client.mutation(api.workouts.remove, { id: workout._id });
+		open = false;
 		goto(resolve('/(app)/tools/training-log'));
 	};
 </script>
 
 <Dialog.Root bind:open>
 	<Dialog.Content>
-		<Dialog.Title>Delete workout</Dialog.Title>
-		<Dialog.Description>
-			Are you sure you want to delete this workout? This action cannot be undone.
-		</Dialog.Description>
+		<Dialog.Title>{title}</Dialog.Title>
+		<Dialog.Description>{description}</Dialog.Description>
 		<Dialog.Footer class="flex flex-row justify-end gap-2">
 			<Dialog.Close class={buttonVariants({ variant: 'secondary' })}>Cancel</Dialog.Close>
-			<Button variant="destructive" onclick={onDelete}>Confirm</Button>
+			<Button variant="destructive" onclick={onDelete} disabled={isDeleting}>
+				{isDeleting ? 'Deleting...' : confirmLabel}
+			</Button>
 		</Dialog.Footer>
 	</Dialog.Content>
 </Dialog.Root>

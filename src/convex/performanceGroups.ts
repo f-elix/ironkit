@@ -33,6 +33,9 @@ export const getById = query({
 		if (!group || group.userId !== userId) {
 			return null;
 		}
+		if (!group.workoutId || group.programWorkoutId !== undefined) {
+			return null;
+		}
 
 		// Get workout for this group
 		const workout = await ctx.db.get(group.workoutId);
@@ -93,6 +96,7 @@ export const create = mutation({
 		const id = await ctx.db.insert('performanceGroups', {
 			userId,
 			workoutId: args.workoutId,
+			programWorkoutId: undefined,
 			label: args.label,
 			workoutOrder: args.workoutOrder,
 			updatedAt: Date.now()
@@ -115,7 +119,7 @@ export const update = mutation({
 		}
 
 		const group = await ctx.db.get(args.id);
-		if (!group || group.userId !== userId) {
+		if (!group || group.userId !== userId || !group.workoutId || group.programWorkoutId !== undefined) {
 			throw new Error('Performance group not found');
 		}
 

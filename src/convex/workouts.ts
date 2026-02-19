@@ -34,24 +34,20 @@ export const getById = query({
 			return null;
 		}
 
-		// Get all performance groups for this workout
 		const performanceGroups = await ctx.db
 			.query('performanceGroups')
 			.withIndex('by_workoutId', (q) => q.eq('workoutId', args.id))
 			.collect();
 
-		// Get all performances for these groups
 		const performances = await ctx.db
 			.query('performances')
 			.withIndex('by_workoutId', (q) => q.eq('workoutId', args.id))
 			.collect();
 
-		// Get all exercise IDs
 		const exerciseIds = Array.from(new Set(performances.map((p) => p.exerciseId)));
 		const exercises = await Promise.all(exerciseIds.map((id) => ctx.db.get(id)));
 		const exerciseMap = new Map(exercises.filter((e) => e !== null).map((e) => [e!._id, e]));
 
-		// Get all performance sets
 		const performanceIds = performances.map((p) => p._id);
 		const allSets: Doc<'performanceSets'>[] = [];
 		for (const perfId of performanceIds) {
@@ -62,7 +58,6 @@ export const getById = query({
 			allSets.push(...sets);
 		}
 
-		// Build the nested structure
 		return {
 			...workout,
 			performanceGroups: performanceGroups
@@ -91,10 +86,49 @@ export const create = mutation({
 		notes: v.optional(v.string()),
 		bodyweight: v.optional(v.number()),
 		bodyweightUnit: v.optional(weightUnit),
-		templateWorkoutId: v.optional(v.id('workouts'))
+		programRunId: v.optional(v.id('programRuns')),
+		programRunSessionId: v.optional(v.id('programRunSessions')),
+		sourceProgramWorkoutId: v.optional(v.id('programWorkouts'))
 	},
 	handler: async (ctx, args) => {
 		const { _id: userId } = await getAuthUser(ctx);
+
+		if (args.programRunSessionId) {
+			const programRunSession = await ctx.db.get(args.programRunSessionId);
+			if (!programRunSession || programRunSession.userId !== userId) {
+				throw new Error('Program run session not found');
+			}
+			const programRun = await ctx.db.get(programRunSession.programRunId);
+			if (!programRun || programRun.userId !== userId) {
+				throw new Error('Program run not found');
+			}
+			if (args.programRunId && args.programRunId !== programRun._id) {
+				throw new Error('Program run mismatch');
+			}
+			if (programRunSession.workoutId !== undefined) {
+				throw new Error('Program run session is already linked to a workout');
+			}
+			if (programRunSession.skippedAt !== undefined) {
+				throw new Error('Program run session is skipped');
+			}
+		} else if (args.programRunId) {
+			const programRun = await ctx.db.get(args.programRunId);
+			if (!programRun || programRun.userId !== userId) {
+				throw new Error('Program run not found');
+			}
+		}
+
+		if (args.sourceProgramWorkoutId) {
+			const programWorkout = await ctx.db.get(args.sourceProgramWorkoutId);
+			if (!programWorkout) {
+				throw new Error('Source program workout not found');
+			}
+			const programTemplate = await ctx.db.get(programWorkout.programTemplateId);
+			if (!programTemplate || programTemplate.userId !== userId) {
+				throw new Error('Source program workout not found');
+			}
+		}
+
 		const newWorkoutId = await ctx.db.insert('workouts', {
 			userId,
 			title: args.title,
@@ -102,54 +136,11 @@ export const create = mutation({
 			notes: args.notes,
 			bodyweight: args.bodyweight,
 			bodyweightUnit: args.bodyweightUnit ?? DEFAULT_WEIGHT_UNIT,
+			programRunId: args.programRunId,
+			programRunSessionId: args.programRunSessionId,
+			sourceProgramWorkoutId: args.sourceProgramWorkoutId,
 			updatedAt: Date.now()
 		});
-		if (args.templateWorkoutId) {
-			const template = await ctx.db.get(args.templateWorkoutId);
-			if (!template || template.userId !== userId) {
-				throw new Error('Template workout not found');
-			}
-			const performanceGroups = await ctx.db
-				.query('performanceGroups')
-				.withIndex('by_workoutId', (q) => q.eq('workoutId', template._id))
-				.collect();
-			for (const group of performanceGroups) {
-				const newGroupId = await ctx.db.insert('performanceGroups', {
-					userId,
-					label: group.label,
-					workoutId: newWorkoutId,
-					workoutOrder: group.workoutOrder,
-					updatedAt: Date.now()
-				});
-				const performances = await ctx.db
-					.query('performances')
-					.withIndex('by_performanceGroupId', (q) => q.eq('performanceGroupId', group._id))
-					.collect();
-				for (const perf of performances) {
-					const newPerformanceId = await ctx.db.insert('performances', {
-						userId,
-						performanceGroupId: newGroupId,
-						exerciseId: perf.exerciseId,
-						groupOrder: perf.groupOrder,
-						workoutId: newWorkoutId,
-						updatedAt: Date.now(),
-						weightUnit: perf.weightUnit
-					});
-					const sets = await ctx.db
-						.query('performanceSets')
-						.withIndex('by_performanceId', (q) => q.eq('performanceId', perf._id))
-						.collect();
-					for (const set of sets) {
-						await ctx.db.insert('performanceSets', {
-							userId,
-							performanceId: newPerformanceId,
-							performanceOrder: set.performanceOrder,
-							updatedAt: Date.now()
-						});
-					}
-				}
-			}
-		}
 		return newWorkoutId;
 	}
 });
@@ -190,19 +181,41 @@ export const remove = mutation({
 			throw new Error('Workout not found');
 		}
 
-		// Delete all related performance groups
+		if (workout.programRunSessionId && workout.programRunId) {
+			const runSession = await ctx.db.get(workout.programRunSessionId);
+			if (runSession && runSession.programRunId === workout.programRunId) {
+				await ctx.db.patch(runSession._id, {
+					workoutId: undefined,
+					updatedAt: Date.now()
+				});
+
+				const run = await ctx.db.get(workout.programRunId);
+				if (run && run.userId === userId) {
+					if (run.status === 'completed') {
+						await ctx.db.patch(run._id, {
+							status: 'paused',
+							endedAt: undefined,
+							updatedAt: Date.now()
+						});
+					} else {
+						await ctx.db.patch(run._id, {
+							updatedAt: Date.now()
+						});
+					}
+				}
+			}
+		}
+
 		const performanceGroups = await ctx.db
 			.query('performanceGroups')
 			.withIndex('by_workoutId', (q) => q.eq('workoutId', args.id))
 			.collect();
 
-		// Delete all related performances
 		const performances = await ctx.db
 			.query('performances')
 			.withIndex('by_workoutId', (q) => q.eq('workoutId', args.id))
 			.collect();
 
-		// Delete all related performance sets
 		for (const perf of performances) {
 			const sets = await ctx.db
 				.query('performanceSets')
@@ -213,17 +226,14 @@ export const remove = mutation({
 			}
 		}
 
-		// Delete performances
 		for (const perf of performances) {
 			await ctx.db.delete(perf._id);
 		}
 
-		// Delete performance groups
 		for (const group of performanceGroups) {
 			await ctx.db.delete(group._id);
 		}
 
-		// Finally delete the workout
 		await ctx.db.delete(args.id);
 
 		return args.id;
