@@ -58,7 +58,9 @@ export const list = query({
 		await assertOwnedProgramWorkoutExercise(ctx, args.programWorkoutExerciseId, userId);
 		const rows = await ctx.db
 			.query('performanceSets')
-			.withIndex('by_performanceId_order', (q) => q.eq('performanceId', args.programWorkoutExerciseId))
+			.withIndex('by_performanceId_order', (q) =>
+				q.eq('performanceId', args.programWorkoutExerciseId)
+			)
 			.collect();
 		return rows.sort((a, b) => a.performanceOrder - b.performanceOrder);
 	}
@@ -119,7 +121,11 @@ export const update = mutation({
 		if (!userId) {
 			throw new Error('Not authenticated');
 		}
-		const { set, exercise, template } = await assertOwnedProgramWorkoutExerciseSet(ctx, args.id, userId);
+		const { set, exercise, template } = await assertOwnedProgramWorkoutExerciseSet(
+			ctx,
+			args.id,
+			userId
+		);
 		const normalizedTargets = normalizeSetTargetForExecution(
 			exercise.executionType,
 			args.targetReps ?? set.programTargetReps,

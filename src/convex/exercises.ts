@@ -148,7 +148,9 @@ export const remove = mutation({
 				}
 				const run = await ctx.db.get(runSession.programRunId);
 				if (run && run.userId === userId) {
-					throw new Error('Exercise is used in a program workout referenced by unfinished run sessions');
+					throw new Error(
+						'Exercise is used in a program workout referenced by unfinished run sessions'
+					);
 				}
 			}
 		}
@@ -178,7 +180,9 @@ export const remove = mutation({
 				performanceGroupIds.map(async (performanceGroupId) => {
 					return ctx.db
 						.query('performances')
-						.withIndex('by_performanceGroupId', (q) => q.eq('performanceGroupId', performanceGroupId))
+						.withIndex('by_performanceGroupId', (q) =>
+							q.eq('performanceGroupId', performanceGroupId)
+						)
 						.collect();
 				})
 			)

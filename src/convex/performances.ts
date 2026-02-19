@@ -31,7 +31,9 @@ export const getByExercise = query({
 		);
 
 		if (args.currentWorkoutId) {
-			filteredPerformances = filteredPerformances.filter((p) => p.workoutId !== args.currentWorkoutId);
+			filteredPerformances = filteredPerformances.filter(
+				(p) => p.workoutId !== args.currentWorkoutId
+			);
 
 			const currentWorkout = await ctx.db.get(args.currentWorkoutId);
 			if (currentWorkout) {

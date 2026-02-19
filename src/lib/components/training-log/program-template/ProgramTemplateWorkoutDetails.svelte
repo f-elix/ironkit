@@ -1,22 +1,26 @@
 <script lang="ts">
 	import { api } from '$convex/_generated/api';
 	import type { Id } from '$convex/_generated/dataModel';
-	import ExerciseSelection from '$lib/components/training-log/ExerciseSelection.svelte';
-	import ProgramTemplateExerciseSetsEditor from '$lib/components/training-log/program-template/ProgramTemplateExerciseSetsEditor.svelte';
-	import { getProgramTemplateEditorContext } from '$lib/components/training-log/program-template/program-template-editor.context';
+	import DeleteWorkoutDialog from '$lib/components/training-log/DeleteWorkoutDialog.svelte';
+	import ProgramTemplateExerciseGroupsSection from '$lib/components/training-log/program-template/ProgramTemplateExerciseGroupsSection.svelte';
+	import ProgramTemplateWorkoutDetailsHeader from '$lib/components/training-log/program-template/ProgramTemplateWorkoutDetailsHeader.svelte';
+	import ProgramTemplateWorkoutMetaForm from '$lib/components/training-log/program-template/ProgramTemplateWorkoutMetaForm.svelte';
+	import ProgramTemplateWorkoutReorderControls from '$lib/components/training-log/program-template/ProgramTemplateWorkoutReorderControls.svelte';
+	import { getProgramTemplateEditorContext } from '$lib/components/training-log/program-template/program-template-editor.context.svelte.js';
 	import type {
 		GroupExerciseUpdate,
 		ProgramWorkoutDetails,
 		ProgramWorkoutDraft,
-		WorkoutSummary,
-		WorkoutMetaUpdate
+		WorkoutMetaUpdate,
+		WorkoutSummary
 	} from '$lib/components/training-log/program-template/program-template-editor.types';
-	import Button, { buttonVariants } from '$lib/shadcn/button/button.svelte';
+	import {
+		getFirstAvailableTrackKey,
+		getTrackColor,
+		normalizeTrackKey
+	} from '$lib/components/training-log/program-template/program-template-track.utils';
+	import Button from '$lib/shadcn/button/button.svelte';
 	import * as Dialog from '$lib/shadcn/dialog';
-	import Input from '$lib/shadcn/input/input.svelte';
-	import Label from '$lib/shadcn/label/label.svelte';
-	import { Textarea } from '$lib/shadcn/textarea';
-	import PlusIcon from '@lucide/svelte/icons/plus';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
 	import { useConvexClient, useQuery } from 'convex-svelte';
 	import { onDestroy } from 'svelte';
@@ -24,7 +28,7 @@
 
 	let { templateId }: { templateId: Id<'programTemplates'> } = $props();
 
-	const { selectedWorkoutIdStore } = getProgramTemplateEditorContext();
+	const editorState = getProgramTemplateEditorContext();
 	const client = useConvexClient();
 
 	const workoutsQuery = useQuery(api.programWorkouts.listByTemplate, () => ({
@@ -32,23 +36,14 @@
 	}));
 
 	let workouts = $derived((workoutsQuery.data ?? []) as WorkoutSummary[]);
-	let preferredSelectedWorkoutId = $derived($selectedWorkoutIdStore);
-	let selectedWorkoutId = $derived.by(() => {
-		if (!workouts.length) {
-			return undefined;
-		}
-		if (
-			preferredSelectedWorkoutId &&
-			workouts.some((workout) => workout._id === preferredSelectedWorkoutId)
-		) {
-			return preferredSelectedWorkoutId;
-		}
-		return workouts[0]?._id;
-	});
-	const selectedWorkoutQuery = useQuery(api.programWorkouts.getById, () => ({
-		id: selectedWorkoutId
-	}));
-	let selectedWorkout = $derived(selectedWorkoutQuery.data as ProgramWorkoutDetails | null | undefined);
+	let selectedWorkoutId = $derived(editorState.selectedWorkoutId);
+
+	const selectedWorkoutQuery = useQuery(api.programWorkouts.getById, () =>
+		selectedWorkoutId ? { id: selectedWorkoutId } : 'skip'
+	);
+	let selectedWorkout = $derived(
+		selectedWorkoutQuery.data as ProgramWorkoutDetails | null | undefined
+	);
 
 	let workoutDraftById = $state<Record<string, ProgramWorkoutDraft>>({});
 	let saveMetaTimer: ReturnType<typeof setTimeout> | undefined;
@@ -60,6 +55,58 @@
 	let workoutTrackKey = $derived(selectedWorkoutDraft.trackKey ?? selectedWorkout?.trackKey ?? 'A');
 	let workoutLabel = $derived(selectedWorkoutDraft.label ?? selectedWorkout?.label ?? '');
 	let workoutNotes = $derived(selectedWorkoutDraft.notes ?? selectedWorkout?.notes ?? '');
+
+	const getNextAvailableTrack = (weekNumber: number): string | null => {
+		const usedInWeek = new Set(
+			workouts
+				.filter(
+					(workout) =>
+						workout.weekNumber === weekNumber &&
+						selectedWorkoutId &&
+						workout._id !== selectedWorkoutId
+				)
+				.map((workout) => normalizeTrackKey(workout.trackKey))
+		);
+		const allTracks = new Set(workouts.map((workout) => normalizeTrackKey(workout.trackKey)));
+
+		for (const letter of 'ABCDEFGHIJKLMNOPQRSTUVWXYZ') {
+			if (!usedInWeek.has(letter) && !allTracks.has(letter)) {
+				return letter;
+			}
+		}
+
+		return null;
+	};
+
+	let availableTrackKeys = $derived.by(() => {
+		const currentWeek = workoutWeekNumber;
+		const currentTrackKey = normalizeTrackKey(workoutTrackKey);
+		const allTracks = [...new Set(workouts.map((workout) => normalizeTrackKey(workout.trackKey)))].sort();
+		const takenInWeek = new Set(
+			workouts
+				.filter(
+					(workout) =>
+						workout.weekNumber === currentWeek &&
+						selectedWorkoutId &&
+						workout._id !== selectedWorkoutId
+				)
+				.map((workout) => normalizeTrackKey(workout.trackKey))
+		);
+
+		const available = allTracks.filter((track) => !takenInWeek.has(track));
+		if (!available.includes(currentTrackKey)) {
+			available.push(currentTrackKey);
+			available.sort();
+		}
+
+		const nextTrack = getNextAvailableTrack(currentWeek) ?? getFirstAvailableTrackKey(takenInWeek);
+		if (!available.includes(nextTrack)) {
+			available.push(nextTrack);
+			available.sort();
+		}
+
+		return available;
+	});
 
 	const normalizePositiveInt = (value: number, fallback = 1) => {
 		if (!Number.isFinite(value)) {
@@ -80,39 +127,25 @@
 			return;
 		}
 		const existing = workoutDraftById[selectedWorkoutId] ?? {};
-		const nextDraft = {
-			...existing,
-			[update.field]: update.value
-		};
-		workoutDraftById = {
-			...workoutDraftById,
-			[selectedWorkoutId]: nextDraft
-		};
+		const nextDraft = { ...existing, [update.field]: update.value };
+		workoutDraftById = { ...workoutDraftById, [selectedWorkoutId]: nextDraft };
 		queueWorkoutMetaSave(selectedWorkoutId, selectedWorkout, nextDraft);
 	};
 
-	const buildWorkoutMetaPayload = (workout: ProgramWorkoutDetails, draft: ProgramWorkoutDraft) => {
-		return {
-			weekNumber: normalizePositiveInt(draft.weekNumber ?? workout.weekNumber, 1),
-			trackKey: (draft.trackKey ?? workout.trackKey).trim().toUpperCase() || 'A',
-			label: (draft.label ?? workout.label ?? '').trim(),
-			notes: (draft.notes ?? workout.notes ?? '').trim()
-		};
-	};
+	const buildWorkoutMetaPayload = (workout: ProgramWorkoutDetails, draft: ProgramWorkoutDraft) => ({
+		weekNumber: normalizePositiveInt(draft.weekNumber ?? workout.weekNumber, 1),
+		trackKey: normalizeTrackKey(draft.trackKey ?? workout.trackKey),
+		label: (draft.label ?? workout.label ?? '').trim(),
+		notes: (draft.notes ?? workout.notes ?? '').trim()
+	});
 
 	const saveWorkoutMeta = async (
 		workoutId: Id<'programWorkouts'>,
 		payload: ReturnType<typeof buildWorkoutMetaPayload>
 	) => {
 		try {
-			await client.mutation(api.programWorkouts.updateWorkoutMeta, {
-				id: workoutId,
-				...payload
-			});
-			workoutDraftById = {
-				...workoutDraftById,
-				[workoutId]: payload
-			};
+			await client.mutation(api.programWorkouts.updateWorkoutMeta, { id: workoutId, ...payload });
+			workoutDraftById = { ...workoutDraftById, [workoutId]: payload };
 		} catch (error) {
 			toast.error(toErrorMessage(error, 'Could not save workout details.'));
 		}
@@ -154,29 +187,41 @@
 
 	const updateGroupLabel = async (groupId: Id<'performanceGroups'>, label: string) => {
 		try {
-			await client.mutation(api.programWorkoutGroups.update, {
-				id: groupId,
-				label
-			});
+			await client.mutation(api.programWorkoutGroups.update, { id: groupId, label });
 		} catch (error) {
 			toast.error(toErrorMessage(error, 'Could not update group label.'));
 		}
 	};
 
 	const removeGroup = async (groupId: Id<'performanceGroups'>) => {
-		if (!confirm('Delete this group and all exercises in it?')) {
-			return;
-		}
 		try {
-			await client.mutation(api.programWorkoutGroups.remove, {
-				id: groupId
-			});
+			await client.mutation(api.programWorkoutGroups.remove, { id: groupId });
 		} catch (error) {
 			toast.error(toErrorMessage(error, 'Could not delete group.'));
 		}
 	};
 
-	const addExerciseToGroup = async (groupId: Id<'performanceGroups'>, exerciseId: Id<'exercises'>) => {
+	let groupPendingDelete = $state<Id<'performanceGroups'> | undefined>(undefined);
+	let groupDeleteDialogOpen = $state(false);
+
+	const promptDeleteGroup = (groupId: Id<'performanceGroups'>) => {
+		groupPendingDelete = groupId;
+		groupDeleteDialogOpen = true;
+	};
+
+	const confirmRemoveGroup = async () => {
+		if (!groupPendingDelete) {
+			return;
+		}
+		await removeGroup(groupPendingDelete);
+		groupPendingDelete = undefined;
+		groupDeleteDialogOpen = false;
+	};
+
+	const addExerciseToGroup = async (
+		groupId: Id<'performanceGroups'>,
+		exerciseId: Id<'exercises'>
+	) => {
 		if (!selectedWorkout) {
 			return;
 		}
@@ -207,9 +252,7 @@
 
 	const removeExercise = async (exerciseTargetId: Id<'performances'>) => {
 		try {
-			await client.mutation(api.programWorkoutExercises.remove, {
-				id: exerciseTargetId
-			});
+			await client.mutation(api.programWorkoutExercises.remove, { id: exerciseTargetId });
 		} catch (error) {
 			toast.error(toErrorMessage(error, 'Could not delete exercise.'));
 		}
@@ -231,187 +274,145 @@
 			toast.error(toErrorMessage(error, 'Could not update set target.'));
 		}
 	};
+
+	let weekWorkouts = $derived.by(() => {
+		if (!selectedWorkout) {
+			return [];
+		}
+		return workouts
+			.filter((workout) => workout.weekNumber === selectedWorkout.weekNumber)
+			.slice()
+			.sort((a, b) => a.slotOrder - b.slotOrder);
+	});
+	let positionInWeek = $derived(
+		selectedWorkoutId ? weekWorkouts.findIndex((workout) => workout._id === selectedWorkoutId) : -1
+	);
+
+	const moveWithinWeek = async (direction: -1 | 1) => {
+		if (!selectedWorkoutId || !selectedWorkout) {
+			return;
+		}
+		const currentIndex = positionInWeek;
+		const nextIndex = currentIndex + direction;
+		if (currentIndex < 0 || nextIndex < 0 || nextIndex >= weekWorkouts.length) {
+			return;
+		}
+		const reordered = weekWorkouts.slice();
+		const [moved] = reordered.splice(currentIndex, 1);
+		reordered.splice(nextIndex, 0, moved);
+		try {
+			await client.mutation(api.programWorkouts.reorderWithinWeek, {
+				programTemplateId: templateId,
+				weekNumber: selectedWorkout.weekNumber,
+				updates: reordered.map((workout, index) => ({ id: workout._id, slotOrder: index }))
+			});
+		} catch (error) {
+			toast.error(toErrorMessage(error, 'Could not reorder workouts.'));
+		}
+	};
+
+	let deleteDialogOpen = $state(false);
+	let isDeletingWorkout = $state(false);
+
+	const confirmDeleteWorkout = async () => {
+		if (!selectedWorkoutId || isDeletingWorkout) {
+			return;
+		}
+		isDeletingWorkout = true;
+		try {
+			await client.mutation(api.programWorkouts.remove, { id: selectedWorkoutId });
+			editorState.clearSelection();
+		} catch (error) {
+			toast.error(toErrorMessage(error, 'Could not delete workout.'));
+		} finally {
+			isDeletingWorkout = false;
+			deleteDialogOpen = false;
+		}
+	};
 </script>
 
-<section class="bg-card/90 rounded-2xl border p-4 shadow-sm">
+<div class="flex min-h-full flex-col">
 	{#if selectedWorkout}
-		<div class="space-y-4">
-			<div class="flex flex-wrap items-start justify-between gap-3">
-				<div class="space-y-1">
-					<h2 class="text-xl font-semibold">Workout details</h2>
-					<p class="text-muted-foreground text-sm">
-						Edit week, ordering, and exercise targets for this workout.
-					</p>
-				</div>
-			</div>
+		<ProgramTemplateWorkoutDetailsHeader
+			trackKey={workoutTrackKey}
+			weekNumber={workoutWeekNumber}
+			label={workoutLabel}
+			trackColorClass={getTrackColor(workoutTrackKey)}
+			onClose={editorState.clearSelection}
+		/>
 
-			<div class="grid gap-3 rounded-xl border p-3 md:grid-cols-2 xl:grid-cols-4">
-				<Label class="grid gap-1.5">
-					<span class="text-xs">Week</span>
-					<Input
-						type="number"
-						min="1"
-						value={workoutWeekNumber}
-						oninput={(event) => {
-							updateSelectedWorkoutDraft({
-								field: 'weekNumber',
-								value: event.currentTarget.valueAsNumber
-							});
-						}}
-					/>
-				</Label>
-				<Label class="grid gap-1.5">
-					<span class="text-xs">Track</span>
-					<Input
-						maxlength={8}
-						value={workoutTrackKey}
-						oninput={(event) => {
-							updateSelectedWorkoutDraft({
-								field: 'trackKey',
-								value: event.currentTarget.value
-							});
-						}}
-					/>
-				</Label>
-				<Label class="grid gap-1.5">
-					<span class="text-xs">Label</span>
-					<Input
-						value={workoutLabel}
-						oninput={(event) => {
-							updateSelectedWorkoutDraft({
-								field: 'label',
-								value: event.currentTarget.value
-							});
-						}}
-					/>
-				</Label>
-				<Label class="grid gap-1.5 md:col-span-2 xl:col-span-4">
-					<span class="text-xs">Workout notes</span>
-					<Textarea
-						rows={2}
-						value={workoutNotes}
-						oninput={(event) => {
-							updateSelectedWorkoutDraft({
-								field: 'notes',
-								value: event.currentTarget.value
-							});
-						}}
-					/>
-				</Label>
-			</div>
+		<div class="flex-1 space-y-6 px-6 py-5">
+			<ProgramTemplateWorkoutMetaForm
+				weekNumber={workoutWeekNumber}
+				trackKey={workoutTrackKey}
+				label={workoutLabel}
+				notes={workoutNotes}
+				{availableTrackKeys}
+				onUpdate={updateSelectedWorkoutDraft}
+			/>
 
-			<div class="space-y-3">
-				<div class="flex items-center justify-between gap-2">
-					<h3 class="text-base font-semibold">Exercise groups</h3>
-					<Button variant="outline" size="sm" onclick={addGroup}>
-						<PlusIcon class="size-4" />
-						Add group
-					</Button>
-				</div>
+			<ProgramTemplateExerciseGroupsSection
+				groups={selectedWorkout.groups}
+				onAddGroup={addGroup}
+				onUpdateGroupLabel={updateGroupLabel}
+				onPromptDeleteGroup={promptDeleteGroup}
+				onAddExerciseToGroup={addExerciseToGroup}
+				onUpdateExercise={updateExercise}
+				onRemoveExercise={removeExercise}
+				onUpdateSetTarget={updateSetTarget}
+			/>
 
-				{#if selectedWorkout.groups.length}
-					<div class="space-y-3">
-						{#each selectedWorkout.groups as group (group._id)}
-							<article class="rounded-xl border p-3">
-								<div class="mb-3 flex flex-wrap items-end gap-2">
-									<Label class="grid min-w-[16rem] grow gap-1.5">
-										<span class="text-xs">Group label</span>
-										<Input
-											value={group.label ?? ''}
-											onchange={(event) => updateGroupLabel(group._id, event.currentTarget.value)}
-										/>
-									</Label>
-									<Button
-										variant="ghost"
-										size="sm"
-										class="text-destructive hover:text-destructive"
-										onclick={() => removeGroup(group._id)}
-									>
-										<TrashIcon class="size-4" />
-										Delete group
-									</Button>
-								</div>
+			{#if weekWorkouts.length > 1 && positionInWeek >= 0}
+				<ProgramTemplateWorkoutReorderControls
+					position={positionInWeek}
+					total={weekWorkouts.length}
+					onMove={moveWithinWeek}
+				/>
+			{/if}
 
-								{#if group.exercises.length}
-									<ul class="space-y-3">
-										{#each group.exercises as exerciseTarget (exerciseTarget._id)}
-											<li class="bg-muted/30 rounded-lg border p-3">
-												<div class="mb-3 grid gap-2 lg:grid-cols-[minmax(0,14rem)_1fr_auto]">
-													<Label class="grid gap-1">
-														<span class="text-xs">Exercise</span>
-														<ExerciseSelection
-															onExerciseAdded={(exerciseId) =>
-																updateExercise(exerciseTarget._id, {
-																	exerciseId
-																})}
-														>
-															{#snippet trigger()}
-																<Dialog.Trigger
-																	class={buttonVariants({
-																		variant: 'outline',
-																		class: 'w-full justify-start'
-																	})}
-																>
-																	{exerciseTarget.exercise?.name ?? 'Select exercise'}
-																</Dialog.Trigger>
-															{/snippet}
-														</ExerciseSelection>
-													</Label>
-													<Label class="grid gap-1">
-														<span class="text-xs">Note</span>
-														<Input
-															value={exerciseTarget.note ?? ''}
-															onchange={(event) =>
-																updateExercise(exerciseTarget._id, {
-																	note: event.currentTarget.value
-																})}
-														/>
-													</Label>
-													<Button
-														variant="ghost"
-														size="sm"
-														class="text-destructive hover:text-destructive self-end"
-														onclick={() => removeExercise(exerciseTarget._id)}
-													>
-														<TrashIcon class="size-4" />
-														Delete
-													</Button>
-												</div>
-
-												<ProgramTemplateExerciseSetsEditor
-													exerciseTargetId={exerciseTarget._id}
-													executionType={exerciseTarget.exercise?.executionType ?? 'reps'}
-													exactSets={exerciseTarget.exactSets}
-													onUpdate={updateSetTarget}
-												/>
-											</li>
-										{/each}
-									</ul>
-								{:else}
-									<p class="text-muted-foreground text-sm">No exercises in this group yet.</p>
-								{/if}
-
-								<ExerciseSelection onExerciseAdded={(exerciseId) => addExerciseToGroup(group._id, exerciseId)}>
-									{#snippet trigger()}
-										<Dialog.Trigger class={buttonVariants({ variant: 'secondary', class: 'mt-3 w-full' })}>
-											<PlusIcon class="size-4" />
-											Add exercise
-										</Dialog.Trigger>
-									{/snippet}
-								</ExerciseSelection>
-							</article>
-						{/each}
-					</div>
-				{:else}
-					<div class="rounded-xl border border-dashed p-6 text-center">
-						<p class="text-muted-foreground text-sm">No groups yet. Add one to start planning sets.</p>
-					</div>
-				{/if}
+			<div class="border-border/20 border-t pt-4">
+				<Button
+					variant="ghost"
+					size="sm"
+					class="text-destructive hover:text-destructive h-7 text-xs"
+					onclick={() => {
+						deleteDialogOpen = true;
+					}}
+				>
+					<TrashIcon class="size-3.5" />
+					Delete workout
+				</Button>
 			</div>
 		</div>
-	{:else}
-		<div class="flex h-full min-h-[30rem] items-center justify-center rounded-xl border border-dashed">
-			<p class="text-muted-foreground text-sm">Select or create a workout to edit details.</p>
+	{:else if selectedWorkoutId && selectedWorkoutQuery.isLoading}
+		<div class="flex flex-1 items-center justify-center px-6 py-12">
+			<p class="text-muted-foreground text-sm">Loading workout...</p>
+		</div>
+	{:else if selectedWorkoutId}
+		<div class="flex flex-1 items-center justify-center px-6 py-12">
+			<p class="text-muted-foreground text-sm">Workout not found.</p>
 		</div>
 	{/if}
-</section>
+</div>
+
+<DeleteWorkoutDialog
+	bind:open={deleteDialogOpen}
+	title="Delete template workout"
+	description="Remove this workout from the program template? This action cannot be undone."
+	confirmLabel="Delete workout"
+	isDeleting={isDeletingWorkout}
+	onConfirmDelete={confirmDeleteWorkout}
+/>
+
+<Dialog.Root bind:open={groupDeleteDialogOpen}>
+	<Dialog.Content>
+		<Dialog.Title>Delete exercise group</Dialog.Title>
+		<Dialog.Description>
+			Delete this group and all exercises in it? This cannot be undone.
+		</Dialog.Description>
+		<Dialog.Footer class="flex flex-row justify-end gap-2">
+			<Button variant="secondary" onclick={() => (groupDeleteDialogOpen = false)}>Cancel</Button>
+			<Button variant="destructive" onclick={confirmRemoveGroup}>Delete group</Button>
+		</Dialog.Footer>
+	</Dialog.Content>
+</Dialog.Root>

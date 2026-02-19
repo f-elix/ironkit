@@ -119,7 +119,12 @@ export const update = mutation({
 		}
 
 		const group = await ctx.db.get(args.id);
-		if (!group || group.userId !== userId || !group.workoutId || group.programWorkoutId !== undefined) {
+		if (
+			!group ||
+			group.userId !== userId ||
+			!group.workoutId ||
+			group.programWorkoutId !== undefined
+		) {
 			throw new Error('Performance group not found');
 		}
 

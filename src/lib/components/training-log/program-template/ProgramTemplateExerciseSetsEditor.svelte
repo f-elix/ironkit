@@ -3,6 +3,7 @@
 	import type { Doc, Id } from '$convex/_generated/dataModel';
 	import ProgramTemplateExerciseSetRow from '$lib/components/training-log/program-template/ProgramTemplateExerciseSetRow.svelte';
 	import Button from '$lib/shadcn/button/button.svelte';
+	import PlusIcon from '@lucide/svelte/icons/plus';
 	import { useConvexClient } from 'convex-svelte';
 
 	let {
@@ -24,7 +25,9 @@
 	} = $props();
 
 	const client = useConvexClient();
-	let sortedSets = $derived((exactSets ?? []).slice().sort((a, b) => a.performanceOrder - b.performanceOrder));
+	let sortedSets = $derived(
+		(exactSets ?? []).slice().sort((a, b) => a.performanceOrder - b.performanceOrder)
+	);
 
 	const addSet = async () => {
 		const last = sortedSets.at(-1);
@@ -36,7 +39,11 @@
 		});
 	};
 
-	const updateSetValue = async (id: Id<'performanceSets'>, nextExecutionType: 'reps' | 'time', value: number) => {
+	const updateSetValue = async (
+		id: Id<'performanceSets'>,
+		nextExecutionType: 'reps' | 'time',
+		value: number
+	) => {
 		if (onUpdate) {
 			await onUpdate(id, nextExecutionType, value);
 			return;
@@ -57,26 +64,24 @@
 	};
 </script>
 
-<div class="grid gap-2 md:col-span-3">
-	<div class="bg-background/50 grid gap-1 rounded-md p-2 sm:bg-transparent sm:p-0">
-		{#each sortedSets as setTarget, index (setTarget._id)}
-			<ProgramTemplateExerciseSetRow
-				{setTarget}
-				{executionType}
-				order={index + 1}
-				showDivider={index > 0}
-				onUpdate={updateSetValue}
-				onRemove={removeSet}
-				canRemove={sortedSets.length > 1}
-			/>
-		{/each}
-	</div>
+<div class="border-border/20 ml-1 space-y-0 border-l pl-3.5 pt-1">
+	{#each sortedSets as setTarget, index (setTarget._id)}
+		<ProgramTemplateExerciseSetRow
+			{setTarget}
+			{executionType}
+			order={index + 1}
+			onUpdate={updateSetValue}
+			onRemove={removeSet}
+			canRemove={sortedSets.length > 1}
+		/>
+	{/each}
 	<Button
-		variant="secondary"
+		variant="ghost"
 		size="sm"
-		class="w-full sm:w-auto sm:justify-self-start"
+		class="text-muted-foreground mt-0.5 h-7 text-xs"
 		onclick={addSet}
 	>
+		<PlusIcon class="size-3.5" />
 		Add set
 	</Button>
 </div>

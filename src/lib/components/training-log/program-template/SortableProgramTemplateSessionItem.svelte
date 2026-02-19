@@ -54,8 +54,7 @@
 			onclick={(event) => {
 				event.stopPropagation();
 				onRemove(session._id);
-			}}
-			>Delete</Button
+			}}>Delete</Button
 		>
 	</div>
 </li>

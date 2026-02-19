@@ -3,7 +3,10 @@ import type { MutationCtx, QueryCtx } from './_generated/server';
 
 type ProgramCtx = MutationCtx | QueryCtx;
 
-const assertExactlyOneParent = (workoutId?: Id<'workouts'>, programWorkoutId?: Id<'programWorkouts'>) => {
+const assertExactlyOneParent = (
+	workoutId?: Id<'workouts'>,
+	programWorkoutId?: Id<'programWorkouts'>
+) => {
 	const hasWorkoutParent = workoutId !== undefined;
 	const hasProgramWorkoutParent = programWorkoutId !== undefined;
 	if (hasWorkoutParent === hasProgramWorkoutParent) {
@@ -59,7 +62,11 @@ export const getOrderedRunSessions = async (ctx: ProgramCtx, programRunId: Id<'p
 
 export const getNextOpenRunSession = async (ctx: ProgramCtx, programRunId: Id<'programRuns'>) => {
 	const sessions = await getOrderedRunSessions(ctx, programRunId);
-	return sessions.find((session) => session.workoutId === undefined && session.skippedAt === undefined) ?? null;
+	return (
+		sessions.find(
+			(session) => session.workoutId === undefined && session.skippedAt === undefined
+		) ?? null
+	);
 };
 
 export const recomputeRunCompletion = async (ctx: MutationCtx, programRunId: Id<'programRuns'>) => {

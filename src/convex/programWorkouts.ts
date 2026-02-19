@@ -87,7 +87,10 @@ const cloneProgramWorkoutStructure = async (
 	}
 };
 
-const removeProgramWorkoutStructure = async (ctx: MutationCtx, programWorkoutId: Id<'programWorkouts'>) => {
+const removeProgramWorkoutStructure = async (
+	ctx: MutationCtx,
+	programWorkoutId: Id<'programWorkouts'>
+) => {
 	const groups = await ctx.db
 		.query('performanceGroups')
 		.withIndex('by_programWorkoutId', (q) => q.eq('programWorkoutId', programWorkoutId))
@@ -251,7 +254,8 @@ export const copyPreviousTrackOccurrenceToWeek = mutation({
 			throw new Error('No previous workout found for this track');
 		}
 
-		const slotOrder = args.slotOrder ?? (await getNextSlotOrder(ctx, template._id, targetWeekNumber));
+		const slotOrder =
+			args.slotOrder ?? (await getNextSlotOrder(ctx, template._id, targetWeekNumber));
 		const targetProgramWorkoutId = await ctx.db.insert('programWorkouts', {
 			userId,
 			programTemplateId: template._id,
@@ -285,7 +289,9 @@ export const updateWorkoutMeta = mutation({
 		}
 		const { workout, template } = await assertOwnedProgramWorkout(ctx, args.id, userId);
 		await ctx.db.patch(workout._id, {
-			...(args.weekNumber !== undefined && { weekNumber: Math.max(1, Math.floor(args.weekNumber)) }),
+			...(args.weekNumber !== undefined && {
+				weekNumber: Math.max(1, Math.floor(args.weekNumber))
+			}),
 			...(args.slotOrder !== undefined && { slotOrder: Math.floor(args.slotOrder) }),
 			...(args.trackKey !== undefined && { trackKey: args.trackKey.trim().toUpperCase() || 'A' }),
 			...(args.label !== undefined && { label: args.label }),

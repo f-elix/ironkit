@@ -24,7 +24,8 @@
 		<Dialog.Description>
 			{#if template}
 				Delete
-				<span class="font-medium">{template.name}</span>? This also removes associated template workouts.
+				<span class="font-medium">{template.name}</span>? This also removes associated template
+				workouts.
 			{/if}
 		</Dialog.Description>
 		{#if deleteError}

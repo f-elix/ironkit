@@ -78,7 +78,9 @@ export const update = mutation({
 		await ctx.db.patch(args.id, {
 			...(args.name !== undefined && { name: args.name.trim() || 'Untitled program' }),
 			...(args.notes !== undefined && { notes: args.notes }),
-			...(args.totalWeeks !== undefined && { totalWeeks: Math.max(1, Math.floor(args.totalWeeks)) }),
+			...(args.totalWeeks !== undefined && {
+				totalWeeks: Math.max(1, Math.floor(args.totalWeeks))
+			}),
 			...(args.status !== undefined && { status: args.status }),
 			updatedAt: Date.now()
 		});
@@ -150,7 +152,9 @@ export const remove = mutation({
 					.query('performances')
 					.withIndex('by_performanceGroupId', (q) => q.eq('performanceGroupId', group._id))
 					.collect();
-				for (const exercise of groupExercises.filter((row) => row.programWorkoutId === programWorkout._id)) {
+				for (const exercise of groupExercises.filter(
+					(row) => row.programWorkoutId === programWorkout._id
+				)) {
 					const setTargets = await ctx.db
 						.query('performanceSets')
 						.withIndex('by_performanceId_order', (q) => q.eq('performanceId', exercise._id))

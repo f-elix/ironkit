@@ -1,14 +1,12 @@
 <script lang="ts">
 	import type { Doc, Id } from '$convex/_generated/dataModel';
-	import Button from '$lib/shadcn/button/button.svelte';
 	import Input from '$lib/shadcn/input/input.svelte';
-	import Label from '$lib/shadcn/label/label.svelte';
+	import XIcon from '@lucide/svelte/icons/x';
 
 	let {
 		setTarget,
 		executionType,
 		order,
-		showDivider = false,
 		onUpdate,
 		onRemove,
 		canRemove
@@ -16,7 +14,6 @@
 		setTarget: Doc<'performanceSets'>;
 		executionType: 'reps' | 'time';
 		order: number;
-		showDivider?: boolean;
 		onUpdate: (
 			id: Id<'performanceSets'>,
 			executionType: 'reps' | 'time',
@@ -33,29 +30,25 @@
 	);
 </script>
 
-<div
-	class={[
-		'grid grid-cols-[auto_1fr_auto] items-end gap-2 px-1 py-2 md:grid-cols-[auto_10rem_auto] md:justify-start md:gap-3',
-		showDivider && 'border-border/60 border-t pt-3'
-	]}
->
-	<span class="text-muted-foreground text-xs">Set {order}</span>
-	<Label class="grid gap-1 md:w-40">
-		<span class="text-xs">{executionType === 'reps' ? 'Reps' : 'Seconds'}</span>
-		<Input
-			type="number"
-			min="1"
-			value={inputValue}
-			onchange={(event) => onUpdate(setTarget._id, executionType, event.currentTarget.valueAsNumber)}
-		/>
-	</Label>
-	<Button
-		variant="ghost"
-		size="sm"
-		class="text-destructive hover:text-destructive justify-self-end md:justify-self-auto md:border md:border-red-900/50 md:bg-red-950/20 md:hover:bg-red-950/35"
-		onclick={() => onRemove(setTarget._id)}
-		disabled={!canRemove}
-	>
-		Remove
-	</Button>
+<div class="flex items-center gap-2.5 py-1">
+	<span class="text-muted-foreground/60 w-5 text-right text-xs tabular-nums">{order}</span>
+	<Input
+		type="number"
+		min="1"
+		value={inputValue}
+		class="h-8 w-20 text-center text-sm tabular-nums"
+		onchange={(e) => onUpdate(setTarget._id, executionType, e.currentTarget.valueAsNumber)}
+	/>
+	<span class="text-muted-foreground/50 text-xs">
+		{executionType === 'reps' ? 'reps' : 'sec'}
+	</span>
+	{#if canRemove}
+		<button
+			type="button"
+			class="text-muted-foreground/30 hover:text-destructive ml-auto transition-colors"
+			onclick={() => onRemove(setTarget._id)}
+		>
+			<XIcon class="size-3.5" />
+		</button>
+	{/if}
 </div>

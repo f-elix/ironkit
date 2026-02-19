@@ -26,7 +26,11 @@ const assertOwnedProgramWorkoutGroup = async (
 	if (group.programWorkoutId === undefined || group.workoutId !== undefined) {
 		throw new Error('Group is not part of a program workout');
 	}
-	const { workout, template } = await assertOwnedProgramWorkout(ctx, group.programWorkoutId, userId);
+	const { workout, template } = await assertOwnedProgramWorkout(
+		ctx,
+		group.programWorkoutId,
+		userId
+	);
 	return { group, workout, template };
 };
 
@@ -117,11 +121,13 @@ export const list = query({
 			.withIndex('by_programWorkoutId', (q) => q.eq('programWorkoutId', args.programWorkoutId))
 			.collect();
 		const rowsWithDetails = await Promise.all(
-			rows.sort((a, b) => a.groupOrder - b.groupOrder).map(async (row) => ({
-				...row,
-				exercise: await ctx.db.get(row.exerciseId),
-				exactSets: await listSetTargets(ctx, row._id)
-			}))
+			rows
+				.sort((a, b) => a.groupOrder - b.groupOrder)
+				.map(async (row) => ({
+					...row,
+					exercise: await ctx.db.get(row.exerciseId),
+					exactSets: await listSetTargets(ctx, row._id)
+				}))
 		);
 		return rowsWithDetails;
 	}
@@ -172,7 +178,13 @@ export const create = mutation({
 			updatedAt: Date.now()
 		});
 
-		await createDefaultSetTargets(ctx, userId, rowId, exercise.executionType, args.initialSetCount ?? 3);
+		await createDefaultSetTargets(
+			ctx,
+			userId,
+			rowId,
+			exercise.executionType,
+			args.initialSetCount ?? 3
+		);
 		await ctx.db.patch(template._id, { updatedAt: Date.now() });
 		return rowId;
 	}
@@ -191,7 +203,11 @@ export const update = mutation({
 		if (!userId) {
 			throw new Error('Not authenticated');
 		}
-		const { item, workout, template } = await assertOwnedProgramWorkoutExercise(ctx, args.id, userId);
+		const { item, workout, template } = await assertOwnedProgramWorkoutExercise(
+			ctx,
+			args.id,
+			userId
+		);
 
 		let performanceGroupId = item.performanceGroupId;
 		if (args.performanceGroupId !== undefined) {

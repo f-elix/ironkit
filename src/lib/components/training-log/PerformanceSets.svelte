@@ -47,12 +47,7 @@
 			<div class="flex items-center gap-1">
 				<div class="flex-1 overflow-hidden rounded-lg">
 					<SwipeToDelete ondelete={() => deleteSet(set._id)} disabled={sets.length <= 1}>
-						<PerformanceSet
-							{set}
-							{unit}
-							{exercise}
-							order={i + 1}
-						/>
+						<PerformanceSet {set} {unit} {exercise} order={i + 1} />
 					</SwipeToDelete>
 				</div>
 				{#if sets.length > 1}

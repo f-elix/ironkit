@@ -7,11 +7,11 @@
 	import * as Sidebar from '$lib/shadcn/sidebar';
 	import DumbbellIcon from '@lucide/svelte/icons/dumbbell';
 	import ListIcon from '@lucide/svelte/icons/list';
-import PlusIcon from '@lucide/svelte/icons/plus';
-import AddWorkout from '$lib/components/training-log/AddWorkout.svelte';
-import Button from '$lib/shadcn/button/button.svelte';
-import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
-import ClipboardListIcon from '@lucide/svelte/icons/clipboard-list';
+	import PlusIcon from '@lucide/svelte/icons/plus';
+	import AddWorkout from '$lib/components/training-log/AddWorkout.svelte';
+	import Button from '$lib/shadcn/button/button.svelte';
+	import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
+	import ClipboardListIcon from '@lucide/svelte/icons/clipboard-list';
 
 	const navItems = [
 		{
@@ -19,17 +19,17 @@ import ClipboardListIcon from '@lucide/svelte/icons/clipboard-list';
 			href: '/tools/training-log',
 			icon: DumbbellIcon
 		},
-	{
-		label: 'Exercises',
-		href: '/tools/training-log/exercises',
-		icon: ListIcon
-	},
-	{
-		label: 'Programs',
-		href: '/tools/training-log/programs',
-		icon: ClipboardListIcon
-	}
-] as const;
+		{
+			label: 'Exercises',
+			href: '/tools/training-log/exercises',
+			icon: ListIcon
+		},
+		{
+			label: 'Programs',
+			href: '/tools/training-log/programs',
+			icon: ClipboardListIcon
+		}
+	] as const;
 
 	let { children } = $props();
 
@@ -65,14 +65,14 @@ import ClipboardListIcon from '@lucide/svelte/icons/clipboard-list';
 						<Sidebar.Menu>
 							{#each navItems as item}
 								{@const Icon = item.icon}
-	{@const isActive =
-		item.href === '/tools/training-log'
-			? page.url.pathname === resolve(item.href) || isWorkoutDetailPage
-			: item.href === '/tools/training-log/programs'
-				? page.url.pathname === resolve(item.href) ||
-					page.url.pathname.includes('/program-template-') ||
-					page.url.pathname.includes('/program-run-')
-				: page.url.pathname === resolve(item.href)}
+								{@const isActive =
+									item.href === '/tools/training-log'
+										? page.url.pathname === resolve(item.href) || isWorkoutDetailPage
+										: item.href === '/tools/training-log/programs'
+											? page.url.pathname === resolve(item.href) ||
+												page.url.pathname.includes('/program-template-') ||
+												page.url.pathname.includes('/program-run-')
+											: page.url.pathname === resolve(item.href)}
 								<Sidebar.MenuItem>
 									<Sidebar.MenuButton {isActive}>
 										{#snippet child({ props })}

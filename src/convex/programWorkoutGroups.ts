@@ -19,7 +19,11 @@ const assertOwnedProgramWorkoutGroup = async (
 	if (group.programWorkoutId === undefined || group.workoutId !== undefined) {
 		throw new Error('Group is not part of a program workout');
 	}
-	const { workout, template } = await assertOwnedProgramWorkout(ctx, group.programWorkoutId, userId);
+	const { workout, template } = await assertOwnedProgramWorkout(
+		ctx,
+		group.programWorkoutId,
+		userId
+	);
 	return { group, workout, template };
 };
 
@@ -35,7 +39,9 @@ export const list = query({
 		await assertOwnedProgramWorkout(ctx, args.programWorkoutId, userId);
 		const groups = await ctx.db
 			.query('performanceGroups')
-			.withIndex('by_programWorkoutId_order', (q) => q.eq('programWorkoutId', args.programWorkoutId))
+			.withIndex('by_programWorkoutId_order', (q) =>
+				q.eq('programWorkoutId', args.programWorkoutId)
+			)
 			.collect();
 		return groups.sort((a, b) => a.workoutOrder - b.workoutOrder);
 	}
@@ -52,7 +58,11 @@ export const create = mutation({
 		if (!userId) {
 			throw new Error('Not authenticated');
 		}
-		const { workout, template } = await assertOwnedProgramWorkout(ctx, args.programWorkoutId, userId);
+		const { workout, template } = await assertOwnedProgramWorkout(
+			ctx,
+			args.programWorkoutId,
+			userId
+		);
 		const groups = await ctx.db
 			.query('performanceGroups')
 			.withIndex('by_programWorkoutId_order', (q) => q.eq('programWorkoutId', workout._id))
@@ -136,7 +146,9 @@ export const remove = mutation({
 			.query('performances')
 			.withIndex('by_performanceGroupId', (q) => q.eq('performanceGroupId', group._id))
 			.collect();
-		for (const exercise of exercises.filter((row) => row.programWorkoutId === group.programWorkoutId)) {
+		for (const exercise of exercises.filter(
+			(row) => row.programWorkoutId === group.programWorkoutId
+		)) {
 			const sets = await ctx.db
 				.query('performanceSets')
 				.withIndex('by_performanceId_order', (q) => q.eq('performanceId', exercise._id))

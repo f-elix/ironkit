@@ -22,7 +22,9 @@
 	<div class="flex items-end justify-between gap-3">
 		<div class="space-y-1">
 			<h2 class="text-lg leading-6 font-semibold">Program templates</h2>
-			<p class="text-muted-foreground text-sm">Open a template to manage workouts, exercises, and runs.</p>
+			<p class="text-muted-foreground text-sm">
+				Open a template to manage workouts, exercises, and runs.
+			</p>
 		</div>
 		<Badge variant="outline">{templates.length} total</Badge>
 	</div>

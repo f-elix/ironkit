@@ -82,7 +82,10 @@ export const startNextAsWorkout = mutation({
 			throw new Error('No open session available');
 		}
 
-		const sourceProgramWorkout = await getProgramWorkoutWithDetails(ctx, nextSession.programWorkoutId);
+		const sourceProgramWorkout = await getProgramWorkoutWithDetails(
+			ctx,
+			nextSession.programWorkoutId
+		);
 		if (!sourceProgramWorkout) {
 			throw new Error('Program workout not found');
 		}
@@ -104,7 +107,9 @@ export const startNextAsWorkout = mutation({
 			updatedAt: Date.now()
 		});
 
-		for (const sourceGroup of sourceProgramWorkout.groups.sort((a, b) => a.workoutOrder - b.workoutOrder)) {
+		for (const sourceGroup of sourceProgramWorkout.groups.sort(
+			(a, b) => a.workoutOrder - b.workoutOrder
+		)) {
 			const performanceGroupId = await ctx.db.insert('performanceGroups', {
 				userId,
 				workoutId,
@@ -114,7 +119,9 @@ export const startNextAsWorkout = mutation({
 				updatedAt: Date.now()
 			});
 
-			for (const sourceExercise of sourceGroup.exercises.sort((a, b) => a.groupOrder - b.groupOrder)) {
+			for (const sourceExercise of sourceGroup.exercises.sort(
+				(a, b) => a.groupOrder - b.groupOrder
+			)) {
 				const performanceId = await ctx.db.insert('performances', {
 					userId,
 					performanceGroupId,
@@ -144,7 +151,9 @@ export const startNextAsWorkout = mutation({
 							}
 						];
 
-				for (const sourceSet of sourceSets.sort((a, b) => a.performanceOrder - b.performanceOrder)) {
+				for (const sourceSet of sourceSets.sort(
+					(a, b) => a.performanceOrder - b.performanceOrder
+				)) {
 					await ctx.db.insert('performanceSets', {
 						userId,
 						performanceId,
