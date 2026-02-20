@@ -50,8 +50,24 @@
 	};
 </script>
 
+{#snippet heroCardSkeleton()}
+	<div class="bg-card animate-pulse rounded-xl border p-5">
+		<div class="flex items-start justify-between gap-3">
+			<div class="min-w-0 flex-1">
+				<div class="bg-muted h-6 w-32 rounded"></div>
+				<div class="bg-muted mt-2 h-4 w-48 rounded"></div>
+				<div class="bg-muted mt-1.5 h-3 w-24 rounded"></div>
+			</div>
+			<div class="bg-muted size-8 shrink-0 rounded"></div>
+		</div>
+		<div class="bg-muted mt-4 h-10 w-full rounded"></div>
+	</div>
+{/snippet}
+
 {#snippet activeProgramCard()}
-	{#if activeRun}
+	{#if activeRunQuery.isLoading}
+		{@render heroCardSkeleton()}
+	{:else if activeRun}
 		{#if activeRun.run.status === 'paused'}
 			<PausedProgramCard
 				run={activeRun.run}

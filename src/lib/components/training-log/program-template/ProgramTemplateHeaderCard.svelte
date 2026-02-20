@@ -66,7 +66,10 @@
 			await client.mutation(api.programRuns.activateTemplate, {
 				programTemplateId: template._id
 			});
+			toast.success('Program started');
 			goto(resolve('/(app)/tools/training-log'));
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : 'Could not start program.');
 		} finally {
 			isActivating = false;
 		}

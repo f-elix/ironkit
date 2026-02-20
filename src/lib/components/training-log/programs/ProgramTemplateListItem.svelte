@@ -14,6 +14,7 @@
 	import PlayIcon from '@lucide/svelte/icons/play';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
 	import { useConvexClient } from 'convex-svelte';
+	import { toast } from 'svelte-sonner';
 
 	let {
 		template,
@@ -62,7 +63,10 @@
 			await client.mutation(api.programRuns.activateTemplate, {
 				programTemplateId: template._id
 			});
+			toast.success('Program started');
 			goto(resolve('/(app)/tools/training-log'));
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : 'Could not start program.');
 		} finally {
 			isActivating = false;
 		}

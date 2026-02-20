@@ -40,6 +40,8 @@
 	let isSkipping = $state(false);
 	let isPausing = $state(false);
 
+	const isCompleted = $derived(!nextSession);
+
 	const sessionLabel = $derived(
 		nextSession
 			? `Week ${nextSession.weekNumber} · ${nextSession.label ?? nextSession.trackKey}`
@@ -47,7 +49,9 @@
 	);
 
 	const progressLabel = $derived(
-		`Session ${completedSessions + 1} of ${totalSessions}`
+		isCompleted
+			? `${completedSessions} of ${totalSessions} sessions completed`
+			: `Session ${completedSessions + 1} of ${totalSessions}`
 	);
 
 	const handleStartWorkout = async () => {
@@ -100,8 +104,6 @@
 			isPausing = false;
 		}
 	};
-
-	const isCompleted = $derived(!nextSession);
 </script>
 
 <article class={['bg-card rounded-xl border p-5']}>
