@@ -1,7 +1,12 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 import { getAuthUserId } from '@convex-dev/auth/server';
+import type { Id } from './_generated/dataModel';
 import { weightUnit } from './schema';
+
+const toWorkoutIds = (ids: (Id<'workouts'> | undefined)[]) => {
+	return [...new Set(ids.filter((id): id is Id<'workouts'> => id !== undefined))];
+};
 
 export const getByExercise = query({
 	args: {
@@ -16,16 +21,15 @@ export const getByExercise = query({
 			return [];
 		}
 
-		// Get all performances for this exercise
 		const allPerformances = await ctx.db
 			.query('performances')
 			.withIndex('by_exerciseId', (q) => q.eq('exerciseId', args.exerciseId))
 			.collect();
 
-		// Filter by user and workout constraints
-		let filteredPerformances = allPerformances.filter((p) => p.userId === userId);
+		let filteredPerformances = allPerformances.filter(
+			(p) => p.userId === userId && p.workoutId !== undefined && p.programWorkoutId === undefined
+		);
 
-		// If currentWorkoutId is provided, exclude it and filter by date
 		if (args.currentWorkoutId) {
 			filteredPerformances = filteredPerformances.filter(
 				(p) => p.workoutId !== args.currentWorkoutId
@@ -33,43 +37,42 @@ export const getByExercise = query({
 
 			const currentWorkout = await ctx.db.get(args.currentWorkoutId);
 			if (currentWorkout) {
-				const workoutIds = [...new Set(filteredPerformances.map((p) => p.workoutId))];
+				const workoutIds = toWorkoutIds(filteredPerformances.map((p) => p.workoutId));
 				const workouts = await Promise.all(workoutIds.map((id) => ctx.db.get(id)));
 				const validWorkoutIds = new Set(
 					workouts.filter((w) => w !== null && w.date <= currentWorkout.date).map((w) => w!._id)
 				);
-				filteredPerformances = filteredPerformances.filter((p) => validWorkoutIds.has(p.workoutId));
+				filteredPerformances = filteredPerformances.filter(
+					(p) => p.workoutId !== undefined && validWorkoutIds.has(p.workoutId)
+				);
 			}
 		} else if (args.maxDate) {
-			// Filter by max date
-			const workoutIds = [...new Set(filteredPerformances.map((p) => p.workoutId))];
+			const workoutIds = toWorkoutIds(filteredPerformances.map((p) => p.workoutId));
 			const workouts = await Promise.all(workoutIds.map((id) => ctx.db.get(id)));
 			const validWorkoutIds = new Set(
 				workouts.filter((w) => w !== null && w.date < args.maxDate!).map((w) => w!._id)
 			);
-			filteredPerformances = filteredPerformances.filter((p) => validWorkoutIds.has(p.workoutId));
+			filteredPerformances = filteredPerformances.filter(
+				(p) => p.workoutId !== undefined && validWorkoutIds.has(p.workoutId)
+			);
 		}
 
-		// Get workouts for sorting and filtering
-		const workoutIds = [...new Set(filteredPerformances.map((p) => p.workoutId))];
+		const workoutIds = toWorkoutIds(filteredPerformances.map((p) => p.workoutId));
 		const workouts = await Promise.all(workoutIds.map((id) => ctx.db.get(id)));
 		const workoutMap = new Map(workouts.filter((w) => w !== null).map((w) => [w!._id, w]));
 
-		// Sort by workout date DESC
 		filteredPerformances.sort((a, b) => {
-			const workoutA = workoutMap.get(a.workoutId);
-			const workoutB = workoutMap.get(b.workoutId);
+			const workoutA = a.workoutId ? workoutMap.get(a.workoutId) : null;
+			const workoutB = b.workoutId ? workoutMap.get(b.workoutId) : null;
 			if (!workoutA || !workoutB) {
 				return 0;
 			}
 			return workoutB.date - workoutA.date;
 		});
 
-		// Limit results
 		const limit = args.limit || 10;
 		const limitedPerformances = filteredPerformances.slice(0, limit);
 
-		// Get exercise and sets for each performance
 		const exercise = await ctx.db.get(args.exerciseId);
 		const performancesWithDetails = await Promise.all(
 			limitedPerformances.map(async (perf) => {
@@ -78,7 +81,6 @@ export const getByExercise = query({
 					.withIndex('by_performanceId_order', (q) => q.eq('performanceId', perf._id))
 					.collect();
 
-				// Filter sets to only include those with values
 				const validSets = sets.filter(
 					(s) =>
 						(s.weight && s.weight > 0) ||
@@ -89,7 +91,7 @@ export const getByExercise = query({
 				return {
 					...perf,
 					exercise,
-					workout: workoutMap.get(perf.workoutId) || null,
+					workout: perf.workoutId ? workoutMap.get(perf.workoutId) || null : null,
 					sets: validSets.sort((a, b) => a.performanceOrder - b.performanceOrder)
 				};
 			})
@@ -114,11 +116,22 @@ export const create = mutation({
 			throw new Error('Not authenticated');
 		}
 
+		const performanceGroup = await ctx.db.get(args.performanceGroupId);
+		if (
+			!performanceGroup ||
+			performanceGroup.userId !== userId ||
+			performanceGroup.workoutId !== args.workoutId ||
+			performanceGroup.programWorkoutId !== undefined
+		) {
+			throw new Error('Not authorized');
+		}
+
 		const id = await ctx.db.insert('performances', {
 			userId,
 			performanceGroupId: args.performanceGroupId,
 			exerciseId: args.exerciseId,
 			workoutId: args.workoutId,
+			programWorkoutId: undefined,
 			groupOrder: args.groupOrder,
 			note: args.note,
 			weightUnit: args.weightUnit,
@@ -144,25 +157,28 @@ export const createWithInitialSet = mutation({
 			throw new Error('Not authenticated');
 		}
 
-		// Verify the user owns the performance group
 		const performanceGroup = await ctx.db.get(args.performanceGroupId);
-		if (!performanceGroup || performanceGroup.userId !== userId) {
+		if (
+			!performanceGroup ||
+			performanceGroup.userId !== userId ||
+			performanceGroup.workoutId !== args.workoutId ||
+			performanceGroup.programWorkoutId !== undefined
+		) {
 			throw new Error('Not authorized');
 		}
 
-		// Create the performance
 		const performanceId = await ctx.db.insert('performances', {
 			userId,
 			performanceGroupId: args.performanceGroupId,
 			exerciseId: args.exerciseId,
 			workoutId: args.workoutId,
+			programWorkoutId: undefined,
 			groupOrder: args.groupOrder,
 			note: args.note,
 			weightUnit: args.weightUnit,
 			updatedAt: Date.now()
 		});
 
-		// Create the initial performance set atomically
 		const performanceSetId = await ctx.db.insert('performanceSets', {
 			userId,
 			performanceId,
@@ -187,7 +203,12 @@ export const update = mutation({
 		}
 
 		const performance = await ctx.db.get(args.id);
-		if (!performance || performance.userId !== userId) {
+		if (
+			!performance ||
+			performance.userId !== userId ||
+			performance.workoutId === undefined ||
+			performance.programWorkoutId !== undefined
+		) {
 			throw new Error('Performance not found');
 		}
 
@@ -210,11 +231,15 @@ export const remove = mutation({
 		}
 
 		const performance = await ctx.db.get(args.id);
-		if (!performance || performance.userId !== userId) {
+		if (
+			!performance ||
+			performance.userId !== userId ||
+			performance.workoutId === undefined ||
+			performance.programWorkoutId !== undefined
+		) {
 			throw new Error('Performance not found');
 		}
 
-		// Delete all sets for this performance
 		const sets = await ctx.db
 			.query('performanceSets')
 			.withIndex('by_performanceId', (q) => q.eq('performanceId', args.id))
@@ -224,7 +249,6 @@ export const remove = mutation({
 			await ctx.db.delete(set._id);
 		}
 
-		// Delete the performance
 		await ctx.db.delete(args.id);
 
 		return args.id;

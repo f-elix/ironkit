@@ -11,6 +11,7 @@
 	import AddWorkout from '$lib/components/training-log/AddWorkout.svelte';
 	import Button from '$lib/shadcn/button/button.svelte';
 	import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
+	import ClipboardListIcon from '@lucide/svelte/icons/clipboard-list';
 
 	const navItems = [
 		{
@@ -22,6 +23,11 @@
 			label: 'Exercises',
 			href: '/tools/training-log/exercises',
 			icon: ListIcon
+		},
+		{
+			label: 'Programs',
+			href: '/tools/training-log/programs',
+			icon: ClipboardListIcon
 		}
 	] as const;
 
@@ -62,7 +68,11 @@
 								{@const isActive =
 									item.href === '/tools/training-log'
 										? page.url.pathname === resolve(item.href) || isWorkoutDetailPage
-										: page.url.pathname === resolve(item.href)}
+										: item.href === '/tools/training-log/programs'
+											? page.url.pathname === resolve(item.href) ||
+												page.url.pathname.includes('/program-template-') ||
+												page.url.pathname.includes('/program-run-')
+											: page.url.pathname === resolve(item.href)}
 								<Sidebar.MenuItem>
 									<Sidebar.MenuButton {isActive}>
 										{#snippet child({ props })}
@@ -112,10 +122,15 @@
 			class="bg-card sticky bottom-0 z-50 w-full border-t"
 			style="view-transition-name: training-log-nav;"
 		>
-			<div class="grid grid-cols-2">
+			<div class="grid grid-cols-3">
 				{#each navItems as item}
 					{@const Icon = item.icon}
-					{@const isActive = page.url.pathname === resolve(item.href)}
+					{@const isActive =
+						item.href === '/tools/training-log/programs'
+							? page.url.pathname === resolve(item.href) ||
+								page.url.pathname.includes('/program-template-') ||
+								page.url.pathname.includes('/program-run-')
+							: page.url.pathname === resolve(item.href)}
 					<a
 						href={resolve(item.href)}
 						class={[
