@@ -9,7 +9,7 @@ const TRACK_COLORS: Record<string, string> = {
 	H: 'bg-pink-500/15 text-pink-300 border-pink-500/20'
 };
 
-export const DEFAULT_TRACK_COLOR = 'bg-muted/50 text-muted-foreground border-border/50';
+const DEFAULT_TRACK_COLOR = 'bg-muted/50 text-muted-foreground border-border/50';
 
 export const getTrackColor = (trackKey: string) => {
 	return TRACK_COLORS[trackKey.toUpperCase()] ?? DEFAULT_TRACK_COLOR;

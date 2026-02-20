@@ -1,7 +1,7 @@
 import type { Id } from '$convex/_generated/dataModel';
 import { getContext, setContext } from 'svelte';
 
-export class ProgramTemplateEditorState {
+class ProgramTemplateEditorState {
 	selectedWorkoutId = $state<Id<'programWorkouts'> | undefined>(undefined);
 	sheetOpen = $state(false);
 

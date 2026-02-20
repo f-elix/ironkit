@@ -8,10 +8,10 @@ export const kgToLbs = (kg: number) => +(kg * MODIFIER).toFixed(1);
 
 export const lbsToKg = (lbs: number) => +(lbs / MODIFIER).toFixed(1);
 
-export const convertWeightTo = (weight: number, unit: WeightUnit) =>
+const convertWeightTo = (weight: number, unit: WeightUnit) =>
 	unit === 'kg' ? lbsToKg(weight) : kgToLbs(weight);
 
-export const convertWeightFrom = (weight: number, unit: WeightUnit) => {
+const convertWeightFrom = (weight: number, unit: WeightUnit) => {
 	return {
 		toKg: () => {
 			return unit === 'kg' ? weight : lbsToKg(weight);

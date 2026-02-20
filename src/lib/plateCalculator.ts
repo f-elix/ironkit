@@ -7,7 +7,7 @@ export type KgPlateConfiguration = KgPlateConfigurationItem[];
 
 export const ALL_PLATES = [25, 20, 15, 10, 5, 2.5, 1.25, 0.5, 0.25] as const;
 export const MAX_WEIGHT = 600;
-export const COLLARS_WEIGHT = 5;
+const COLLARS_WEIGHT = 5;
 
 export const getActualBarWeight = ({
 	barWeight,
