@@ -65,6 +65,62 @@ export const getActiveRun = query({
 	}
 });
 
+export const getActiveRunWithDetails = query({
+	args: {},
+	handler: async (ctx) => {
+		const userId = await getAuthUserId(ctx);
+		if (!userId) {
+			return null;
+		}
+		const activeRun = await ctx.db
+			.query('programRuns')
+			.withIndex('by_userId_status', (q) => q.eq('userId', userId).eq('status', 'active'))
+			.first();
+		if (!activeRun) {
+			return null;
+		}
+
+		const template = await ctx.db.get(activeRun.programTemplateId);
+		if (!template) {
+			return null;
+		}
+
+		const sessions = await ctx.db
+			.query('programRunSessions')
+			.withIndex('by_programRunId', (q) => q.eq('programRunId', activeRun._id))
+			.collect();
+
+		const completedSessions = sessions.filter((s) => s.workoutId || s.skippedAt).length;
+		const totalSessions = sessions.length;
+
+		const nextSession = await getNextOpenRunSession(ctx, activeRun._id);
+		let nextSessionDetails = null;
+		if (nextSession) {
+			const programWorkout = await ctx.db.get(nextSession.programWorkoutId);
+			if (programWorkout) {
+				nextSessionDetails = {
+					weekNumber: programWorkout.weekNumber,
+					label: programWorkout.label,
+					trackKey: programWorkout.trackKey
+				};
+			}
+		}
+
+		return {
+			run: activeRun,
+			template,
+			nextSession: nextSession
+				? {
+						...nextSession,
+						...nextSessionDetails
+					}
+				: null,
+			totalSessions,
+			completedSessions
+		};
+	}
+});
+
 export const getNextPlannedSession = query({
 	args: {
 		programRunId: v.optional(v.id('programRuns'))
