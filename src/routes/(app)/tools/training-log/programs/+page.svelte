@@ -158,7 +158,7 @@
 					<ProgramTemplateListItem
 						{template}
 						updatedAtLabel={formatDate(template.updatedAt)}
-						workoutCount={1}
+						workoutCount={template.workoutCount}
 						activeRunId={isActiveTemplate ? activeRun._id : undefined}
 						hasOtherActiveRun={!!activeRun && !isActiveTemplate}
 						onDelete={() => askDeleteTemplate(template)}

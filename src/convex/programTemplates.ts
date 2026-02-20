@@ -14,7 +14,21 @@ export const list = query({
 			.query('programTemplates')
 			.withIndex('by_userId', (q) => q.eq('userId', userId))
 			.collect();
-		return templates.sort((a, b) => b.updatedAt - a.updatedAt);
+
+		const templatesWithCounts = await Promise.all(
+			templates.map(async (template) => {
+				const workouts = await ctx.db
+					.query('programWorkouts')
+					.withIndex('by_programTemplateId', (q) => q.eq('programTemplateId', template._id))
+					.collect();
+				return {
+					...template,
+					workoutCount: workouts.length
+				};
+			})
+		);
+
+		return templatesWithCounts.sort((a, b) => b.updatedAt - a.updatedAt);
 	}
 });
 
