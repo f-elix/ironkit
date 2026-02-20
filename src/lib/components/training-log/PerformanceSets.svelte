@@ -20,6 +20,12 @@
 	let sets = $derived(performance.sets);
 	let unit = $derived(performance.weightUnit);
 	let exercise = $derived(performance.exercise);
+	let executionType = $derived(exercise?.executionType ?? 'reps');
+	let firstEmptySetId = $derived.by(
+		() =>
+			sets.find((set) => (executionType === 'time' ? set.durationSeconds == null : set.reps == null))
+				?._id
+	);
 
 	const addSet = (currentOrder: number, nextOrder: Maybe<number>) => {
 		const performanceOrder = nextOrder
@@ -47,7 +53,13 @@
 			<div class="flex items-center gap-1">
 				<div class="flex-1 overflow-hidden rounded-lg">
 					<SwipeToDelete ondelete={() => deleteSet(set._id)} disabled={sets.length <= 1}>
-						<PerformanceSet {set} {unit} {exercise} order={i + 1} />
+						<PerformanceSet
+							{set}
+							{unit}
+							{exercise}
+							order={i + 1}
+							autofocus={set._id === firstEmptySetId}
+						/>
 					</SwipeToDelete>
 				</div>
 				{#if sets.length > 1}

@@ -7,30 +7,33 @@
 	import { useConvexClient } from 'convex-svelte';
 	import { api } from '$convex/_generated/api';
 	import { Textarea } from '$lib/shadcn/textarea';
+	import { onMount } from 'svelte';
 
 	let {
 		set,
 		unit,
 		exercise,
-		order
+		order,
+		autofocus = false
 	}: {
 		set: PerformanceSet;
 		unit: WeightUnit;
 		exercise: Maybe<Exercise>;
 		order?: number;
+		autofocus?: boolean;
 	} = $props();
 
 	let repsInputRef = $state<Maybe<HTMLInputElement>>(null);
 
 	const client = useConvexClient();
-	const executionType = exercise?.executionType ?? 'reps';
-	const loadType = exerciseLoadType(exercise) ?? 'weighted';
-	const weight = set.weight;
-	const reps = set.reps;
-	const durationSeconds = set.durationSeconds;
-	const targetReps = set.programTargetReps;
-	const targetDurationSeconds = set.programTargetDurationSeconds;
-	const hasProgramTargets = targetReps != null || targetDurationSeconds != null;
+	let executionType = $derived(exercise?.executionType ?? 'reps');
+	let loadType = $derived(exerciseLoadType(exercise) ?? 'weighted');
+	let weight = $derived(set.weight);
+	let reps = $derived(set.reps);
+	let durationSeconds = $derived(set.durationSeconds);
+	let targetReps = $derived(set.programTargetReps);
+	let targetDurationSeconds = $derived(set.programTargetDurationSeconds);
+	let hasProgramTargets = $derived(targetReps != null || targetDurationSeconds != null);
 
 	const onWeightChange = (event: Event) => {
 		const value = (event.target as HTMLInputElement).value;
@@ -48,8 +51,8 @@
 		client.mutation(api.performanceSets.update, { id: set._id, durationSeconds: value });
 	};
 
-	$effect(() => {
-		if (repsInputRef && !repsInputRef.value) {
+	onMount(() => {
+		if (autofocus && repsInputRef && !repsInputRef.value) {
 			repsInputRef?.focus();
 		}
 	});
