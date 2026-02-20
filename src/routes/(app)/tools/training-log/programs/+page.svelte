@@ -12,7 +12,10 @@
 	import { useConvexClient, useQuery } from 'convex-svelte';
 
 	const templatesQuery = useQuery(api.programTemplates.list, {});
+	const activeRunQuery = useQuery(api.programRuns.getActiveRun, {});
 	const client = useConvexClient();
+
+	const activeRun = $derived(activeRunQuery.data ?? null);
 
 	const dateFormatter = new Intl.DateTimeFormat('en-CA', { dateStyle: 'medium' });
 	const formatDate = (timestamp: number) => dateFormatter.format(new Date(timestamp));
@@ -151,9 +154,13 @@
 		{:else if filteredTemplates.length > 0}
 			<ul class="grid gap-3 pb-20 md:pb-0">
 				{#each filteredTemplates as template, i (template._id)}
+					{@const isActiveTemplate = activeRun?.programTemplateId === template._id}
 					<ProgramTemplateListItem
 						{template}
 						updatedAtLabel={formatDate(template.updatedAt)}
+						workoutCount={1}
+						activeRunId={isActiveTemplate ? activeRun._id : undefined}
+						hasOtherActiveRun={!!activeRun && !isActiveTemplate}
 						onDelete={() => askDeleteTemplate(template)}
 						animationDelay={i * 50}
 					/>
