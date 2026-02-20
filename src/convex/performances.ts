@@ -193,6 +193,7 @@ export const createWithInitialSet = mutation({
 export const update = mutation({
 	args: {
 		id: v.id('performances'),
+		exerciseId: v.optional(v.id('exercises')),
 		note: v.optional(v.string()),
 		weightUnit: v.optional(weightUnit)
 	},
@@ -213,6 +214,7 @@ export const update = mutation({
 		}
 
 		await ctx.db.patch(args.id, {
+			...(args.exerciseId !== undefined && { exerciseId: args.exerciseId }),
 			...(args.note !== undefined && { note: args.note }),
 			...(args.weightUnit !== undefined && { weightUnit: args.weightUnit }),
 			updatedAt: Date.now()

@@ -4,11 +4,12 @@
 	import UnitSelector from '$lib/components/ui/UnitSelector.svelte';
 	import ExerciseHistoryDialog from '$lib/components/training-log/ExerciseHistoryDialog.svelte';
 	import ExerciseInfoDialog from '$lib/components/training-log/ExerciseInfoDialog.svelte';
+	import ExerciseSelection from '$lib/components/training-log/ExerciseSelection.svelte';
 	import DeletePerformanceDialog from '$lib/components/training-log/DeletePerformanceDialog.svelte';
 	import ClosePeformanceButton from '$lib/components/training-log/ClosePeformanceButton.svelte';
 	import { useConvexClient } from 'convex-svelte';
 	import { api } from '$convex/_generated/api';
-	import { Dialog } from 'bits-ui';
+	import * as Dialog from '$lib/shadcn/dialog';
 	import { buttonVariants } from '$lib/shadcn/button';
 	import PencilIcon from '@lucide/svelte/icons/pencil';
 	import type { WorkoutWithRelations } from '$lib/db/types';
@@ -55,14 +56,32 @@
 		}
 		return `${plannedValues.length} set${plannedValues.length > 1 ? 's' : ''} (${plannedValues.join('/')} ${unitLabel})`;
 	});
+
+	const onExerciseAdded = async (exerciseId: Id<'exercises'>) => {
+		await client.mutation(api.performances.update, {
+			id: performance._id,
+			exerciseId
+		});
+	};
 </script>
 
 <div class="relative flex flex-col gap-6">
 	<div class="flex items-start gap-4">
 		<div class="flex min-w-0 grow items-baseline gap-1">
 			<div class="flex flex-col items-start gap-0.5">
-				<h3 class="text-lg leading-5 font-semibold">
-					{exerciseName}
+				<h3 class="leading-5">
+					<ExerciseSelection {onExerciseAdded}>
+						{#snippet trigger()}
+							<Dialog.Trigger
+								class={buttonVariants({
+									variant: 'ghost',
+									class: 'h-auto p-0 text-left text-lg font-semibold hover:bg-transparent'
+								})}
+							>
+								{exerciseName ?? 'Select exercise'}
+							</Dialog.Trigger>
+						{/snippet}
+					</ExerciseSelection>
 				</h3>
 				{#if exercise?.loadType === 'bodyweight'}
 					<h4 class="text-sm opacity-70">
