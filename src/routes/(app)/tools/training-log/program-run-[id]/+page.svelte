@@ -16,6 +16,7 @@
 	import { toast } from 'svelte-sonner';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import AlertCircleIcon from '@lucide/svelte/icons/alert-circle';
+	import CancelProgramDialog from '$lib/components/training-log/programs/CancelProgramDialog.svelte';
 
 	const runId = $derived(page.params.id as Id<'programRuns'>);
 	const runQuery = useQuery(api.programRuns.getById, () => ({ id: runId }));
@@ -32,6 +33,7 @@
 	let isPausing = $state(false);
 	let isResuming = $state(false);
 	let isCanceling = $state(false);
+	let cancelDialogOpen = $state(false);
 
 	const run = $derived(runQuery.data);
 	const template = $derived(templateQuery.data);
@@ -116,11 +118,12 @@
 		}
 	};
 
-	const handleCancel = async () => {
+	const handleCancelConfirm = async () => {
 		if (isCanceling || !run) return;
 		isCanceling = true;
 		try {
 			await client.mutation(api.programRuns.cancelRun, { id: run._id });
+			cancelDialogOpen = false;
 			toast.success('Program canceled');
 			goto(resolve('/(app)/tools/training-log/programs'));
 		} catch (error) {
@@ -257,11 +260,10 @@
 						<Button
 							variant="destructive"
 							class="flex-1"
-							onclick={handleCancel}
-							disabled={isCanceling}
+							onclick={() => (cancelDialogOpen = true)}
 						>
 							<XIcon />
-							{isCanceling ? 'Canceling...' : 'Cancel Program'}
+							Cancel Program
 						</Button>
 					{/if}
 				</footer>
@@ -315,3 +317,5 @@
 		{/snippet}
 	</EmptyState>
 {/if}
+
+<CancelProgramDialog bind:open={cancelDialogOpen} onConfirm={handleCancelConfirm} isLoading={isCanceling} />
