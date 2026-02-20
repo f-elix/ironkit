@@ -4,7 +4,6 @@ import { getAuthUserId } from '@convex-dev/auth/server';
 import { weightUnit } from './schema';
 import { getAuthUser } from './auth';
 import { DEFAULT_WEIGHT_UNIT } from '../lib/constants';
-import type { Doc } from './_generated/dataModel';
 
 export const list = query({
 	args: {},
@@ -34,48 +33,7 @@ export const getById = query({
 			return null;
 		}
 
-		const performanceGroups = await ctx.db
-			.query('performanceGroups')
-			.withIndex('by_workoutId', (q) => q.eq('workoutId', args.id))
-			.collect();
-
-		const performances = await ctx.db
-			.query('performances')
-			.withIndex('by_workoutId', (q) => q.eq('workoutId', args.id))
-			.collect();
-
-		const exerciseIds = Array.from(new Set(performances.map((p) => p.exerciseId)));
-		const exercises = await Promise.all(exerciseIds.map((id) => ctx.db.get(id)));
-		const exerciseMap = new Map(exercises.filter((e) => e !== null).map((e) => [e!._id, e]));
-
-		const performanceIds = performances.map((p) => p._id);
-		const allSets: Doc<'performanceSets'>[] = [];
-		for (const perfId of performanceIds) {
-			const sets = await ctx.db
-				.query('performanceSets')
-				.withIndex('by_performanceId', (q) => q.eq('performanceId', perfId))
-				.collect();
-			allSets.push(...sets);
-		}
-
-		return {
-			...workout,
-			performanceGroups: performanceGroups
-				.sort((a, b) => a.workoutOrder - b.workoutOrder)
-				.map((group) => ({
-					...group,
-					performances: performances
-						.filter((p) => p.performanceGroupId === group._id)
-						.sort((a, b) => a.groupOrder - b.groupOrder)
-						.map((perf) => ({
-							...perf,
-							exercise: exerciseMap.get(perf.exerciseId) || null,
-							sets: allSets
-								.filter((s) => s.performanceId === perf._id)
-								.sort((a, b) => a.performanceOrder - b.performanceOrder)
-						}))
-				}))
-		};
+		return workout;
 	}
 });
 
