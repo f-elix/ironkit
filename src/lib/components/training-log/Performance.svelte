@@ -36,25 +36,38 @@
 	let bodyweight = $derived(
 		workout?.bodyweight ? `${workout?.bodyweight} ${workout?.bodyweightUnit}` : ''
 	);
+	const formatTargetValue = (value: string, executionType: 'reps' | 'time') => {
+		if (/[a-zA-Z]/.test(value)) {
+			return value;
+		}
+		return executionType === 'reps' ? `${value} reps` : `${value} sec`;
+	};
 	let programTargetSummary = $derived.by(() => {
 		const executionType = exercise?.executionType ?? 'reps';
 		const plannedValues = sets
 			.slice()
-			.sort((a, b) => a.performanceOrder - b.performanceOrder)
-			.map((set) =>
-				executionType === 'time' ? set.programTargetDurationSeconds : set.programTargetReps
-			)
-			.filter((value): value is number => value != null);
+			.toSorted((a, b) => a.performanceOrder - b.performanceOrder)
+			.map((set) => {
+				const targetRange =
+					executionType === 'reps'
+						? set.programTargetRepsRange?.trim()
+						: set.programTargetDuration?.trim();
+				if (!targetRange) {
+					return null;
+				}
+				const formattedTarget = formatTargetValue(targetRange, executionType);
+				const targetSetRange = set.programTargetSetRange?.trim();
+				if (!targetSetRange) {
+					return formattedTarget;
+				}
+				return `${formattedTarget} (${targetSetRange} sets)`;
+			})
+			.filter((value): value is string => value !== null);
 
 		if (!plannedValues.length) {
 			return '';
 		}
-		const unitLabel = executionType === 'time' ? 'sec' : 'reps';
-		const uniqueValues = [...new Set(plannedValues)];
-		if (uniqueValues.length === 1) {
-			return `${plannedValues.length} set${plannedValues.length > 1 ? 's' : ''} x ${uniqueValues[0]} ${unitLabel}`;
-		}
-		return `${plannedValues.length} set${plannedValues.length > 1 ? 's' : ''} (${plannedValues.join('/')} ${unitLabel})`;
+		return plannedValues.join('; ');
 	});
 
 	const onExerciseAdded = async (exerciseId: Id<'exercises'>) => {

@@ -16,6 +16,67 @@ import { defaultSetTargetForExecution } from './programValidation';
 
 type ProgramCtx = MutationCtx | QueryCtx;
 
+const buildCombinedProgramTargetRange = (
+	executionType: 'reps' | 'time',
+	sourceSets: Array<{
+		programTargetSetRange?: string;
+		programTargetRepsRange?: string;
+		programTargetDuration?: string;
+	}>,
+	defaultTargets: ReturnType<typeof defaultSetTargetForExecution>
+) => {
+	const segments = sourceSets
+		.map((sourceSet) => {
+			const targetValue =
+				executionType === 'reps'
+					? sourceSet.programTargetRepsRange?.trim()
+					: sourceSet.programTargetDuration?.trim();
+			if (!targetValue) {
+				return null;
+			}
+			const targetSetRange = sourceSet.programTargetSetRange?.trim() || '1';
+			return {
+				targetSetRange,
+				targetValue,
+				summary: `${targetSetRange} set(s): ${targetValue}`
+			};
+		})
+		.filter(
+			(
+				segment
+			): segment is {
+				targetSetRange: string;
+				targetValue: string;
+				summary: string;
+			} => segment !== null
+		);
+
+	if (!segments.length) {
+		return {
+			programTargetSetRange: defaultTargets.targetSetRange,
+			programTargetRepsRange: defaultTargets.targetRepsRange,
+			programTargetDuration: defaultTargets.targetDuration
+		};
+	}
+
+	if (segments.length === 1) {
+		const only = segments[0];
+		return {
+			programTargetSetRange: only.targetSetRange,
+			programTargetRepsRange: executionType === 'reps' ? only.targetValue : undefined,
+			programTargetDuration: executionType === 'time' ? only.targetValue : undefined
+		};
+	}
+
+	return {
+		programTargetSetRange: undefined,
+		programTargetRepsRange:
+			executionType === 'reps' ? segments.map((segment) => segment.summary).join('; ') : undefined,
+		programTargetDuration:
+			executionType === 'time' ? segments.map((segment) => segment.summary).join('; ') : undefined
+	};
+};
+
 const getRunSessionWithDetails = async (
 	ctx: ProgramCtx,
 	programRunSessionId: Id<'programRunSessions'>
@@ -137,6 +198,7 @@ export const startNextAsWorkout = mutation({
 				const defaultTargets = defaultSetTargetForExecution(
 					sourceExercise.exercise?.executionType ?? 'reps'
 				);
+				const executionType = sourceExercise.exercise?.executionType ?? 'reps';
 				const sourceSets = sourceExercise.exactSets.length
 					? sourceExercise.exactSets
 					: [
@@ -144,29 +206,35 @@ export const startNextAsWorkout = mutation({
 								weight: undefined,
 								reps: undefined,
 								durationSeconds: undefined,
-								programTargetReps: defaultTargets.targetReps,
-								programTargetDurationSeconds: defaultTargets.targetDurationSeconds,
+								programTargetSetRange: defaultTargets.targetSetRange,
+								programTargetRepsRange: defaultTargets.targetRepsRange,
+								programTargetDuration: defaultTargets.targetDuration,
 								note: undefined,
 								performanceOrder: 0
 							}
 						];
+				const orderedSourceSets = sourceSets
+					.slice()
+					.sort((a, b) => a.performanceOrder - b.performanceOrder);
+				const combinedProgramTargets = buildCombinedProgramTargetRange(
+					executionType,
+					orderedSourceSets,
+					defaultTargets
+				);
 
-				for (const sourceSet of sourceSets.sort(
-					(a, b) => a.performanceOrder - b.performanceOrder
-				)) {
-					await ctx.db.insert('performanceSets', {
-						userId,
-						performanceId,
-						weight: sourceSet.weight,
-						reps: sourceSet.reps,
-						durationSeconds: sourceSet.durationSeconds,
-						programTargetReps: sourceSet.programTargetReps,
-						programTargetDurationSeconds: sourceSet.programTargetDurationSeconds,
-						note: sourceSet.note,
-						performanceOrder: sourceSet.performanceOrder,
-						updatedAt: Date.now()
-					});
-				}
+				await ctx.db.insert('performanceSets', {
+					userId,
+					performanceId,
+					weight: undefined,
+					reps: undefined,
+					durationSeconds: undefined,
+					programTargetSetRange: combinedProgramTargets.programTargetSetRange,
+					programTargetRepsRange: combinedProgramTargets.programTargetRepsRange,
+					programTargetDuration: combinedProgramTargets.programTargetDuration,
+					note: undefined,
+					performanceOrder: 0,
+					updatedAt: Date.now()
+				});
 			}
 		}
 

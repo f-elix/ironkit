@@ -31,9 +31,6 @@
 	let weight = $derived(set.weight);
 	let reps = $derived(set.reps);
 	let durationSeconds = $derived(set.durationSeconds);
-	let targetReps = $derived(set.programTargetReps);
-	let targetDurationSeconds = $derived(set.programTargetDurationSeconds);
-	let hasProgramTargets = $derived(targetReps != null || targetDurationSeconds != null);
 
 	const onWeightChange = (event: Event) => {
 		const value = (event.target as HTMLInputElement).value;
@@ -90,11 +87,6 @@
 					class="h-11 w-full text-center text-lg font-semibold"
 					bind:ref={repsInputRef}
 				/>
-				{#if hasProgramTargets && executionType === 'reps' && targetReps}
-					<span class="text-primary text-[11px]">Target: {targetReps} reps</span>
-				{:else if hasProgramTargets && executionType === 'time' && targetDurationSeconds}
-					<span class="text-primary text-[11px]">Target: {targetDurationSeconds} sec</span>
-				{/if}
 			</Label>
 			<!-- Separator -->
 			<div class="text-muted-foreground translate-y-2 text-lg" aria-hidden="true">&times;</div>

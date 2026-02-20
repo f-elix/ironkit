@@ -76,8 +76,9 @@ const cloneProgramWorkoutStructure = async (
 					weight: setTarget.weight,
 					reps: setTarget.reps,
 					durationSeconds: setTarget.durationSeconds,
-					programTargetReps: setTarget.programTargetReps,
-					programTargetDurationSeconds: setTarget.programTargetDurationSeconds,
+					programTargetSetRange: setTarget.programTargetSetRange,
+					programTargetRepsRange: setTarget.programTargetRepsRange,
+					programTargetDuration: setTarget.programTargetDuration,
 					note: setTarget.note,
 					performanceOrder: setTarget.performanceOrder,
 					updatedAt: Date.now()

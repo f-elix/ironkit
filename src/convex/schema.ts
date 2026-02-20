@@ -112,8 +112,9 @@ export default defineSchema({
 		weight: v.optional(v.number()),
 		reps: v.optional(v.number()),
 		durationSeconds: v.optional(v.number()),
-		programTargetReps: v.optional(v.number()),
-		programTargetDurationSeconds: v.optional(v.number()),
+		programTargetSetRange: v.optional(v.string()),
+		programTargetRepsRange: v.optional(v.string()),
+		programTargetDuration: v.optional(v.string()),
 		note: v.optional(v.string()),
 		performanceOrder: v.number()
 	})

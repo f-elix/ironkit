@@ -3,7 +3,11 @@ import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 import type { Id } from './_generated/dataModel';
 import type { MutationCtx, QueryCtx } from './_generated/server';
-import { assertOwnedExercise, normalizeSetTargetForExecution } from './programValidation';
+import {
+	assertOwnedExercise,
+	defaultSetTargetForExecution,
+	normalizeSetRangeTargetsForExecution
+} from './programValidation';
 import { assertOwnedProgramWorkout } from './programsCore';
 
 type ProgramCtx = MutationCtx | QueryCtx;
@@ -70,8 +74,9 @@ export const create = mutation({
 	args: {
 		programWorkoutExerciseId: v.id('performances'),
 		setOrder: v.optional(v.number()),
-		targetReps: v.optional(v.number()),
-		targetDurationSeconds: v.optional(v.number())
+		targetSetRange: v.optional(v.string()),
+		targetRepsRange: v.optional(v.string()),
+		targetDuration: v.optional(v.string())
 	},
 	handler: async (ctx, args) => {
 		const userId = await getAuthUserId(ctx);
@@ -84,10 +89,12 @@ export const create = mutation({
 			args.programWorkoutExerciseId,
 			userId
 		);
-		const normalizedTargets = normalizeSetTargetForExecution(
+		const defaults = defaultSetTargetForExecution(exercise.executionType);
+		const normalizedTargets = normalizeSetRangeTargetsForExecution(
 			exercise.executionType,
-			args.targetReps,
-			args.targetDurationSeconds
+			args.targetSetRange ?? defaults.targetSetRange,
+			args.targetRepsRange ?? defaults.targetRepsRange,
+			args.targetDuration ?? defaults.targetDuration
 		);
 		const currentRows = await ctx.db
 			.query('performanceSets')
@@ -99,8 +106,9 @@ export const create = mutation({
 			userId,
 			performanceId: exerciseTarget._id,
 			performanceOrder: args.setOrder ?? (lastRow?.performanceOrder ?? -1) + 1,
-			programTargetReps: normalizedTargets.targetReps,
-			programTargetDurationSeconds: normalizedTargets.targetDurationSeconds,
+			programTargetSetRange: normalizedTargets.targetSetRange,
+			programTargetRepsRange: normalizedTargets.targetRepsRange,
+			programTargetDuration: normalizedTargets.targetDuration,
 			updatedAt: Date.now()
 		});
 
@@ -113,8 +121,9 @@ export const update = mutation({
 	args: {
 		id: v.id('performanceSets'),
 		setOrder: v.optional(v.number()),
-		targetReps: v.optional(v.number()),
-		targetDurationSeconds: v.optional(v.number())
+		targetSetRange: v.optional(v.string()),
+		targetRepsRange: v.optional(v.string()),
+		targetDuration: v.optional(v.string())
 	},
 	handler: async (ctx, args) => {
 		const userId = await getAuthUserId(ctx);
@@ -126,15 +135,17 @@ export const update = mutation({
 			args.id,
 			userId
 		);
-		const normalizedTargets = normalizeSetTargetForExecution(
+		const normalizedTargets = normalizeSetRangeTargetsForExecution(
 			exercise.executionType,
-			args.targetReps ?? set.programTargetReps,
-			args.targetDurationSeconds ?? set.programTargetDurationSeconds
+			args.targetSetRange ?? set.programTargetSetRange,
+			args.targetRepsRange ?? set.programTargetRepsRange,
+			args.targetDuration ?? set.programTargetDuration
 		);
 		await ctx.db.patch(set._id, {
 			...(args.setOrder !== undefined && { performanceOrder: args.setOrder }),
-			programTargetReps: normalizedTargets.targetReps,
-			programTargetDurationSeconds: normalizedTargets.targetDurationSeconds,
+			programTargetSetRange: normalizedTargets.targetSetRange,
+			programTargetRepsRange: normalizedTargets.targetRepsRange,
+			programTargetDuration: normalizedTargets.targetDuration,
 			updatedAt: Date.now()
 		});
 		await ctx.db.patch(template._id, { updatedAt: Date.now() });
@@ -175,8 +186,9 @@ export const replaceAll = mutation({
 		programWorkoutExerciseId: v.id('performances'),
 		sets: v.array(
 			v.object({
-				targetReps: v.optional(v.number()),
-				targetDurationSeconds: v.optional(v.number())
+				targetSetRange: v.optional(v.string()),
+				targetRepsRange: v.optional(v.string()),
+				targetDuration: v.optional(v.string())
 			})
 		)
 	},
@@ -193,6 +205,7 @@ export const replaceAll = mutation({
 			args.programWorkoutExerciseId,
 			userId
 		);
+		const defaults = defaultSetTargetForExecution(exercise.executionType);
 
 		const existingRows = await ctx.db
 			.query('performanceSets')
@@ -203,17 +216,19 @@ export const replaceAll = mutation({
 		}
 
 		for (const [index, set] of args.sets.entries()) {
-			const normalizedTargets = normalizeSetTargetForExecution(
+			const normalizedTargets = normalizeSetRangeTargetsForExecution(
 				exercise.executionType,
-				set.targetReps,
-				set.targetDurationSeconds
+				set.targetSetRange ?? defaults.targetSetRange,
+				set.targetRepsRange ?? defaults.targetRepsRange,
+				set.targetDuration ?? defaults.targetDuration
 			);
 			await ctx.db.insert('performanceSets', {
 				userId,
 				performanceId: exerciseTarget._id,
 				performanceOrder: index,
-				programTargetReps: normalizedTargets.targetReps,
-				programTargetDurationSeconds: normalizedTargets.targetDurationSeconds,
+				programTargetSetRange: normalizedTargets.targetSetRange,
+				programTargetRepsRange: normalizedTargets.targetRepsRange,
+				programTargetDuration: normalizedTargets.targetDuration,
 				updatedAt: Date.now()
 			});
 		}

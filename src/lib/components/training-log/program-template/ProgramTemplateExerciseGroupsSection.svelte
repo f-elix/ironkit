@@ -34,7 +34,8 @@
 		onUpdateSetTarget: (
 			setId: Id<'performanceSets'>,
 			executionType: 'reps' | 'time',
-			value: number
+			targetSetRange: string,
+			targetValue: string
 		) => Promise<void> | void;
 	} = $props();
 </script>

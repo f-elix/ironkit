@@ -29,9 +29,7 @@
 	let isResuming = $state(false);
 	let isCanceling = $state(false);
 
-	const progressLabel = $derived(
-		`Session ${completedSessions + 1} of ${totalSessions}`
-	);
+	const progressLabel = $derived(`Session ${completedSessions + 1} of ${totalSessions}`);
 
 	const handleResumeProgram = async () => {
 		if (isResuming) return;

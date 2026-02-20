@@ -265,14 +265,15 @@
 	const updateSetTarget = async (
 		setId: Id<'performanceSets'>,
 		executionType: 'reps' | 'time',
-		value: number
+		targetSetRange: string,
+		targetValue: string
 	) => {
-		const normalizedValue = normalizePositiveInt(value, executionType === 'reps' ? 8 : 60);
 		try {
 			await client.mutation(api.programWorkoutExerciseSets.update, {
 				id: setId,
-				targetReps: executionType === 'reps' ? normalizedValue : undefined,
-				targetDurationSeconds: executionType === 'time' ? normalizedValue : undefined
+				targetSetRange,
+				targetRepsRange: executionType === 'reps' ? targetValue : undefined,
+				targetDuration: executionType === 'time' ? targetValue : undefined
 			});
 		} catch (error) {
 			toast.error(toErrorMessage(error, 'Could not update set target.'));

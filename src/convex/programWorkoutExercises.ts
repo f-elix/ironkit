@@ -8,8 +8,7 @@ import { assertOwnedProgramWorkout } from './programsCore';
 import {
 	assertOwnedExercise,
 	defaultSetTargetForExecution,
-	normalizePositiveInteger,
-	normalizeSetTargetForExecution
+	normalizePositiveInteger
 } from './programValidation';
 
 type ProgramCtx = MutationCtx | QueryCtx;
@@ -77,8 +76,9 @@ const createDefaultSetTargets = async (
 			userId,
 			performanceId,
 			performanceOrder: i,
-			programTargetReps: defaults.targetReps,
-			programTargetDurationSeconds: defaults.targetDurationSeconds,
+			programTargetSetRange: defaults.targetSetRange,
+			programTargetRepsRange: defaults.targetRepsRange,
+			programTargetDuration: defaults.targetDuration,
 			updatedAt: Date.now()
 		});
 	}
@@ -93,14 +93,10 @@ const resetSetTargetsForExecution = async (
 	const defaults = defaultSetTargetForExecution(executionType);
 
 	for (const set of existingSets) {
-		const normalizedTargets = normalizeSetTargetForExecution(
-			executionType,
-			defaults.targetReps,
-			defaults.targetDurationSeconds
-		);
 		await ctx.db.patch(set._id, {
-			programTargetReps: normalizedTargets.targetReps,
-			programTargetDurationSeconds: normalizedTargets.targetDurationSeconds,
+			programTargetSetRange: defaults.targetSetRange,
+			programTargetRepsRange: defaults.targetRepsRange,
+			programTargetDuration: defaults.targetDuration,
 			updatedAt: Date.now()
 		});
 	}

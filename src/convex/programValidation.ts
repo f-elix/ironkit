@@ -23,44 +23,47 @@ export const normalizePositiveInteger = (value: number, fieldName: string) => {
 	return Math.max(1, Math.floor(value));
 };
 
-export const normalizeSetTargetForExecution = (
+export const normalizeSetRangeTargetsForExecution = (
 	executionType: ExecutionType,
-	targetReps?: number,
-	targetDurationSeconds?: number
+	targetSetRange?: string,
+	targetRepsRange?: string,
+	targetDuration?: string
 ) => {
+	const normalizedTargetSetRange = (targetSetRange ?? '').trim() || '1';
+	const normalizedTargetRepsRange = (targetRepsRange ?? '').trim();
+	const normalizedTargetDuration = (targetDuration ?? '').trim();
+
 	if (executionType === 'reps') {
-		if (targetDurationSeconds !== undefined) {
-			throw new Error('Duration target is not allowed for rep-based exercises');
-		}
-		if (targetReps == null) {
-			throw new Error('Reps target is required for rep-based exercises');
+		if (!normalizedTargetRepsRange) {
+			throw new Error('Rep target range is required');
 		}
 		return {
-			targetReps: normalizePositiveInteger(targetReps, 'Reps target'),
-			targetDurationSeconds: undefined
+			targetSetRange: normalizedTargetSetRange,
+			targetRepsRange: normalizedTargetRepsRange,
+			targetDuration: undefined
 		};
 	}
 
-	if (targetReps !== undefined) {
-		throw new Error('Reps target is not allowed for time-based exercises');
-	}
-	if (targetDurationSeconds == null) {
-		throw new Error('Duration target is required for time-based exercises');
+	if (!normalizedTargetDuration) {
+		throw new Error('Duration target is required');
 	}
 	return {
-		targetReps: undefined,
-		targetDurationSeconds: normalizePositiveInteger(targetDurationSeconds, 'Duration target')
+		targetSetRange: normalizedTargetSetRange,
+		targetRepsRange: undefined,
+		targetDuration: normalizedTargetDuration
 	};
 };
 
 export const defaultSetTargetForExecution = (executionType: ExecutionType) => {
 	return executionType === 'reps'
 		? {
-				targetReps: 8,
-				targetDurationSeconds: undefined
+				targetSetRange: '1',
+				targetRepsRange: '8',
+				targetDuration: undefined
 			}
 		: {
-				targetReps: undefined,
-				targetDurationSeconds: 60
+				targetSetRange: '1',
+				targetRepsRange: undefined,
+				targetDuration: '60 sec'
 			};
 };
