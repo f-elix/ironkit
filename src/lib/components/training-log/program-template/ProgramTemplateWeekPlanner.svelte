@@ -103,9 +103,7 @@
 					updates: reordered.map((w, i) => ({ id: w._id, slotOrder: i }))
 				});
 			} catch (error) {
-				toast.error(
-					error instanceof Error ? error.message : 'Could not reorder workouts.'
-				);
+				toast.error(error instanceof Error ? error.message : 'Could not reorder workouts.');
 			}
 		};
 
@@ -201,7 +199,7 @@
 						<button
 							type="button"
 							class={[
-								'flex min-w-28 max-w-48 flex-col gap-1.5 rounded-lg border p-2.5 text-left transition-all duration-150 sm:min-w-36 sm:max-w-56 sm:gap-2 sm:p-3',
+								'flex max-w-48 min-w-28 flex-col gap-1.5 rounded-lg border p-2.5 text-left transition-all duration-150 sm:max-w-56 sm:min-w-36 sm:gap-2 sm:p-3',
 								selectedWorkoutId === workout._id
 									? 'border-primary/50 bg-primary/5 shadow-primary/5 shadow-sm'
 									: 'border-border/40 bg-card/25 hover:border-border/70 hover:bg-card/50'

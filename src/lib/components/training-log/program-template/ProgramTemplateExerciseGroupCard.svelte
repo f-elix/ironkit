@@ -139,7 +139,9 @@
 			<p class="text-muted-foreground/50 py-2 text-xs">No exercises yet</p>
 		{/if}
 
-		<ExerciseSelection onExerciseAdded={(exerciseId) => onAddExerciseToGroup(group._id, exerciseId)}>
+		<ExerciseSelection
+			onExerciseAdded={(exerciseId) => onAddExerciseToGroup(group._id, exerciseId)}
+		>
 			{#snippet trigger()}
 				<Dialog.Trigger
 					class={buttonVariants({

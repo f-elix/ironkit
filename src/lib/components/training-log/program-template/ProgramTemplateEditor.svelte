@@ -49,11 +49,11 @@
 		/>
 	</div>
 
-	<Sheet.Root
-		open={editorState.sheetOpen}
-		onOpenChange={editorState.setSheetOpen}
-	>
-		<Sheet.Content side="right" class="w-full overflow-y-auto p-0 sm:max-w-xl [&>button[class*='absolute']]:hidden">
+	<Sheet.Root open={editorState.sheetOpen} onOpenChange={editorState.setSheetOpen}>
+		<Sheet.Content
+			side="right"
+			class="w-full overflow-y-auto p-0 sm:max-w-xl [&>button[class*='absolute']]:hidden"
+		>
 			<div class="sr-only">
 				<Sheet.Title>Edit workout</Sheet.Title>
 				<Sheet.Description>Edit workout details, exercises and sets</Sheet.Description>

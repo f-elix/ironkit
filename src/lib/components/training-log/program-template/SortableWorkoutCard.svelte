@@ -29,7 +29,7 @@
 
 <li
 	class={[
-		'flex min-w-28 max-w-48 rounded-lg border transition-all duration-150 sm:min-w-36 sm:max-w-56',
+		'flex max-w-48 min-w-28 rounded-lg border transition-all duration-150 sm:max-w-56 sm:min-w-36',
 		isDragging.current
 			? 'border-primary/50 bg-primary/10 shadow-primary/10 ring-primary/20 z-10 shadow-lg ring-1'
 			: isSelected

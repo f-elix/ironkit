@@ -16,7 +16,9 @@
 	} = $props();
 </script>
 
-<div class="border-border/40 bg-background/95 sticky top-0 z-10 border-b px-6 pt-6 pb-4 backdrop-blur-sm">
+<div
+	class="border-border/40 bg-background/95 sticky top-0 z-10 border-b px-6 pt-6 pb-4 backdrop-blur-sm"
+>
 	<div class="flex items-center gap-2">
 		<span
 			class={[

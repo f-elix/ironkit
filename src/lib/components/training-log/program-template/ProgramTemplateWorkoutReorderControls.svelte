@@ -14,7 +14,9 @@
 	} = $props();
 </script>
 
-<div class="border-border/25 bg-muted/10 flex items-center justify-between rounded-lg border px-3 py-2">
+<div
+	class="border-border/25 bg-muted/10 flex items-center justify-between rounded-lg border px-3 py-2"
+>
 	<span class="text-muted-foreground text-xs tabular-nums">
 		Position {position + 1} of {total} in week
 	</span>

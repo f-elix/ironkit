@@ -51,7 +51,9 @@
 	let selectedWorkoutDraft = $derived(
 		selectedWorkout && selectedWorkoutId ? (workoutDraftById[selectedWorkoutId] ?? {}) : {}
 	);
-	let workoutWeekNumber = $derived(selectedWorkoutDraft.weekNumber ?? selectedWorkout?.weekNumber ?? 1);
+	let workoutWeekNumber = $derived(
+		selectedWorkoutDraft.weekNumber ?? selectedWorkout?.weekNumber ?? 1
+	);
 	let workoutTrackKey = $derived(selectedWorkoutDraft.trackKey ?? selectedWorkout?.trackKey ?? 'A');
 	let workoutLabel = $derived(selectedWorkoutDraft.label ?? selectedWorkout?.label ?? '');
 	let workoutNotes = $derived(selectedWorkoutDraft.notes ?? selectedWorkout?.notes ?? '');
@@ -81,7 +83,9 @@
 	let availableTrackKeys = $derived.by(() => {
 		const currentWeek = workoutWeekNumber;
 		const currentTrackKey = normalizeTrackKey(workoutTrackKey);
-		const allTracks = [...new Set(workouts.map((workout) => normalizeTrackKey(workout.trackKey)))].sort();
+		const allTracks = [
+			...new Set(workouts.map((workout) => normalizeTrackKey(workout.trackKey)))
+		].sort();
 		const takenInWeek = new Set(
 			workouts
 				.filter(

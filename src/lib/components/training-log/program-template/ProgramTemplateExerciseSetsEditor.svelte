@@ -64,7 +64,7 @@
 	};
 </script>
 
-<div class="border-border/20 ml-1 space-y-0 border-l pl-3.5 pt-1">
+<div class="border-border/20 ml-1 space-y-0 border-l pt-1 pl-3.5">
 	{#each sortedSets as setTarget, index (setTarget._id)}
 		<ProgramTemplateExerciseSetRow
 			{setTarget}
