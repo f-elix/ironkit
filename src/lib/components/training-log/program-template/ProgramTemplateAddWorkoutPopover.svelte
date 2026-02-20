@@ -54,6 +54,11 @@
 			isOpen = false;
 		}
 	};
+
+	const handleSubmit = (e: Event) => {
+		e.preventDefault();
+		createWorkout('scratch');
+	};
 </script>
 
 <Popover.Root open={isOpen} onOpenChange={handleOpenChange}>
@@ -63,7 +68,7 @@
 		<PlusIcon class="size-4" />
 	</Popover.Trigger>
 	<Popover.Content class="w-56" align="start">
-		<div class="grid gap-3">
+		<form class="grid gap-3" onsubmit={handleSubmit}>
 			<div class="flex items-center gap-2">
 				<p class="text-sm font-medium">Week {weekNumber}</p>
 				<span
@@ -107,6 +112,6 @@
 					</Button>
 				{/if}
 			</div>
-		</div>
+		</form>
 	</Popover.Content>
 </Popover.Root>

@@ -1,5 +1,6 @@
 {
 	"$schema": "https://unpkg.com/knip@5/schema.json",
 	"tags": ["-lintignore"],
-	"ignore": ["src/lib/shadcn/**/*", "src/convex/**/*"]
+	"ignore": ["src/lib/shadcn/**/*", "src/convex/**/*"],
+	"ignoreDependencies": ["@convex-dev/auth"]
 }
