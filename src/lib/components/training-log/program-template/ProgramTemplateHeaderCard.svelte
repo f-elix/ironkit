@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { api } from '$convex/_generated/api';
 	import type { Doc } from '$convex/_generated/dataModel';
 	import type {
@@ -6,19 +8,69 @@
 		ProgramTemplateStatus
 	} from '$lib/components/training-log/program-template/program-template-editor.types';
 	import Badge from '$lib/shadcn/badge/badge.svelte';
+	import Button from '$lib/shadcn/button/button.svelte';
+	import { buttonVariants } from '$lib/shadcn/button';
 	import Input from '$lib/shadcn/input/input.svelte';
 	import * as Popover from '$lib/shadcn/popover';
+	import * as Tooltip from '$lib/shadcn/tooltip';
 	import { Textarea } from '$lib/shadcn/textarea';
+	import { cn } from '$lib/shadcn/utils';
 	import CheckIcon from '@lucide/svelte/icons/check';
+	import EyeIcon from '@lucide/svelte/icons/eye';
 	import LoaderIcon from '@lucide/svelte/icons/loader';
+	import PlayIcon from '@lucide/svelte/icons/play';
 	import StickyNoteIcon from '@lucide/svelte/icons/sticky-note';
-	import { useConvexClient } from 'convex-svelte';
+	import { useConvexClient, useQuery } from 'convex-svelte';
 	import { onDestroy } from 'svelte';
 	import { toast } from 'svelte-sonner';
 
 	let { template }: { template: Doc<'programTemplates'> } = $props();
 
 	const client = useConvexClient();
+
+	const activeRunQuery = useQuery(api.programRuns.getActiveRun, {});
+	const workoutsQuery = useQuery(api.programWorkouts.listByTemplate, () => ({
+		programTemplateId: template._id
+	}));
+
+	const activeRun = $derived(activeRunQuery.data ?? null);
+	const workouts = $derived(workoutsQuery.data ?? []);
+	const workoutCount = $derived(workouts.length);
+
+	const activeRunForThisTemplate = $derived(
+		activeRun?.programTemplateId === template._id ? activeRun : null
+	);
+	const hasOtherActiveRun = $derived(activeRun !== null && !activeRunForThisTemplate);
+	const canStart = $derived(workoutCount > 0 && !activeRunForThisTemplate);
+
+	const viewActiveRunHref = $derived(
+		activeRunForThisTemplate
+			? resolve('/(app)/tools/training-log/program-run-[id]', { id: activeRunForThisTemplate._id })
+			: null
+	);
+
+	let isActivating = $state(false);
+
+	async function handleStart() {
+		if (!canStart || isActivating) return;
+
+		if (hasOtherActiveRun) {
+			const confirmed = window.confirm(
+				'Starting this will replace your current program. Continue?'
+			);
+			if (!confirmed) return;
+		}
+
+		isActivating = true;
+		try {
+			await client.mutation(api.programRuns.activateTemplate, {
+				programTemplateId: template._id
+			});
+			goto(resolve('/(app)/tools/training-log'));
+		} finally {
+			isActivating = false;
+		}
+	}
 
 	let draft = $state<ProgramTemplateDraft>({});
 	let saveTimer: ReturnType<typeof setTimeout> | undefined;
@@ -164,6 +216,40 @@
 				{statusValue}
 			</Badge>
 		</button>
+
+		{#if viewActiveRunHref}
+			<Button href={viewActiveRunHref} variant="secondary" size="sm" class="h-7 gap-1 px-2 text-xs">
+				<EyeIcon class="size-3.5" />
+				View Run
+			</Button>
+		{:else if canStart}
+			<Button
+				variant="secondary"
+				size="sm"
+				class="h-7 gap-1 px-2 text-xs"
+				disabled={isActivating}
+				onclick={handleStart}
+			>
+				<PlayIcon class="size-3.5" />
+				{isActivating ? 'Starting...' : 'Start'}
+			</Button>
+		{:else}
+			<Tooltip.Provider>
+				<Tooltip.Root>
+					<Tooltip.Trigger
+						class={cn(
+							buttonVariants({ variant: 'secondary', size: 'sm' }),
+							'h-7 gap-1 px-2 text-xs opacity-50'
+						)}
+						disabled
+					>
+						<PlayIcon class="size-3.5" />
+						Start
+					</Tooltip.Trigger>
+					<Tooltip.Content>Add workouts first</Tooltip.Content>
+				</Tooltip.Root>
+			</Tooltip.Provider>
+		{/if}
 
 		<Popover.Root>
 			<Popover.Trigger
