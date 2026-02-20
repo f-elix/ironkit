@@ -2,6 +2,7 @@
 	import AddWorkout from '$lib/components/training-log/AddWorkout.svelte';
 	import WorkoutButton from '$lib/components/training-log/WorkoutButton.svelte';
 	import ActiveProgramCard from '$lib/components/training-log/ActiveProgramCard.svelte';
+	import PausedProgramCard from '$lib/components/training-log/PausedProgramCard.svelte';
 	import { useConvexClient, useQuery } from 'convex-svelte';
 	import { api } from '$convex/_generated/api';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
@@ -51,13 +52,22 @@
 
 {#snippet activeProgramCard()}
 	{#if activeRun}
-		<ActiveProgramCard
-			run={activeRun.run}
-			template={activeRun.template}
-			nextSession={nextSessionProps}
-			totalSessions={activeRun.totalSessions}
-			completedSessions={activeRun.completedSessions}
-		/>
+		{#if activeRun.run.status === 'paused'}
+			<PausedProgramCard
+				run={activeRun.run}
+				template={activeRun.template}
+				totalSessions={activeRun.totalSessions}
+				completedSessions={activeRun.completedSessions}
+			/>
+		{:else}
+			<ActiveProgramCard
+				run={activeRun.run}
+				template={activeRun.template}
+				nextSession={nextSessionProps}
+				totalSessions={activeRun.totalSessions}
+				completedSessions={activeRun.completedSessions}
+			/>
+		{/if}
 	{/if}
 {/snippet}
 
