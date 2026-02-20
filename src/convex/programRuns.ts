@@ -35,10 +35,38 @@ export const getById = query({
 			return null;
 		}
 		const run = await assertOwnedProgramRun(ctx, args.id, userId);
+		const template = await ctx.db.get(run.programTemplateId);
 		const sessions = await getOrderedRunSessions(ctx, run._id);
+
+		const sessionsWithDetails = await Promise.all(
+			sessions.map(async (session) => {
+				const programWorkout = await ctx.db.get(session.programWorkoutId);
+				const workout = session.workoutId ? await ctx.db.get(session.workoutId) : null;
+				return {
+					...session,
+					programWorkout: programWorkout
+						? {
+								weekNumber: programWorkout.weekNumber,
+								slotOrder: programWorkout.slotOrder,
+								trackKey: programWorkout.trackKey,
+								label: programWorkout.label
+							}
+						: null,
+					workout: workout
+						? {
+								_id: workout._id,
+								title: workout.title,
+								date: workout.date
+							}
+						: null
+				};
+			})
+		);
+
 		return {
 			...run,
-			sessions
+			template,
+			sessions: sessionsWithDetails
 		};
 	}
 });
