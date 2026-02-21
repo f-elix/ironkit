@@ -103,9 +103,7 @@ export const getActiveRunWithDetails = query({
 		const activeRun = await ctx.db
 			.query('programRuns')
 			.withIndex('by_userId', (q) => q.eq('userId', userId))
-			.filter((q) =>
-				q.or(q.eq(q.field('status'), 'active'), q.eq(q.field('status'), 'paused'))
-			)
+			.filter((q) => q.or(q.eq(q.field('status'), 'active'), q.eq(q.field('status'), 'paused')))
 			.first();
 		if (!activeRun) {
 			return null;

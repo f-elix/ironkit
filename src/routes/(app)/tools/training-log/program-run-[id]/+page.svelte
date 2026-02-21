@@ -21,13 +21,10 @@
 
 	const runId = $derived(page.params.id as Id<'programRuns'>);
 	const runQuery = useQuery(api.programRuns.getById, () => ({ id: runId }));
-	const templateQuery = useQuery(
-		api.programTemplates.getById,
-		() => {
-			const run = runQuery.data;
-			return run ? { id: run.programTemplateId } : 'skip';
-		}
-	);
+	const templateQuery = useQuery(api.programTemplates.getById, () => {
+		const run = runQuery.data;
+		return run ? { id: run.programTemplateId } : 'skip';
+	});
 
 	const client = useConvexClient();
 
@@ -87,14 +84,22 @@
 
 	type SessionState = 'completed' | 'skipped' | 'next' | 'pending';
 	const getSessionState = (session: SessionWithDetails, index: number): SessionState => {
-		if (session.workoutId !== undefined) {return 'completed';}
-		if (session.skippedAt !== undefined) {return 'skipped';}
-		if (index === firstOpenIndex) {return 'next';}
+		if (session.workoutId !== undefined) {
+			return 'completed';
+		}
+		if (session.skippedAt !== undefined) {
+			return 'skipped';
+		}
+		if (index === firstOpenIndex) {
+			return 'next';
+		}
 		return 'pending';
 	};
 
 	const handlePause = async () => {
-		if (isPausing || !run) {return;}
+		if (isPausing || !run) {
+			return;
+		}
 		isPausing = true;
 		try {
 			await client.mutation(api.programRuns.pauseRun, { id: run._id });
@@ -107,7 +112,9 @@
 	};
 
 	const handleResume = async () => {
-		if (isResuming || !run) {return;}
+		if (isResuming || !run) {
+			return;
+		}
 		isResuming = true;
 		try {
 			await client.mutation(api.programRuns.resumeRun, { id: run._id });
@@ -120,7 +127,9 @@
 	};
 
 	const handleCancelConfirm = async () => {
-		if (isCanceling || !run) {return;}
+		if (isCanceling || !run) {
+			return;
+		}
 		isCanceling = true;
 		try {
 			await client.mutation(api.programRuns.cancelRun, { id: run._id });
@@ -182,14 +191,19 @@
 							{#each weekSessions as session (session._id)}
 								{@const globalIndex = sessions.indexOf(session)}
 								{@const state = getSessionState(session, globalIndex)}
-								{@const label = session.programWorkout?.label ?? session.programWorkout?.trackKey ?? 'Session'}
+								{@const label =
+									session.programWorkout?.label ?? session.programWorkout?.trackKey ?? 'Session'}
 								<li>
 									{#if state === 'completed' && session.workoutId}
 										<a
-											href={resolve('/(app)/tools/training-log/workout-[id]', { id: session.workoutId })}
+											href={resolve('/(app)/tools/training-log/workout-[id]', {
+												id: session.workoutId
+											})}
 											class="hover:bg-muted/50 flex items-center gap-3 px-4 py-3 transition-colors"
 										>
-											<span class="bg-primary/10 text-primary flex size-6 shrink-0 items-center justify-center rounded-full">
+											<span
+												class="bg-primary/10 text-primary flex size-6 shrink-0 items-center justify-center rounded-full"
+											>
 												<CheckIcon class="size-3.5" />
 											</span>
 											<span class="min-w-0 flex-1 truncate font-medium">{label}</span>
@@ -201,17 +215,23 @@
 										</a>
 									{:else if state === 'next'}
 										<div class="flex items-center gap-3 px-4 py-3">
-											<span class="bg-primary text-primary-foreground flex size-6 shrink-0 items-center justify-center rounded-full">
+											<span
+												class="bg-primary text-primary-foreground flex size-6 shrink-0 items-center justify-center rounded-full"
+											>
 												<PlayIcon class="size-3" />
 											</span>
 											<span class="min-w-0 flex-1 truncate font-medium">{label}</span>
-											<span class="bg-primary/10 text-primary rounded-full px-2 py-0.5 text-xs font-medium">
+											<span
+												class="bg-primary/10 text-primary rounded-full px-2 py-0.5 text-xs font-medium"
+											>
 												Up next
 											</span>
 										</div>
 									{:else if state === 'skipped'}
 										<div class="flex items-center gap-3 px-4 py-3 opacity-50">
-											<span class="bg-muted text-muted-foreground flex size-6 shrink-0 items-center justify-center rounded-full">
+											<span
+												class="bg-muted text-muted-foreground flex size-6 shrink-0 items-center justify-center rounded-full"
+											>
 												<CircleSlashIcon class="size-3.5" />
 											</span>
 											<span class="min-w-0 flex-1 truncate">{label}</span>
@@ -219,7 +239,9 @@
 										</div>
 									{:else}
 										<div class="flex items-center gap-3 px-4 py-3 opacity-40">
-											<span class="text-muted-foreground flex size-6 shrink-0 items-center justify-center">
+											<span
+												class="text-muted-foreground flex size-6 shrink-0 items-center justify-center"
+											>
 												<CircleIcon class="size-4" />
 											</span>
 											<span class="min-w-0 flex-1 truncate">{label}</span>
@@ -236,33 +258,19 @@
 				<footer class="sticky bottom-4 flex gap-3 pt-4 md:static md:bottom-auto">
 					{#if canPauseResume}
 						{#if isActive}
-							<Button
-								variant="outline"
-								class="flex-1"
-								onclick={handlePause}
-								disabled={isPausing}
-							>
+							<Button variant="outline" class="flex-1" onclick={handlePause} disabled={isPausing}>
 								<PauseIcon />
 								{isPausing ? 'Pausing...' : 'Pause'}
 							</Button>
 						{:else if isPaused}
-							<Button
-								variant="outline"
-								class="flex-1"
-								onclick={handleResume}
-								disabled={isResuming}
-							>
+							<Button variant="outline" class="flex-1" onclick={handleResume} disabled={isResuming}>
 								<PlayIcon />
 								{isResuming ? 'Resuming...' : 'Resume'}
 							</Button>
 						{/if}
 					{/if}
 					{#if canCancel}
-						<Button
-							variant="destructive"
-							class="flex-1"
-							onclick={() => (cancelDialogOpen = true)}
-						>
+						<Button variant="destructive" class="flex-1" onclick={() => (cancelDialogOpen = true)}>
 							<XIcon />
 							Cancel Program
 						</Button>
@@ -312,11 +320,13 @@
 			or you don't have access to it.
 		{/snippet}
 		{#snippet button()}
-			<Button href={resolve('/(app)/tools/training-log/programs')}>
-				Back to Programs
-			</Button>
+			<Button href={resolve('/(app)/tools/training-log/programs')}>Back to Programs</Button>
 		{/snippet}
 	</EmptyState>
 {/if}
 
-<CancelProgramDialog bind:open={cancelDialogOpen} onConfirm={handleCancelConfirm} isLoading={isCanceling} />
+<CancelProgramDialog
+	bind:open={cancelDialogOpen}
+	onConfirm={handleCancelConfirm}
+	isLoading={isCanceling}
+/>

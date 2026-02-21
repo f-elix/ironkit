@@ -55,7 +55,9 @@
 	);
 
 	const handleStartWorkout = async () => {
-		if (isStarting || !nextSession) {return;}
+		if (isStarting || !nextSession) {
+			return;
+		}
 		isStarting = true;
 		try {
 			const result = await client.mutation(api.programRunSessions.startNextAsWorkout, {
@@ -72,7 +74,9 @@
 	};
 
 	const handleSkipSession = async () => {
-		if (isSkipping || !nextSession) {return;}
+		if (isSkipping || !nextSession) {
+			return;
+		}
 		isSkipping = true;
 		try {
 			await client.mutation(api.programRunSessions.skipNext, {
@@ -91,7 +95,9 @@
 	};
 
 	const handlePauseProgram = async () => {
-		if (isPausing) {return;}
+		if (isPausing) {
+			return;
+		}
 		isPausing = true;
 		try {
 			await client.mutation(api.programRuns.pauseRun, {
@@ -148,12 +154,7 @@
 	</div>
 
 	{#if !isCompleted}
-		<Button
-			size="lg"
-			class="mt-4 w-full"
-			onclick={handleStartWorkout}
-			disabled={isStarting}
-		>
+		<Button size="lg" class="mt-4 w-full" onclick={handleStartWorkout} disabled={isStarting}>
 			<PlayIcon />
 			{isStarting ? 'Starting...' : 'Start Workout'}
 		</Button>

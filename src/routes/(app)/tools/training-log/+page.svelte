@@ -103,7 +103,9 @@
 <div class="hidden grow md:flex">
 	{#if activeRun && workouts.length}
 		<!-- Hero card centered - 2/3 width -->
-		<div class="sticky top-20 flex h-[calc(100dvh-6.5rem)] basis-2/3 flex-col items-center justify-center self-start px-8">
+		<div
+			class="sticky top-20 flex h-[calc(100dvh-6.5rem)] basis-2/3 flex-col items-center justify-center self-start px-8"
+		>
 			<div class="w-full max-w-md">
 				{@render activeProgramCard()}
 			</div>

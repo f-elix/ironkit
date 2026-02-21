@@ -13,11 +13,13 @@
 ## Task 1: Active Program Hero Card Component
 
 **Files:**
+
 - Create: `src/lib/components/training-log/ActiveProgramCard.svelte`
 
 **Step 1: Create the hero card component**
 
 Create a component that displays:
+
 - Program name (from template)
 - Next session label: "Week X · [Label or Track]"
 - Progress indicator: "Session N of M"
@@ -135,7 +137,7 @@ Create a component that displays:
 		</div>
 
 		<DropdownMenu.Root>
-			<DropdownMenu.Trigger class="text-muted-foreground hover:text-foreground -mr-2 -mt-1 p-2">
+			<DropdownMenu.Trigger class="text-muted-foreground hover:text-foreground -mt-1 -mr-2 p-2">
 				<EllipsisVerticalIcon class="size-5" />
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Content align="end">
@@ -185,11 +187,13 @@ git commit -m "feat: add ActiveProgramCard component for hero card UI"
 ## Task 2: Convex Query for Active Run with Session Counts
 
 **Files:**
+
 - Modify: `src/convex/programRuns.ts`
 
 **Step 1: Add query to get active run with template and session counts**
 
 Add a new query `getActiveRunWithDetails` that returns the active run plus:
+
 - The template document
 - Next session's programWorkout data (weekNumber, label, trackKey)
 - Total session count
@@ -270,6 +274,7 @@ git commit -m "feat: add getActiveRunWithDetails query for hero card data"
 ## Task 3: Integrate Hero Card into Workouts Page
 
 **Files:**
+
 - Modify: `src/routes/(app)/tools/training-log/+page.svelte`
 
 **Step 1: Import and query active run**
@@ -301,11 +306,13 @@ git commit -m "feat: integrate ActiveProgramCard into workouts page"
 ## Task 4: Program Run Detail Page
 
 **Files:**
+
 - Create: `src/routes/(app)/tools/training-log/program-run-[id]/+page.svelte`
 
 **Step 1: Create the route page**
 
 Page displays:
+
 - Back button
 - Program name and start date
 - Progress bar with "X of Y" sessions
@@ -335,11 +342,13 @@ git commit -m "feat: add program run detail page with progress tracking"
 ## Task 5: Enhance getById Query for Run Detail Page
 
 **Files:**
+
 - Modify: `src/convex/programRuns.ts`
 
 **Step 1: Enhance getById to include workout links and programWorkout details**
 
 For each session, include:
+
 - programWorkout details (weekNumber, slotOrder, trackKey, label)
 - workout details if completed (title, date)
 - skippedAt timestamp if skipped
@@ -409,6 +418,7 @@ git commit -m "feat: enhance getById query with session and workout details"
 ## Task 6: Start Program Button on Programs List
 
 **Files:**
+
 - Modify: `src/lib/components/training-log/programs/ProgramTemplateListItem.svelte`
 - Modify: `src/routes/(app)/tools/training-log/programs/+page.svelte`
 
@@ -446,11 +456,13 @@ git commit -m "feat: add start program button to programs list"
 ## Task 7: Start Program Button in Template Editor
 
 **Files:**
+
 - Modify: `src/lib/components/training-log/program-template/ProgramTemplateHeaderCard.svelte`
 
 **Step 1: Add start button to header**
 
 Similar logic to programs list:
+
 - Show "View Active Run" if this template has an active run
 - Show "Start Program" if workouts exist
 - Disabled if no workouts
@@ -476,6 +488,7 @@ git commit -m "feat: add start program button to template editor"
 ## Task 8: Convex Queries for Workout Counts and Active Run
 
 **Files:**
+
 - Modify: `src/convex/programTemplates.ts`
 
 **Step 1: Enhance list query to include workout counts**
@@ -528,6 +541,7 @@ git commit -m "feat: add workout counts to program templates list query"
 ## Task 9: Cancel Program with Confirmation
 
 **Files:**
+
 - Create: `src/lib/components/training-log/programs/CancelProgramDialog.svelte`
 - Modify: `src/routes/(app)/tools/training-log/program-run-[id]/+page.svelte`
 
@@ -557,6 +571,7 @@ git commit -m "feat: add cancel program confirmation dialog"
 ## Task 10: Resume Paused Program
 
 **Files:**
+
 - Modify: `src/routes/(app)/tools/training-log/program-run-[id]/+page.svelte`
 - Create: `src/lib/components/training-log/PausedProgramCard.svelte`
 
@@ -586,6 +601,7 @@ git commit -m "feat: add resume functionality for paused programs"
 ## Task 11: Final Polish and Edge Cases
 
 **Files:**
+
 - Various components
 
 **Step 1: Handle loading states**

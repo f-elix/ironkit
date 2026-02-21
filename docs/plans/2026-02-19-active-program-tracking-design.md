@@ -6,14 +6,14 @@ When a user activates a program, the Workouts page transforms into a "mission co
 
 ## Design Decisions
 
-| Question | Decision |
-|----------|----------|
-| Primary action on entry | Review next session briefly, then start |
+| Question                       | Decision                                          |
+| ------------------------------ | ------------------------------------------------- |
+| Primary action on entry        | Review next session briefly, then start           |
 | Standalone workout coexistence | Program-first; standalone creation takes backseat |
-| Program activation location | Both programs list and template editor |
-| Session preview detail level | Minimal (session name/label + week number) |
-| Skip session access | Available in overflow menu (not prominent) |
-| Program management location | Dedicated program run page |
+| Program activation location    | Both programs list and template editor            |
+| Session preview detail level   | Minimal (session name/label + week number)        |
+| Skip session access            | Available in overflow menu (not prominent)        |
+| Program management location    | Dedicated program run page                        |
 
 ## Workouts Page (with Active Program)
 
@@ -143,10 +143,10 @@ Hero card appears in the left 2/3 area (where empty state currently is). Workout
 
 ## Summary Table
 
-| Location | Changes |
-|----------|---------|
-| Workouts page | Hero card when active; minimal session info; "Start Workout"; overflow menu; workout list unchanged |
-| Program run page | New `/program-run-[id]}` route; progress bar; week-by-week sessions; states; pause/cancel |
-| Programs list | "Start" button; disabled if 0 workouts; "View Active Run" if running; replace confirmation |
-| Template editor | "Start Program" button; same logic as programs list |
-| No active program | Current behavior; hero card absent |
+| Location          | Changes                                                                                             |
+| ----------------- | --------------------------------------------------------------------------------------------------- |
+| Workouts page     | Hero card when active; minimal session info; "Start Workout"; overflow menu; workout list unchanged |
+| Program run page  | New `/program-run-[id]}` route; progress bar; week-by-week sessions; states; pause/cancel           |
+| Programs list     | "Start" button; disabled if 0 workouts; "View Active Run" if running; replace confirmation          |
+| Template editor   | "Start Program" button; same logic as programs list                                                 |
+| No active program | Current behavior; hero card absent                                                                  |
