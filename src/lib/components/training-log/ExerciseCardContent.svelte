@@ -31,26 +31,26 @@
 	} = $props();
 
 	const client = useConvexClient();
-	const group = performanceGroup;
 
 	const onExerciseAdded = async (exerciseId: Id<'exercises'>) => {
 		const lastOrder = performances.at(-1)?.groupOrder ?? 0;
-		await addExerciseToPerformanceGroup(client, group, exerciseId, lastOrder + 1);
+		await addExerciseToPerformanceGroup(client, performanceGroup, exerciseId, lastOrder + 1);
 	};
 
 	const onLabelChange = async (event: Event) => {
 		const value = (event.currentTarget as HTMLInputElement).value;
 		await client.mutation(api.performanceGroups.update, {
-			id: group._id,
+			id: performanceGroup._id,
 			label: value
 		});
 	};
 
 	const onDeletePerformance = async (performanceId: Id<'performances'>) => {
+		const currentCount = performances.length;
 		await client.mutation(api.performances.remove, { id: performanceId });
-		if (performances.length === 2) {
+		if (currentCount === 2) {
 			await client.mutation(api.performanceGroups.update, {
-				id: group._id,
+				id: performanceGroup._id,
 				label: ''
 			});
 		}
@@ -64,8 +64,8 @@
 			<span class="sr-only">Group title</span>
 			<Input
 				type="text"
-				placeholder={group.label ? '' : 'Group name (optional)'}
-				value={group.label ?? ''}
+				placeholder={performanceGroup.label ? '' : 'Group name (optional)'}
+				value={performanceGroup.label ?? ''}
 				oninput={onLabelChange}
 				class="text-sm font-medium"
 			/>

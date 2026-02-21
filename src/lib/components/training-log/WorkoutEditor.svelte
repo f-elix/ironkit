@@ -3,7 +3,7 @@
 	import { api } from '$convex/_generated/api';
 	import ExerciseSelection from '$lib/components/training-log/ExerciseSelection.svelte';
 	import * as Dialog from '$lib/shadcn/dialog';
-	import Button from '$lib/shadcn/button/button.svelte';
+	import Button, { buttonVariants } from '$lib/shadcn/button/button.svelte';
 	import PlusIcon from '@lucide/svelte/icons/plus';
 	import { addExerciseToWorkout } from '$lib/training-log/addExerciseToWorkout';
 	import { DragDropProvider, type DragDropEvents } from '@dnd-kit-svelte/svelte';
@@ -143,19 +143,15 @@
 	<div class="hidden md:block md:px-4">
 		<ExerciseSelection {onExerciseAdded}>
 			{#snippet trigger()}
-				<Dialog.Trigger>
-					{#snippet child({ props })}
-						<Button
-							{...props}
-							variant="outline"
-							size="lg"
-							class="w-full justify-center py-6 text-base font-medium"
-							role="combobox"
-						>
-							<PlusIcon class="mr-2 size-5" />
-							Add exercise
-						</Button>
-					{/snippet}
+				<Dialog.Trigger
+					class={buttonVariants({
+						variant: 'outline',
+						size: 'lg',
+						class: 'w-full justify-center py-6 text-base font-medium'
+					})}
+				>
+					<PlusIcon class="mr-2 size-5" />
+					Add exercise
 				</Dialog.Trigger>
 			{/snippet}
 		</ExerciseSelection>

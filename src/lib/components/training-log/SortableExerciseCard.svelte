@@ -52,7 +52,14 @@
 	});
 
 	let completedSets = $derived(
-		performances.flatMap((p) => p.sets ?? []).filter((s) => s.reps != null && s.reps > 0).length
+		performances.flatMap((p) => {
+			const executionType = p.exercise?.executionType ?? 'reps';
+			return (p.sets ?? []).filter(
+				(s) =>
+					(executionType === 'reps' && s.reps != null && s.reps > 0) ||
+					(executionType === 'time' && s.durationSeconds != null && s.durationSeconds > 0)
+			);
+		}).length
 	);
 	let totalSets = $derived(performances.flatMap((p) => p.sets ?? []).length);
 	let progress = $derived(totalSets > 0 ? (completedSets / totalSets) * 100 : 0);
