@@ -121,6 +121,7 @@ export const update = mutation({
 		}
 		await ctx.db.patch(id, {
 			...updates,
+			bodyweight: updates.bodyweight || undefined,
 			updatedAt: Date.now()
 		});
 	}

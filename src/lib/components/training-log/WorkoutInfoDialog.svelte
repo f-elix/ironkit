@@ -53,7 +53,7 @@
 				title: title ?? DEFAULT_WORKOUT_TITLE,
 				notes: notes?.trim() ?? '',
 				date: date.toDate(TIMEZONE).getTime(),
-				bodyweight: bodyweight ?? undefined,
+				bodyweight: bodyweight || 0,
 				bodyweightUnit
 			});
 			open = false;
@@ -63,7 +63,8 @@
 			title: title ?? DEFAULT_WORKOUT_TITLE,
 			notes: notes?.trim() ?? '',
 			date: date.toDate(TIMEZONE).getTime(),
-			bodyweight,
+			bodyweight:
+				typeof bodyweight === 'number' && Number.isFinite(bodyweight) ? bodyweight : undefined,
 			bodyweightUnit
 		});
 		goto(resolve('/(app)/tools/training-log/workout-[id]', { id: newWorkoutId }));

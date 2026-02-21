@@ -26,10 +26,8 @@
 	// Using a simple array to track expanded state - reactive via $state
 	let expandedGroupIds = $state<string[]>([]);
 
-	let allExpanded = $derived(
-		performanceGroups.length === 0 ||
-			(performanceGroups.length > 0 &&
-				performanceGroups.every((g) => expandedGroupIds.includes(g._id)))
+	let someExpanded = $derived(
+		performanceGroups.length > 0 && performanceGroups.some((g) => expandedGroupIds.includes(g._id))
 	);
 
 	const toggleExpand = (groupId: string) => {
@@ -90,21 +88,21 @@
 		<button
 			class={cn(
 				'rounded px-2 py-1 text-xs font-medium transition-colors',
-				allExpanded
+				someExpanded
 					? 'bg-primary/20 text-primary'
 					: 'bg-muted text-muted-foreground hover:text-foreground'
 			)}
-			onclick={allExpanded ? collapseAll : expandAll}
+			onclick={someExpanded ? collapseAll : expandAll}
 			disabled={performanceGroups.length === 0}
 		>
-			{allExpanded ? 'Collapse all' : 'Expand all'}
+			{someExpanded ? 'Collapse all' : 'Expand all'}
 		</button>
 	</div>
 
 	<div class="px-4 pb-24 md:pb-4">
 		{#if performanceGroups.length}
 			<DragDropProvider {onDragStart} {onDragEnd}>
-				<div class="flex flex-col gap-3">
+				<ul class="flex flex-col gap-3">
 					{#each performanceGroups as performanceGroup, index (performanceGroup._id)}
 						{@const isExpanded = expandedGroupIds.includes(performanceGroup._id)}
 						<SortableExerciseCard
@@ -117,7 +115,7 @@
 							}}
 						/>
 					{/each}
-				</div>
+				</ul>
 			</DragDropProvider>
 		{/if}
 	</div>

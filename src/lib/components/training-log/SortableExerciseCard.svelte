@@ -58,11 +58,11 @@
 	let progress = $derived(totalSets > 0 ? (completedSets / totalSets) * 100 : 0);
 </script>
 
-<div
+<li
 	class={cn(
-		'group relative overflow-hidden rounded-xl border transition-all duration-200',
+		'group relative overflow-hidden rounded-xl border transition-[transform,background-color,border-color] duration-200',
 		isDragging.current
-			? 'border-primary bg-card z-10 scale-[1.02] opacity-100 shadow-lg'
+			? 'border-primary bg-card z-10 scale-[1.02]'
 			: 'border-border bg-card hover:bg-card/80'
 	)}
 	{@attach ref}
@@ -165,4 +165,4 @@
 			</div>
 		{/if}
 	</Collapsible.Root>
-</div>
+</li>
