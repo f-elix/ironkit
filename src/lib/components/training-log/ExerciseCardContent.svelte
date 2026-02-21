@@ -12,17 +12,8 @@
 	import Label from '$lib/shadcn/label/label.svelte';
 	import Input from '$lib/shadcn/input/input.svelte';
 	import Button from '$lib/shadcn/button/button.svelte';
-	import type { Exercise, PerformanceSet } from '$lib/db/types';
+	import type { PerformanceWithRelations } from '$lib/db/types';
 	import ExerciseCardTargetSummary from '$lib/components/training-log/ExerciseCardTargetSummary.svelte';
-
-	type PerformanceWithRelations = {
-		_id: Id<'performances'>;
-		exerciseId: Id<'exercises'>;
-		exercise: Exercise | null;
-		weightUnit: 'lbs' | 'kg';
-		groupOrder: number;
-		sets: PerformanceSet[];
-	};
 
 	type PerformanceGroupWithRelations = {
 		_id: Id<'performanceGroups'>;
