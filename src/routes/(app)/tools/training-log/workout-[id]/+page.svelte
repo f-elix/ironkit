@@ -11,8 +11,10 @@
 	let workout = $derived(query.data);
 </script>
 
-{#if workout}
-	<div class="min-h-full" style="view-transition-name: workout;">
-		<WorkoutEditor {workoutId} {workout} />
-	</div>
-{/if}
+{#key workoutId}
+	{#if workout}
+		<div class="min-h-full" style="view-transition-name: workout;">
+			<WorkoutEditor {workoutId} {workout} />
+		</div>
+	{/if}
+{/key}

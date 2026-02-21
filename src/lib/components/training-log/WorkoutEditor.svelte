@@ -12,7 +12,6 @@
 	import type { Id } from '$convex/_generated/dataModel';
 	import { cn } from '$lib/shadcn/utils';
 	import WorkoutStats from '$lib/components/training-log/WorkoutStats.svelte';
-	import WorkoutInfoDialog from '$lib/components/training-log/WorkoutInfoDialog.svelte';
 	import type { Workout } from '$lib/db/types';
 
 	let { workoutId, workout }: { workoutId: Id<'workouts'>; workout: Workout } = $props();
@@ -86,31 +85,23 @@
 </script>
 
 <div class="flex min-h-full flex-col">
-	<WorkoutInfoDialog {workout}>
-		{#snippet trigger({ props })}
-			<WorkoutStats {workout} {...props} />
-		{/snippet}
-	</WorkoutInfoDialog>
-
-	<div class="flex items-center justify-between px-4 py-2">
-		<div class="flex items-center gap-2">
-			<button
-				class={cn(
-					'rounded px-2 py-1 text-xs font-medium transition-colors',
-					allExpanded ? 'bg-primary/20 text-primary' : 'text-muted-foreground hover:text-foreground'
-				)}
-				onclick={allExpanded ? collapseAll : expandAll}
-				disabled={performanceGroups.length === 0}
-			>
-				{allExpanded ? 'Collapse all' : 'Expand all'}
-			</button>
-		</div>
-		<span class="text-muted-foreground text-xs">
-			{performanceGroups.length} exercise{performanceGroups.length !== 1 ? 's' : ''}
-		</span>
+	<WorkoutStats {workout} {workoutId} />
+	<div class="p-4 pt-2">
+		<button
+			class={cn(
+				'rounded px-2 py-1 text-xs font-medium transition-colors',
+				allExpanded
+					? 'bg-primary/20 text-primary'
+					: 'bg-muted text-muted-foreground hover:text-foreground'
+			)}
+			onclick={allExpanded ? collapseAll : expandAll}
+			disabled={performanceGroups.length === 0}
+		>
+			{allExpanded ? 'Collapse all' : 'Expand all'}
+		</button>
 	</div>
 
-	<div class="flex-1 px-4 pb-24 md:pb-4">
+	<div class="px-4 pb-24 md:pb-4">
 		{#if performanceGroups.length}
 			<DragDropProvider {onDragStart} {onDragEnd}>
 				<div class="flex flex-col gap-3">
@@ -132,17 +123,17 @@
 	</div>
 
 	<!-- Mobile FAB -->
-	<div class="fixed right-6 bottom-6 z-50 md:hidden">
+	<div class="fixed right-4 bottom-8 z-50 md:hidden">
 		<ExerciseSelection {onExerciseAdded}>
 			{#snippet trigger()}
 				<Dialog.Trigger>
 					{#snippet child({ props })}
 						<button
 							{...props}
-							class="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-[#c45c26] to-[#a04a1e] text-white shadow-xl shadow-[#c45c26]/30 transition-transform hover:scale-105 active:scale-95"
+							class="bg-primary text-primary-foreground hover:bg-primary/90 flex size-14 items-center justify-center rounded-full"
 							aria-label="Add exercise"
 						>
-							<PlusIcon class="size-8" strokeWidth={2.5} />
+							<PlusIcon class="size-7" />
 						</button>
 					{/snippet}
 				</Dialog.Trigger>

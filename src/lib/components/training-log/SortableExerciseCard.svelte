@@ -3,11 +3,13 @@
 	import { useQuery } from 'convex-svelte';
 	import { api } from '$convex/_generated/api';
 	import type { Id } from '$convex/_generated/dataModel';
-	import ExerciseCardContent from './ExerciseCardContent.svelte';
+	import ExerciseCardContent from '$lib/components/training-log/ExerciseCardContent.svelte';
 	import ChevronDown from '@lucide/svelte/icons/chevron-down';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
 	import { cn } from '$lib/shadcn/utils';
 	import * as Collapsible from '$lib/shadcn/collapsible';
+	import { slide } from 'svelte/transition';
+	import { cubicOut } from 'svelte/easing';
 
 	let {
 		performanceGroup,
@@ -74,7 +76,7 @@
 
 	<Collapsible.Root open={isExpanded} onOpenChange={onToggle}>
 		<!-- Main card header - always visible -->
-		<Collapsible.Trigger>
+		<Collapsible.Trigger class="w-full text-left">
 			<div class="flex w-full items-center gap-3 p-4">
 				<!-- Drag handle -->
 				<div
@@ -86,71 +88,81 @@
 
 				<!-- Exercise info -->
 				<div class="min-w-0 flex-1">
-					<div class="flex items-center gap-2">
-						{#if label}
-							<span class="text-muted-foreground truncate text-sm font-medium">{label}</span>
-						{/if}
-					</div>
+					{#if label && performances.length > 1}
+						<span class="text-muted-foreground text-xs font-medium">
+							{label}
+						</span>
+					{/if}
 
 					{#if performances.length === 1}
-						<h3 class="truncate text-lg font-semibold">
+						<div class="text-base font-semibold whitespace-normal">
 							{performances[0]?.exercise?.name ?? 'Select exercise'}
-						</h3>
+						</div>
 					{:else}
-						<div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+						<div class="flex flex-col gap-0.5">
 							{#each performances as perf, i}
-								<span class="text-lg font-semibold">
-									{perf.exercise?.name ?? 'Select exercise'}{i < performances.length - 1 ? ',' : ''}
-								</span>
+								<div class="flex items-center gap-1.5 text-sm font-medium">
+									<span
+										class="bg-muted text-muted-foreground flex size-4 shrink-0 items-center justify-center rounded text-xs"
+									>
+										{i + 1}
+									</span>
+									<span class="whitespace-normal">{perf.exercise?.name ?? 'Select exercise'}</span>
+								</div>
 							{/each}
 						</div>
 					{/if}
 				</div>
 
-				<!-- Delete button -->
-				{#if onDelete}
-					<button
-						class="text-muted-foreground hover:text-destructive flex size-8 items-center justify-center rounded-full transition-colors"
-						onclick={(e) => {
-							e.stopPropagation();
-							onDelete();
-						}}
+				<!-- Right side: stats and chevron -->
+				<div class="ml-auto flex shrink-0 items-center gap-2">
+					{#if totalSets > 0}
+						<div class="bg-muted flex items-center gap-1.5 rounded-full px-2.5 py-1">
+							<span
+								class={[
+									'font-mono text-sm font-bold tabular-nums',
+									completedSets === totalSets && 'text-primary'
+								]}
+							>
+								{completedSets}
+							</span>
+							<span class="text-muted-foreground">/</span>
+							<span class="text-muted-foreground font-mono text-sm tabular-nums">{totalSets}</span>
+						</div>
+					{/if}
+
+					<div
+						class={[
+							'bg-muted flex size-10 items-center justify-center rounded-full transition-transform duration-300',
+							isExpanded && 'rotate-180'
+						]}
 					>
-						<Trash2 class="size-4" />
-					</button>
-				{/if}
-
-				<!-- Stats badge -->
-				{#if totalSets > 0}
-					<div class="bg-muted flex items-center gap-1.5 rounded-full px-2.5 py-1">
-						<span
-							class="font-mono text-sm font-bold tabular-nums"
-							class:text-primary={completedSets === totalSets}
-						>
-							{completedSets}
-						</span>
-						<span class="text-muted-foreground">/</span>
-						<span class="text-muted-foreground font-mono text-sm tabular-nums">{totalSets}</span>
+						<ChevronDown class="text-muted-foreground size-5" />
 					</div>
-				{/if}
-
-				<!-- Expand chevron -->
-				<div
-					class="bg-muted flex size-10 shrink-0 items-center justify-center rounded-full transition-transform duration-300"
-					class:rotate-180={isExpanded}
-				>
-					<ChevronDown class="text-muted-foreground size-5" />
 				</div>
 			</div>
 		</Collapsible.Trigger>
 
 		<!-- Expanded content -->
-		<Collapsible.Content>
-			{#if group}
+		{#if isExpanded && group}
+			<div transition:slide={{ duration: 200, easing: cubicOut }}>
 				<div class="border-border border-t">
 					<ExerciseCardContent performanceGroup={group} {performances} />
 				</div>
-			{/if}
-		</Collapsible.Content>
+
+				<!-- Delete action -->
+				{#if onDelete}
+					<div class="border-border border-t px-4 py-3">
+						<button
+							class="text-destructive hover:bg-destructive/10 flex w-full items-center justify-center gap-2 rounded-lg py-2 text-sm font-medium transition-colors"
+							onclick={onDelete}
+						>
+							<Trash2 class="size-4" />
+							Remove
+						</button>
+					</div>
+				{/if}
+			</div>
+		{/if}
 	</Collapsible.Root>
 </div>

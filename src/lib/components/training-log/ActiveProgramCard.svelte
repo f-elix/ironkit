@@ -2,7 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { api } from '$convex/_generated/api';
-	import type { Doc, Id } from '$convex/_generated/dataModel';
+	import type { Doc } from '$convex/_generated/dataModel';
 	import { Button, buttonVariants } from '$lib/shadcn/button';
 	import * as DropdownMenu from '$lib/shadcn/dropdown-menu';
 	import { cn } from '$lib/shadcn/utils';
@@ -55,7 +55,7 @@
 	);
 
 	const handleStartWorkout = async () => {
-		if (isStarting || !nextSession) return;
+		if (isStarting || !nextSession) {return;}
 		isStarting = true;
 		try {
 			const result = await client.mutation(api.programRunSessions.startNextAsWorkout, {
@@ -72,7 +72,7 @@
 	};
 
 	const handleSkipSession = async () => {
-		if (isSkipping || !nextSession) return;
+		if (isSkipping || !nextSession) {return;}
 		isSkipping = true;
 		try {
 			await client.mutation(api.programRunSessions.skipNext, {
@@ -87,11 +87,11 @@
 	};
 
 	const handleViewProgram = () => {
-		goto(`/tools/training-log/program-run-${run._id}`);
+		goto(resolve('/(app)/tools/training-log/program-run-[id]', { id: run._id }));
 	};
 
 	const handlePauseProgram = async () => {
-		if (isPausing) return;
+		if (isPausing) {return;}
 		isPausing = true;
 		try {
 			await client.mutation(api.programRuns.pauseRun, {

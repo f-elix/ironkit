@@ -16,7 +16,7 @@
 	import Input from '$lib/shadcn/input/input.svelte';
 	import Button from '$lib/shadcn/button/button.svelte';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
-	import type { Exercise } from '$lib/db/types';
+	import type { Exercise, PerformanceSet } from '$lib/db/types';
 
 	type PerformanceWithRelations = {
 		_id: Id<'performances'>;
@@ -24,14 +24,7 @@
 		exercise: Exercise | null;
 		weightUnit: 'lbs' | 'kg';
 		groupOrder: number;
-		sets: {
-			_id: Id<'performanceSets'>;
-			weight: number | null;
-			reps: number | null;
-			durationSeconds: number | null;
-			note: string | null;
-			performanceOrder: number;
-		}[];
+		sets: PerformanceSet[];
 	};
 
 	type PerformanceGroupWithRelations = {
@@ -54,11 +47,7 @@
 
 	const onExerciseAdded = async (exerciseId: Id<'exercises'>) => {
 		const lastOrder = performances.at(-1)?.groupOrder ?? 0;
-		await addExerciseToPerformanceGroup(client, group as any, exerciseId, lastOrder + 1);
-	};
-
-	const onGroupDelete = async () => {
-		await client.mutation(api.performanceGroups.remove, { id: group._id });
+		await addExerciseToPerformanceGroup(client, group, exerciseId, lastOrder + 1);
 	};
 
 	const onLabelChange = async (event: Event) => {
@@ -83,34 +72,24 @@
 <div class="flex flex-col gap-4 p-4">
 	<!-- Group label input for multi-exercise groups -->
 	{#if performances.length > 1}
-		<div class="flex items-center gap-2">
-			<Label class="flex-1">
-				<span class="sr-only">Group title</span>
-				<Input
-					type="text"
-					placeholder={group.label ? '' : 'Group name (optional)'}
-					value={group.label ?? ''}
-					oninput={onLabelChange}
-					class="text-sm font-medium"
-				/>
-			</Label>
-			<Button
-				variant="ghost"
-				size="icon"
-				class="text-muted-foreground hover:text-destructive"
-				onclick={onGroupDelete}
-			>
-				<Trash2 class="size-4" />
-			</Button>
-		</div>
+		<Label class="flex-1">
+			<span class="sr-only">Group title</span>
+			<Input
+				type="text"
+				placeholder={group.label ? '' : 'Group name (optional)'}
+				value={group.label ?? ''}
+				oninput={onLabelChange}
+				class="text-sm font-medium"
+			/>
+		</Label>
 	{/if}
 
 	<!-- Exercise performances -->
 	{#each performances as performance (performance._id)}
 		<div class="flex flex-col gap-4">
 			<!-- Exercise header -->
-			<div class="flex items-center justify-between gap-2">
-				<div class="flex shrink-0 grow items-center gap-2">
+			<div class="flex items-center gap-2">
+				<div class="flex min-w-0 flex-1 items-center gap-2">
 					<ExerciseSelection
 						onExerciseAdded={async (exerciseId) => {
 							await client.mutation(api.performances.update, {
@@ -123,10 +102,10 @@
 							<Dialog.Trigger
 								class={buttonVariants({
 									variant: 'ghost',
-									class: 'h-auto grow justify-start p-0 text-left hover:bg-transparent'
+									class: 'h-auto min-w-0 flex-1 justify-start p-0 text-left hover:bg-transparent'
 								})}
 							>
-								<span class="text-lg font-semibold">
+								<span class="text-lg font-semibold whitespace-normal">
 									{performance.exercise?.name ?? 'Select exercise'}
 								</span>
 							</Dialog.Trigger>
@@ -178,15 +157,15 @@
 			<!-- Sets -->
 			{#if performance.sets && performance.sets.length > 0}
 				<div class="flex flex-col gap-2">
-					{#each performance.sets as set, setIndex (set._id)}
-						<OptimizedSetRow
-							set={set as any}
-							{setIndex}
-							unit={performance.weightUnit ?? 'lbs'}
-							exercise={performance.exercise as any}
-							previousSet={setIndex > 0 ? (performance.sets[setIndex - 1] as any) : null}
-						/>
-					{/each}
+						{#each performance.sets as set, setIndex (set._id)}
+							<OptimizedSetRow
+								{set}
+								{setIndex}
+								unit={performance.weightUnit ?? 'lbs'}
+								exercise={performance.exercise}
+								previousSet={setIndex > 0 ? performance.sets[setIndex - 1] : null}
+							/>
+						{/each}
 				</div>
 			{/if}
 

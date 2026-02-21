@@ -6,7 +6,7 @@ import type { ConvexClient } from 'convex/browser';
 
 export const addExerciseToPerformanceGroup = async (
 	client: ConvexClient,
-	performanceGroup: PerformanceGroup,
+	performanceGroup: Pick<PerformanceGroup, '_id' | 'workoutId'>,
 	exerciseId: Id<'exercises'>,
 	groupOrder: number
 ) => {

@@ -17,6 +17,7 @@
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import AlertCircleIcon from '@lucide/svelte/icons/alert-circle';
 	import CancelProgramDialog from '$lib/components/training-log/programs/CancelProgramDialog.svelte';
+	import { SvelteMap } from 'svelte/reactivity';
 
 	const runId = $derived(page.params.id as Id<'programRuns'>);
 	const runQuery = useQuery(api.programRuns.getById, () => ({ id: runId }));
@@ -68,7 +69,7 @@
 	);
 
 	const sessionsByWeek = $derived.by(() => {
-		const map = new Map<number, SessionWithDetails[]>();
+		const map = new SvelteMap<number, SessionWithDetails[]>();
 		for (const session of sessions) {
 			const week = session.programWorkout?.weekNumber ?? 1;
 			if (!map.has(week)) {
@@ -86,14 +87,14 @@
 
 	type SessionState = 'completed' | 'skipped' | 'next' | 'pending';
 	const getSessionState = (session: SessionWithDetails, index: number): SessionState => {
-		if (session.workoutId !== undefined) return 'completed';
-		if (session.skippedAt !== undefined) return 'skipped';
-		if (index === firstOpenIndex) return 'next';
+		if (session.workoutId !== undefined) {return 'completed';}
+		if (session.skippedAt !== undefined) {return 'skipped';}
+		if (index === firstOpenIndex) {return 'next';}
 		return 'pending';
 	};
 
 	const handlePause = async () => {
-		if (isPausing || !run) return;
+		if (isPausing || !run) {return;}
 		isPausing = true;
 		try {
 			await client.mutation(api.programRuns.pauseRun, { id: run._id });
@@ -106,7 +107,7 @@
 	};
 
 	const handleResume = async () => {
-		if (isResuming || !run) return;
+		if (isResuming || !run) {return;}
 		isResuming = true;
 		try {
 			await client.mutation(api.programRuns.resumeRun, { id: run._id });
@@ -119,7 +120,7 @@
 	};
 
 	const handleCancelConfirm = async () => {
-		if (isCanceling || !run) return;
+		if (isCanceling || !run) {return;}
 		isCanceling = true;
 		try {
 			await client.mutation(api.programRuns.cancelRun, { id: run._id });

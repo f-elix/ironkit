@@ -75,6 +75,51 @@ export const getById = query({
 	}
 });
 
+export const getWorkoutStats = query({
+	args: { workoutId: v.id('workouts') },
+	handler: async (ctx, args) => {
+		const userId = await getAuthUserId(ctx);
+		if (!userId) {
+			return { exerciseCount: 0, setCount: 0 };
+		}
+
+		const groups = await ctx.db
+			.query('performanceGroups')
+			.withIndex('by_workoutId', (q) => q.eq('workoutId', args.workoutId))
+			.collect();
+		const exerciseCount = groups.filter(
+			(group) =>
+				group.userId === userId &&
+				group.workoutId === args.workoutId &&
+				group.programWorkoutId === undefined
+		).length;
+
+		const performances = await ctx.db
+			.query('performances')
+			.withIndex('by_workoutId', (q) => q.eq('workoutId', args.workoutId))
+			.collect();
+		const userPerformances = performances.filter(
+			(performance) =>
+				performance.userId === userId &&
+				performance.workoutId === args.workoutId &&
+				performance.programWorkoutId === undefined
+		);
+
+		const setCounts = await Promise.all(
+			userPerformances.map(async (performance) => {
+				const sets = await ctx.db
+					.query('performanceSets')
+					.withIndex('by_performanceId', (q) => q.eq('performanceId', performance._id))
+					.collect();
+				return sets.length;
+			})
+		);
+		const setCount = setCounts.reduce((sum, count) => sum + count, 0);
+
+		return { exerciseCount, setCount };
+	}
+});
+
 export const create = mutation({
 	args: {
 		workoutId: v.id('workouts'),
