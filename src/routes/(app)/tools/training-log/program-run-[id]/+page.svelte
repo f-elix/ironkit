@@ -77,7 +77,7 @@
 		return map;
 	});
 
-	const sortedWeeks = $derived([...sessionsByWeek.keys()].sort((a, b) => a - b));
+	const sortedWeeks = $derived([...sessionsByWeek.keys()].toSorted((a, b) => a - b));
 
 	const dateFormatter = new Intl.DateTimeFormat('en-CA', { dateStyle: 'medium' });
 	const formatDate = (timestamp: number) => dateFormatter.format(new Date(timestamp));

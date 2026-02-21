@@ -17,7 +17,7 @@ export const list = query({
 
 		return groups
 			.filter((g) => g.userId === userId)
-			.sort((a, b) => a.workoutOrder - b.workoutOrder);
+			.toSorted((a, b) => a.workoutOrder - b.workoutOrder);
 	}
 });
 
@@ -62,7 +62,7 @@ export const getById = query({
 				return {
 					...perf,
 					exercise: exerciseMap.get(perf.exerciseId) || null,
-					sets: sets.sort((a, b) => a.performanceOrder - b.performanceOrder),
+					sets: sets.toSorted((a, b) => a.performanceOrder - b.performanceOrder),
 					workout
 				};
 			})
@@ -70,7 +70,7 @@ export const getById = query({
 
 		return {
 			...group,
-			performances: performancesWithSets.sort((a, b) => a.groupOrder - b.groupOrder)
+			performances: performancesWithSets.toSorted((a, b) => a.groupOrder - b.groupOrder)
 		};
 	}
 });

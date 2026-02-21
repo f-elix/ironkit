@@ -17,7 +17,7 @@ export const list = query({
 
 		return sets
 			.filter((s) => s.userId === userId)
-			.sort((a, b) => a.performanceOrder - b.performanceOrder);
+			.toSorted((a, b) => a.performanceOrder - b.performanceOrder);
 	}
 });
 

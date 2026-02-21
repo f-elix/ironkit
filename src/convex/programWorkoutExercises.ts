@@ -58,7 +58,7 @@ const listSetTargets = async (ctx: ProgramCtx, performanceId: Id<'performances'>
 		.query('performanceSets')
 		.withIndex('by_performanceId_order', (q) => q.eq('performanceId', performanceId))
 		.collect();
-	return rows.sort((a, b) => a.performanceOrder - b.performanceOrder);
+	return rows.toSorted((a, b) => a.performanceOrder - b.performanceOrder);
 };
 
 const createDefaultSetTargets = async (
@@ -118,7 +118,7 @@ export const list = query({
 			.collect();
 		const rowsWithDetails = await Promise.all(
 			rows
-				.sort((a, b) => a.groupOrder - b.groupOrder)
+				.toSorted((a, b) => a.groupOrder - b.groupOrder)
 				.map(async (row) => ({
 					...row,
 					exercise: await ctx.db.get(row.exerciseId),
@@ -159,7 +159,7 @@ export const create = mutation({
 			.withIndex('by_performanceGroupId', (q) => q.eq('performanceGroupId', group._id))
 			.collect();
 		const lastRow = currentRows.length
-			? currentRows.sort((a, b) => a.groupOrder - b.groupOrder)[currentRows.length - 1]
+			? currentRows.toSorted((a, b) => a.groupOrder - b.groupOrder)[currentRows.length - 1]
 			: undefined;
 
 		const rowId = await ctx.db.insert('performances', {

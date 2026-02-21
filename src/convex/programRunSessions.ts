@@ -168,7 +168,7 @@ export const startNextAsWorkout = mutation({
 			updatedAt: Date.now()
 		});
 
-		for (const sourceGroup of sourceProgramWorkout.groups.sort(
+		for (const sourceGroup of sourceProgramWorkout.groups.toSorted(
 			(a, b) => a.workoutOrder - b.workoutOrder
 		)) {
 			const performanceGroupId = await ctx.db.insert('performanceGroups', {
@@ -180,7 +180,7 @@ export const startNextAsWorkout = mutation({
 				updatedAt: Date.now()
 			});
 
-			for (const sourceExercise of sourceGroup.exercises.sort(
+			for (const sourceExercise of sourceGroup.exercises.toSorted(
 				(a, b) => a.groupOrder - b.groupOrder
 			)) {
 				const performanceId = await ctx.db.insert('performances', {
@@ -202,20 +202,20 @@ export const startNextAsWorkout = mutation({
 				const sourceSets = sourceExercise.exactSets.length
 					? sourceExercise.exactSets
 					: [
-							{
-								weight: undefined,
-								reps: undefined,
-								durationSeconds: undefined,
-								programTargetSetRange: defaultTargets.targetSetRange,
-								programTargetRepsRange: defaultTargets.targetRepsRange,
-								programTargetDuration: defaultTargets.targetDuration,
-								note: undefined,
-								performanceOrder: 0
-							}
-						];
+						{
+							weight: undefined,
+							reps: undefined,
+							durationSeconds: undefined,
+							programTargetSetRange: defaultTargets.targetSetRange,
+							programTargetRepsRange: defaultTargets.targetRepsRange,
+							programTargetDuration: defaultTargets.targetDuration,
+							note: undefined,
+							performanceOrder: 0
+						}
+					];
 				const orderedSourceSets = sourceSets
 					.slice()
-					.sort((a, b) => a.performanceOrder - b.performanceOrder);
+					.toSorted((a, b) => a.performanceOrder - b.performanceOrder);
 				const combinedProgramTargets = buildCombinedProgramTargetRange(
 					executionType,
 					orderedSourceSets,

@@ -43,7 +43,7 @@ export const list = query({
 				q.eq('programWorkoutId', args.programWorkoutId)
 			)
 			.collect();
-		return groups.sort((a, b) => a.workoutOrder - b.workoutOrder);
+		return groups.toSorted((a, b) => a.workoutOrder - b.workoutOrder);
 	}
 });
 

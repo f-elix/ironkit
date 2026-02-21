@@ -49,7 +49,7 @@
 				items: workouts
 					.filter((w) => w.weekNumber === week)
 					.slice()
-					.sort((a, b) => a.slotOrder - b.slotOrder)
+					.toSorted((a, b) => a.slotOrder - b.slotOrder)
 			});
 		}
 		return weeks;
@@ -78,7 +78,7 @@
 			const weekItems = workouts
 				.filter((w) => w.weekNumber === weekNumber)
 				.slice()
-				.sort((a, b) => a.slotOrder - b.slotOrder);
+				.toSorted((a, b) => a.slotOrder - b.slotOrder);
 			dragSnapshot = $state.snapshot(weekItems);
 		};
 
