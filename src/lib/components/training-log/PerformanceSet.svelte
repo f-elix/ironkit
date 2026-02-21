@@ -82,7 +82,7 @@
 				<Input
 					type="number"
 					value={executionType === 'reps' ? reps : durationSeconds}
-					oninput={executionType === 'reps' ? onRepsChange : onTimeChange}
+					onblur={executionType === 'reps' ? onRepsChange : onTimeChange}
 					min="0"
 					class="h-11 w-full text-center text-lg font-semibold"
 					bind:ref={repsInputRef}
@@ -104,12 +104,13 @@
 					<Input
 						type="text"
 						value={weight}
-						oninput={onWeightChange}
+						onblur={onWeightChange}
 						inputmode="decimal"
 						pattern="-?[0-9]*[.,]?[0-9]*"
-						class="h-11 w-full text-center text-lg font-semibold {loadType === 'bodyweight'
-							? 'pl-7'
-							: ''}"
+						class={[
+							'h-11 w-full text-center text-lg font-semibold',
+							loadType === 'bodyweight' ? 'pl-7' : ''
+						]}
 					/>
 				</div>
 			</Label>
@@ -122,7 +123,7 @@
 			class="min-h-none text-sm font-normal"
 			placeholder="Note (RIR, RPE, etc.)"
 			value={set.note}
-			oninput={(event) => {
+			onblur={(event) => {
 				client.mutation(api.performanceSets.update, {
 					id: set._id,
 					note: event.currentTarget.value

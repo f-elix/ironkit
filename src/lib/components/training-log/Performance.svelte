@@ -88,7 +88,8 @@
 							<Dialog.Trigger
 								class={buttonVariants({
 									variant: 'ghost',
-									class: 'h-auto p-0 text-left text-lg font-semibold hover:bg-transparent'
+									class:
+										'h-auto p-0 text-left text-lg font-semibold whitespace-normal hover:bg-transparent'
 								})}
 							>
 								{exerciseName ?? 'Select exercise'}
