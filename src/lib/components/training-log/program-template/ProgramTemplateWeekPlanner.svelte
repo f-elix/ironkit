@@ -20,21 +20,15 @@
 	import { useConvexClient, useQuery } from 'convex-svelte';
 	import { toast } from 'svelte-sonner';
 
-	let {
-		templateId,
-		templateTotalWeeks
-	}: {
-		templateId: Id<'programTemplates'>;
-		templateTotalWeeks: number;
-	} = $props();
-
 	const editorState = getProgramTemplateEditorContext();
 	const client = useConvexClient();
+	const templateQuery = useQuery(api.programTemplates.getById, () => ({ id: editorState.templateId }));
 
 	const workoutsQuery = useQuery(api.programWorkouts.listByTemplateWithSummaries, () => ({
-		programTemplateId: templateId
+		programTemplateId: editorState.templateId
 	}));
 
+	let templateTotalWeeks = $derived(templateQuery.data?.totalWeeks ?? 1);
 	let workouts = $derived((workoutsQuery.data ?? []) as WorkoutSummaryWithGroups[]);
 	let selectedWorkoutId = $derived(editorState.selectedWorkoutId);
 
@@ -99,7 +93,7 @@
 
 			try {
 				await client.mutation(api.programWorkouts.reorderWithinWeek, {
-					programTemplateId: templateId,
+					programTemplateId: editorState.templateId,
 					weekNumber,
 					updates: reordered.map((w, i) => ({ id: w._id, slotOrder: i }))
 				});
@@ -126,7 +120,7 @@
 
 		try {
 			const args = {
-				programTemplateId: templateId,
+				programTemplateId: editorState.templateId,
 				trackKey: normalizeTrackKey(trackKey),
 				label: label.trim() || undefined,
 				notes: undefined

@@ -2,8 +2,13 @@ import type { Id } from '$convex/_generated/dataModel';
 import { getContext, setContext } from 'svelte';
 
 class ProgramTemplateEditorState {
+	templateId: Id<'programTemplates'>;
 	selectedWorkoutId = $state<Id<'programWorkouts'> | undefined>(undefined);
 	sheetOpen = $state(false);
+
+	constructor(templateId: Id<'programTemplates'>) {
+		this.templateId = templateId;
+	}
 
 	selectWorkout = (id: Id<'programWorkouts'>) => {
 		this.selectedWorkoutId = id;
@@ -25,8 +30,8 @@ class ProgramTemplateEditorState {
 
 const programTemplateEditorContextKey = Symbol('program-template-editor');
 
-export const setProgramTemplateEditorContext = () => {
-	return setContext(programTemplateEditorContextKey, new ProgramTemplateEditorState());
+export const setProgramTemplateEditorContext = (templateId: Id<'programTemplates'>) => {
+	return setContext(programTemplateEditorContextKey, new ProgramTemplateEditorState(templateId));
 };
 
 export const getProgramTemplateEditorContext = () => {

@@ -10,7 +10,7 @@
 
 	let { templateId }: { templateId: Id<'programTemplates'> } = $props();
 
-	const editorState = setProgramTemplateEditorContext();
+	const editorState = setProgramTemplateEditorContext(templateId);
 
 	const templateQuery = useQuery(api.programTemplates.getById, () => ({ id: templateId }));
 	let template = $derived(templateQuery.data);
@@ -42,11 +42,8 @@
 	</div>
 {:else}
 	<div class="flex flex-col gap-5 p-4 md:p-0">
-		<ProgramTemplateHeaderCard {template} />
-		<ProgramTemplateWeekPlanner
-			templateId={template._id}
-			templateTotalWeeks={template.totalWeeks}
-		/>
+		<ProgramTemplateHeaderCard />
+		<ProgramTemplateWeekPlanner />
 	</div>
 
 	<Sheet.Root open={editorState.sheetOpen} onOpenChange={editorState.setSheetOpen}>
@@ -58,7 +55,7 @@
 				<Sheet.Title>Edit workout</Sheet.Title>
 				<Sheet.Description>Edit workout details, exercises and sets</Sheet.Description>
 			</div>
-			<ProgramTemplateWorkoutDetails templateId={template._id} />
+			<ProgramTemplateWorkoutDetails />
 		</Sheet.Content>
 	</Sheet.Root>
 {/if}

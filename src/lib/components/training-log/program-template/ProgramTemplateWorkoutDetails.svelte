@@ -8,7 +8,6 @@
 	import ProgramTemplateWorkoutReorderControls from '$lib/components/training-log/program-template/ProgramTemplateWorkoutReorderControls.svelte';
 	import { getProgramTemplateEditorContext } from '$lib/components/training-log/program-template/program-template-editor.context.svelte.js';
 	import type {
-		GroupExerciseUpdate,
 		ProgramWorkoutDetails,
 		ProgramWorkoutDraft,
 		WorkoutMetaUpdate,
@@ -20,19 +19,16 @@
 		normalizeTrackKey
 	} from '$lib/components/training-log/program-template/program-template-track.utils';
 	import Button from '$lib/shadcn/button/button.svelte';
-	import * as Dialog from '$lib/shadcn/dialog';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
 	import { useConvexClient, useQuery } from 'convex-svelte';
 	import { onDestroy } from 'svelte';
 	import { toast } from 'svelte-sonner';
 
-	let { templateId }: { templateId: Id<'programTemplates'> } = $props();
-
 	const editorState = getProgramTemplateEditorContext();
 	const client = useConvexClient();
 
 	const workoutsQuery = useQuery(api.programWorkouts.listByTemplate, () => ({
-		programTemplateId: templateId
+		programTemplateId: editorState.templateId
 	}));
 
 	let workouts = $derived((workoutsQuery.data ?? []) as WorkoutSummary[]);
@@ -83,9 +79,7 @@
 	let availableTrackKeys = $derived.by(() => {
 		const currentWeek = workoutWeekNumber;
 		const currentTrackKey = normalizeTrackKey(workoutTrackKey);
-		const allTracks = [
-			...new Set(workouts.map((workout) => normalizeTrackKey(workout.trackKey)))
-		].toSorted();
+		const allTracks = [...new Set(workouts.map((workout) => normalizeTrackKey(workout.trackKey)))].toSorted();
 		const takenInWeek = new Set(
 			workouts
 				.filter(
@@ -175,111 +169,6 @@
 		}
 	});
 
-	const addGroup = async () => {
-		if (!selectedWorkout) {
-			return;
-		}
-		try {
-			await client.mutation(api.programWorkoutGroups.create, {
-				programWorkoutId: selectedWorkout._id,
-				workoutOrder: selectedWorkout.groups.length
-			});
-		} catch (error) {
-			toast.error(toErrorMessage(error, 'Could not add group.'));
-		}
-	};
-
-	const updateGroupLabel = async (groupId: Id<'performanceGroups'>, label: string) => {
-		try {
-			await client.mutation(api.programWorkoutGroups.update, { id: groupId, label });
-		} catch (error) {
-			toast.error(toErrorMessage(error, 'Could not update group label.'));
-		}
-	};
-
-	const removeGroup = async (groupId: Id<'performanceGroups'>) => {
-		try {
-			await client.mutation(api.programWorkoutGroups.remove, { id: groupId });
-		} catch (error) {
-			toast.error(toErrorMessage(error, 'Could not delete group.'));
-		}
-	};
-
-	let groupPendingDelete = $state<Id<'performanceGroups'> | undefined>(undefined);
-	let groupDeleteDialogOpen = $state(false);
-
-	const promptDeleteGroup = (groupId: Id<'performanceGroups'>) => {
-		groupPendingDelete = groupId;
-		groupDeleteDialogOpen = true;
-	};
-
-	const confirmRemoveGroup = async () => {
-		if (!groupPendingDelete) {
-			return;
-		}
-		await removeGroup(groupPendingDelete);
-		groupPendingDelete = undefined;
-		groupDeleteDialogOpen = false;
-	};
-
-	const addExerciseToGroup = async (
-		groupId: Id<'performanceGroups'>,
-		exerciseId: Id<'exercises'>
-	) => {
-		if (!selectedWorkout) {
-			return;
-		}
-		try {
-			await client.mutation(api.programWorkoutExercises.create, {
-				programWorkoutId: selectedWorkout._id,
-				performanceGroupId: groupId,
-				exerciseId
-			});
-		} catch (error) {
-			toast.error(toErrorMessage(error, 'Could not add exercise.'));
-		}
-	};
-
-	const updateExercise = async (
-		exerciseTargetId: Id<'performances'>,
-		updates: GroupExerciseUpdate
-	) => {
-		try {
-			await client.mutation(api.programWorkoutExercises.update, {
-				id: exerciseTargetId,
-				...updates
-			});
-		} catch (error) {
-			toast.error(toErrorMessage(error, 'Could not update exercise.'));
-		}
-	};
-
-	const removeExercise = async (exerciseTargetId: Id<'performances'>) => {
-		try {
-			await client.mutation(api.programWorkoutExercises.remove, { id: exerciseTargetId });
-		} catch (error) {
-			toast.error(toErrorMessage(error, 'Could not delete exercise.'));
-		}
-	};
-
-	const updateSetTarget = async (
-		setId: Id<'programWorkoutExerciseTargets'>,
-		executionType: 'reps' | 'time',
-		targetSetRange: string,
-		targetValue: string
-	) => {
-		try {
-			await client.mutation(api.programWorkoutExerciseSets.update, {
-				id: setId,
-				targetSetRange,
-				targetRepsRange: executionType === 'reps' ? targetValue : undefined,
-				targetDuration: executionType === 'time' ? targetValue : undefined
-			});
-		} catch (error) {
-			toast.error(toErrorMessage(error, 'Could not update set target.'));
-		}
-	};
-
 	let weekWorkouts = $derived.by(() => {
 		if (!selectedWorkout) {
 			return [];
@@ -307,7 +196,7 @@
 		reordered.splice(nextIndex, 0, moved);
 		try {
 			await client.mutation(api.programWorkouts.reorderWithinWeek, {
-				programTemplateId: templateId,
+				programTemplateId: editorState.templateId,
 				weekNumber: selectedWorkout.weekNumber,
 				updates: reordered.map((workout, index) => ({ id: workout._id, slotOrder: index }))
 			});
@@ -357,14 +246,8 @@
 			/>
 
 			<ProgramTemplateExerciseGroupsSection
+				programWorkoutId={selectedWorkout._id}
 				groups={selectedWorkout.groups}
-				onAddGroup={addGroup}
-				onUpdateGroupLabel={updateGroupLabel}
-				onPromptDeleteGroup={promptDeleteGroup}
-				onAddExerciseToGroup={addExerciseToGroup}
-				onUpdateExercise={updateExercise}
-				onRemoveExercise={removeExercise}
-				onUpdateSetTarget={updateSetTarget}
 			/>
 
 			{#if weekWorkouts.length > 1 && positionInWeek >= 0}
@@ -408,16 +291,3 @@
 	isDeleting={isDeletingWorkout}
 	onConfirmDelete={confirmDeleteWorkout}
 />
-
-<Dialog.Root bind:open={groupDeleteDialogOpen}>
-	<Dialog.Content>
-		<Dialog.Title>Delete exercise group</Dialog.Title>
-		<Dialog.Description>
-			Delete this group and all exercises in it? This cannot be undone.
-		</Dialog.Description>
-		<Dialog.Footer class="flex flex-row justify-end gap-2">
-			<Button variant="secondary" onclick={() => (groupDeleteDialogOpen = false)}>Cancel</Button>
-			<Button variant="destructive" onclick={confirmRemoveGroup}>Delete group</Button>
-		</Dialog.Footer>
-	</Dialog.Content>
-</Dialog.Root>

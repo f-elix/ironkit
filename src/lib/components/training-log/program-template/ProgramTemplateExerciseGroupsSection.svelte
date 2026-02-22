@@ -1,49 +1,68 @@
 <script lang="ts">
+	import { api } from '$convex/_generated/api';
 	import type { Id } from '$convex/_generated/dataModel';
 	import ProgramTemplateExerciseGroupCard from '$lib/components/training-log/program-template/ProgramTemplateExerciseGroupCard.svelte';
-	import type {
-		GroupExerciseUpdate,
-		ProgramWorkoutGroup
-	} from '$lib/components/training-log/program-template/program-template-editor.types';
+	import type { ProgramWorkoutGroup } from '$lib/components/training-log/program-template/program-template-editor.types';
 	import Button from '$lib/shadcn/button/button.svelte';
+	import * as Dialog from '$lib/shadcn/dialog';
 	import PlusIcon from '@lucide/svelte/icons/plus';
+	import { useConvexClient } from 'convex-svelte';
+	import { toast } from 'svelte-sonner';
 
 	let {
-		groups,
-		onAddGroup,
-		onUpdateGroupLabel,
-		onPromptDeleteGroup,
-		onAddExerciseToGroup,
-		onUpdateExercise,
-		onRemoveExercise,
-		onUpdateSetTarget
+		programWorkoutId,
+		groups
 	}: {
+		programWorkoutId: Id<'programWorkouts'>;
 		groups: ProgramWorkoutGroup[];
-		onAddGroup: () => Promise<void> | void;
-		onUpdateGroupLabel: (groupId: Id<'performanceGroups'>, label: string) => Promise<void> | void;
-		onPromptDeleteGroup: (groupId: Id<'performanceGroups'>) => void;
-		onAddExerciseToGroup: (
-			groupId: Id<'performanceGroups'>,
-			exerciseId: Id<'exercises'>
-		) => Promise<void> | void;
-		onUpdateExercise: (
-			exerciseTargetId: Id<'performances'>,
-			updates: GroupExerciseUpdate
-		) => Promise<void> | void;
-		onRemoveExercise: (exerciseTargetId: Id<'performances'>) => Promise<void> | void;
-		onUpdateSetTarget: (
-			setId: Id<'programWorkoutExerciseTargets'>,
-			executionType: 'reps' | 'time',
-			targetSetRange: string,
-			targetValue: string
-		) => Promise<void> | void;
 	} = $props();
+
+	const client = useConvexClient();
+
+	const toErrorMessage = (error: unknown, fallback: string) => {
+		if (error instanceof Error && error.message) {
+			return error.message;
+		}
+		return fallback;
+	};
+
+	const addGroup = async () => {
+		try {
+			await client.mutation(api.programWorkoutGroups.create, {
+				programWorkoutId,
+				workoutOrder: groups.length
+			});
+		} catch (error) {
+			toast.error(toErrorMessage(error, 'Could not add group.'));
+		}
+	};
+
+	let groupPendingDelete = $state<Id<'performanceGroups'> | undefined>(undefined);
+	let groupDeleteDialogOpen = $state(false);
+
+	const promptDeleteGroup = (groupId: Id<'performanceGroups'>) => {
+		groupPendingDelete = groupId;
+		groupDeleteDialogOpen = true;
+	};
+
+	const confirmRemoveGroup = async () => {
+		if (!groupPendingDelete) {
+			return;
+		}
+		try {
+			await client.mutation(api.programWorkoutGroups.remove, { id: groupPendingDelete });
+			groupDeleteDialogOpen = false;
+			groupPendingDelete = undefined;
+		} catch (error) {
+			toast.error(toErrorMessage(error, 'Could not delete group.'));
+		}
+	};
 </script>
 
 <div class="space-y-3">
 	<div class="flex items-center justify-between">
 		<h3 class="text-sm font-semibold">Exercise groups</h3>
-		<Button variant="outline" size="sm" class="h-7 text-xs" onclick={onAddGroup}>
+		<Button variant="outline" size="sm" class="h-7 text-xs" onclick={addGroup}>
 			<PlusIcon class="size-3.5" />
 			Add exercise group
 		</Button>
@@ -52,15 +71,7 @@
 	{#if groups.length}
 		<div class="space-y-3">
 			{#each groups as group (group._id)}
-				<ProgramTemplateExerciseGroupCard
-					{group}
-					{onUpdateGroupLabel}
-					{onPromptDeleteGroup}
-					{onAddExerciseToGroup}
-					{onUpdateExercise}
-					{onRemoveExercise}
-					{onUpdateSetTarget}
-				/>
+				<ProgramTemplateExerciseGroupCard {group} {programWorkoutId} onDeleteGroup={promptDeleteGroup} />
 			{/each}
 		</div>
 	{:else}
@@ -71,3 +82,16 @@
 		</div>
 	{/if}
 </div>
+
+<Dialog.Root bind:open={groupDeleteDialogOpen}>
+	<Dialog.Content>
+		<Dialog.Title>Delete exercise group</Dialog.Title>
+		<Dialog.Description>
+			Delete this group and all exercises in it? This cannot be undone.
+		</Dialog.Description>
+		<Dialog.Footer class="flex flex-row justify-end gap-2">
+			<Button variant="secondary" onclick={() => (groupDeleteDialogOpen = false)}>Cancel</Button>
+			<Button variant="destructive" onclick={confirmRemoveGroup}>Delete group</Button>
+		</Dialog.Footer>
+	</Dialog.Content>
+</Dialog.Root>

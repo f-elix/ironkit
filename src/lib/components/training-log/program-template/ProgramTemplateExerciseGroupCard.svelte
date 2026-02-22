@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { api } from '$convex/_generated/api';
 	import type { Id } from '$convex/_generated/dataModel';
 	import ExerciseSelection from '$lib/components/training-log/ExerciseSelection.svelte';
 	import ProgramTemplateExerciseSetsEditor from '$lib/components/training-log/program-template/ProgramTemplateExerciseSetsEditor.svelte';
@@ -12,35 +13,69 @@
 	import Input from '$lib/shadcn/input/input.svelte';
 	import PlusIcon from '@lucide/svelte/icons/plus';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
+	import { useConvexClient } from 'convex-svelte';
+	import { toast } from 'svelte-sonner';
 
 	let {
 		group,
-		onUpdateGroupLabel,
-		onPromptDeleteGroup,
-		onAddExerciseToGroup,
-		onUpdateExercise,
-		onRemoveExercise,
-		onUpdateSetTarget
+		programWorkoutId,
+		onDeleteGroup
 	}: {
 		group: ProgramWorkoutGroup;
-		onUpdateGroupLabel: (groupId: Id<'performanceGroups'>, label: string) => Promise<void> | void;
-		onPromptDeleteGroup: (groupId: Id<'performanceGroups'>) => void;
-		onAddExerciseToGroup: (
-			groupId: Id<'performanceGroups'>,
-			exerciseId: Id<'exercises'>
-		) => Promise<void> | void;
-		onUpdateExercise: (
-			exerciseTargetId: Id<'performances'>,
-			updates: GroupExerciseUpdate
-		) => Promise<void> | void;
-		onRemoveExercise: (exerciseTargetId: Id<'performances'>) => Promise<void> | void;
-		onUpdateSetTarget: (
-			setId: Id<'programWorkoutExerciseTargets'>,
-			executionType: 'reps' | 'time',
-			targetSetRange: string,
-			targetValue: string
-		) => Promise<void> | void;
+		programWorkoutId: Id<'programWorkouts'>;
+		onDeleteGroup: (groupId: Id<'performanceGroups'>) => void;
 	} = $props();
+
+	const client = useConvexClient();
+
+	const toErrorMessage = (error: unknown, fallback: string) => {
+		if (error instanceof Error && error.message) {
+			return error.message;
+		}
+		return fallback;
+	};
+
+	const updateGroupLabel = async (label: string) => {
+		try {
+			await client.mutation(api.programWorkoutGroups.update, { id: group._id, label });
+		} catch (error) {
+			toast.error(toErrorMessage(error, 'Could not update group label.'));
+		}
+	};
+
+	const addExerciseToGroup = async (exerciseId: Id<'exercises'>) => {
+		try {
+			await client.mutation(api.programWorkoutExercises.create, {
+				programWorkoutId,
+				performanceGroupId: group._id,
+				exerciseId
+			});
+		} catch (error) {
+			toast.error(toErrorMessage(error, 'Could not add exercise.'));
+		}
+	};
+
+	const updateExercise = async (
+		exerciseTargetId: Id<'performances'>,
+		updates: GroupExerciseUpdate
+	) => {
+		try {
+			await client.mutation(api.programWorkoutExercises.update, {
+				id: exerciseTargetId,
+				...updates
+			});
+		} catch (error) {
+			toast.error(toErrorMessage(error, 'Could not update exercise.'));
+		}
+	};
+
+	const removeExercise = async (exerciseTargetId: Id<'performances'>) => {
+		try {
+			await client.mutation(api.programWorkoutExercises.remove, { id: exerciseTargetId });
+		} catch (error) {
+			toast.error(toErrorMessage(error, 'Could not delete exercise.'));
+		}
+	};
 
 	let exerciseCount = $derived(group.exercises.length);
 	let autoGroupType = $derived.by(() => {
@@ -71,12 +106,12 @@
 			class="placeholder:text-muted-foreground/50 min-w-0 flex-1 bg-transparent text-xs font-medium outline-none"
 			placeholder={placeholderText}
 			value={group.label ?? ''}
-			onchange={(e) => onUpdateGroupLabel(group._id, e.currentTarget.value)}
+			onchange={(e) => updateGroupLabel(e.currentTarget.value)}
 		/>
 		<button
 			type="button"
 			class="text-muted-foreground/50 hover:text-destructive shrink-0 transition-colors"
-			onclick={() => onPromptDeleteGroup(group._id)}
+			onclick={() => onDeleteGroup(group._id)}
 		>
 			<TrashIcon class="size-3.5" />
 		</button>
@@ -91,7 +126,7 @@
 							<div class="min-w-0 flex-1 space-y-1.5">
 								<ExerciseSelection
 									onExerciseAdded={(exerciseId) =>
-										onUpdateExercise(exerciseTarget._id, { exerciseId })}
+										updateExercise(exerciseTarget._id, { exerciseId })}
 								>
 									{#snippet trigger()}
 										<Dialog.Trigger
@@ -110,7 +145,7 @@
 									placeholder="Exercise note"
 									value={exerciseTarget.note ?? ''}
 									onchange={(e) =>
-										onUpdateExercise(exerciseTarget._id, {
+										updateExercise(exerciseTarget._id, {
 											note: e.currentTarget.value
 										})}
 								/>
@@ -118,7 +153,7 @@
 							<button
 								type="button"
 								class="text-muted-foreground/40 hover:text-destructive mt-1 shrink-0 transition-colors"
-								onclick={() => onRemoveExercise(exerciseTarget._id)}
+								onclick={() => removeExercise(exerciseTarget._id)}
 							>
 								<TrashIcon class="size-3.5" />
 							</button>
@@ -128,7 +163,6 @@
 							exerciseTargetId={exerciseTarget._id}
 							executionType={exerciseTarget.exercise?.executionType ?? 'reps'}
 							exactSets={exerciseTarget.exactSets}
-							onUpdate={onUpdateSetTarget}
 						/>
 					</div>
 					{#if exerciseIndex < group.exercises.length - 1}
@@ -140,9 +174,7 @@
 			<p class="text-muted-foreground/50 py-2 text-xs">No exercises yet</p>
 		{/if}
 
-		<ExerciseSelection
-			onExerciseAdded={(exerciseId) => onAddExerciseToGroup(group._id, exerciseId)}
-		>
+		<ExerciseSelection onExerciseAdded={addExerciseToGroup}>
 			{#snippet trigger()}
 				<Dialog.Trigger
 					class={buttonVariants({

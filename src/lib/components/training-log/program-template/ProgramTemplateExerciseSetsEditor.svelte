@@ -5,27 +5,25 @@
 	import Button from '$lib/shadcn/button/button.svelte';
 	import PlusIcon from '@lucide/svelte/icons/plus';
 	import { useConvexClient } from 'convex-svelte';
+	import { toast } from 'svelte-sonner';
 
 	let {
 		exerciseTargetId,
 		executionType,
-		exactSets,
-		onUpdate,
-		onRemove
+		exactSets
 	}: {
 		exerciseTargetId: Id<'performances'>;
 		executionType: 'reps' | 'time';
 		exactSets: Doc<'programWorkoutExerciseTargets'>[];
-		onUpdate?: (
-			id: Id<'programWorkoutExerciseTargets'>,
-			executionType: 'reps' | 'time',
-			targetSetRange: string,
-			targetValue: string
-		) => Promise<void> | void;
-		onRemove?: (id: Id<'programWorkoutExerciseTargets'>) => Promise<void> | void;
 	} = $props();
 
 	const client = useConvexClient();
+	const toErrorMessage = (error: unknown, fallback: string) => {
+		if (error instanceof Error && error.message) {
+			return error.message;
+		}
+		return fallback;
+	};
 	let sortedSets = $derived(
 		(exactSets ?? []).slice().toSorted((a, b) => a.targetOrder - b.targetOrder)
 	);
@@ -37,13 +35,17 @@
 
 	const addSet = async () => {
 		const last = sortedSets.at(-1);
-		await client.mutation(api.programWorkoutExerciseSets.create, {
-			programWorkoutExerciseId: exerciseTargetId,
-			setOrder: (last?.targetOrder ?? -1) + 1,
-			targetSetRange: '1',
-			targetRepsRange: executionType === 'reps' ? '8' : undefined,
-			targetDuration: executionType === 'time' ? '60 sec' : undefined
-		});
+		try {
+			await client.mutation(api.programWorkoutExerciseSets.create, {
+				programWorkoutExerciseId: exerciseTargetId,
+				setOrder: (last?.targetOrder ?? -1) + 1,
+				targetSetRange: '1',
+				targetRepsRange: executionType === 'reps' ? '8' : undefined,
+				targetDuration: executionType === 'time' ? '60 sec' : undefined
+			});
+		} catch (error) {
+			toast.error(toErrorMessage(error, 'Could not add set target.'));
+		}
 	};
 
 	const updateSetValue = async (
@@ -52,24 +54,24 @@
 		targetSetRange: string,
 		targetValue: string
 	) => {
-		if (onUpdate) {
-			await onUpdate(id, nextExecutionType, targetSetRange, targetValue);
-			return;
+		try {
+			await client.mutation(api.programWorkoutExerciseSets.update, {
+				id,
+				targetSetRange,
+				targetRepsRange: nextExecutionType === 'reps' ? targetValue : undefined,
+				targetDuration: nextExecutionType === 'time' ? targetValue : undefined
+			});
+		} catch (error) {
+			toast.error(toErrorMessage(error, 'Could not update set target.'));
 		}
-		await client.mutation(api.programWorkoutExerciseSets.update, {
-			id,
-			targetSetRange,
-			targetRepsRange: nextExecutionType === 'reps' ? targetValue : undefined,
-			targetDuration: nextExecutionType === 'time' ? targetValue : undefined
-		});
 	};
 
 	const removeSet = async (id: Id<'programWorkoutExerciseTargets'>) => {
-		if (onRemove) {
-			await onRemove(id);
-			return;
+		try {
+			await client.mutation(api.programWorkoutExerciseSets.remove, { id });
+		} catch (error) {
+			toast.error(toErrorMessage(error, 'Could not remove set target.'));
 		}
-		await client.mutation(api.programWorkoutExerciseSets.remove, { id });
 	};
 </script>
 
