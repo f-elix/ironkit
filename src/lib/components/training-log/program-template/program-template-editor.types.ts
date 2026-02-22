@@ -1,6 +1,5 @@
 import type { Doc, Id } from '$convex/_generated/dataModel';
-
-export type ProgramTemplateStatus = 'draft' | 'archived';
+import type { ProgramTemplateStatus } from '$lib/training-log/program-template-status';
 export type CreateWorkoutMode = 'scratch' | 'copy';
 
 export type WorkoutSummary = Pick<
@@ -34,8 +33,6 @@ export type WorkoutWeek = {
 	items: WorkoutSummaryWithGroups[];
 };
 
-type ExerciseOption = Pick<Doc<'exercises'>, '_id' | 'name'>;
-
 export type ProgramWorkoutExercise = Doc<'performances'> & {
 	exercise: Doc<'exercises'> | null;
 	exactSets: Doc<'programWorkoutExerciseTargets'>[];
@@ -61,11 +58,6 @@ export type ProgramTemplateDraft = {
 	notes?: string;
 	totalWeeks?: number;
 	status?: ProgramTemplateStatus;
-};
-
-type TemplateDisplay = {
-	name: string;
-	status: ProgramTemplateStatus;
 };
 
 type WorkoutMetaValues = {

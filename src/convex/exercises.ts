@@ -130,8 +130,8 @@ export const remove = mutation({
 					return;
 				}
 				const template = await ctx.db.get(programWorkout.programTemplateId);
-				if (template && template.userId === userId && template.status === 'draft') {
-					throw new Error('Exercise is used in at least one draft program workout');
+				if (template && template.userId === userId && template.status !== 'archived') {
+					throw new Error('Exercise is used in at least one non-archived program workout');
 				}
 			})
 		);

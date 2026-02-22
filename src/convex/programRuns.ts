@@ -196,6 +196,9 @@ export const activateTemplate = mutation({
 		await ensureNoOtherActiveRun(ctx, userId);
 
 		const template = await assertOwnedProgramTemplate(ctx, args.programTemplateId, userId);
+		if (template.status !== 'published') {
+			throw new Error('Only published programs can be started');
+		}
 		const programWorkouts = await ctx.db
 			.query('programWorkouts')
 			.withIndex('by_programTemplateId', (q) => q.eq('programTemplateId', template._id))

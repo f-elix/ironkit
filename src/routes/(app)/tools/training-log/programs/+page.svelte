@@ -5,6 +5,10 @@
 	import ProgramTemplateListItem from '$lib/components/training-log/programs/ProgramTemplateListItem.svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import { Button } from '$lib/shadcn/button';
+	import {
+		PROGRAM_TEMPLATE_FILTER_OPTIONS,
+		type ProgramTemplateFilter
+	} from '$lib/training-log/program-template-status';
 	import ClipboardListIcon from '@lucide/svelte/icons/clipboard-list';
 	import PlusIcon from '@lucide/svelte/icons/plus';
 	import { useConvexClient, useQuery } from 'convex-svelte';
@@ -18,20 +22,17 @@
 	const dateFormatter = new Intl.DateTimeFormat('en-CA', { dateStyle: 'medium' });
 	const formatDate = (timestamp: number) => dateFormatter.format(new Date(timestamp));
 
-	type Filter = 'all' | 'draft' | 'archived';
-	const filterOptions: { key: Filter; label: string }[] = [
-		{ key: 'all', label: 'All' },
-		{ key: 'draft', label: 'Draft' },
-		{ key: 'archived', label: 'Archived' }
-	];
-
-	let filter = $state<Filter>('all');
+	let filter = $state<ProgramTemplateFilter>('all');
 	let isCreating = $state(false);
 	let createError = $state('');
 
 	let templates = $derived(templatesQuery.data ?? []);
-	let draftCount = $derived(templates.filter((t) => t.status === 'draft').length);
-	let archivedCount = $derived(templates.filter((t) => t.status === 'archived').length);
+	let filterCounts = $derived.by(() => ({
+		all: templates.length,
+		draft: templates.filter((t) => t.status === 'draft').length,
+		published: templates.filter((t) => t.status === 'published').length,
+		archived: templates.filter((t) => t.status === 'archived').length
+	}));
 	let filteredTemplates = $derived(
 		filter === 'all' ? templates : templates.filter((t) => t.status === filter)
 	);
@@ -55,7 +56,6 @@
 			isCreating = false;
 		}
 	};
-
 </script>
 
 <div class="flex grow flex-col p-4 md:p-0">
@@ -77,9 +77,8 @@
 
 		{#if templates.length > 0}
 			<nav class="flex gap-1" aria-label="Filter templates">
-				{#each filterOptions as { key, label } (key)}
-					{@const count =
-						key === 'all' ? templates.length : key === 'draft' ? draftCount : archivedCount}
+				{#each PROGRAM_TEMPLATE_FILTER_OPTIONS as { key, label } (key)}
+					{@const count = filterCounts[key]}
 					<button
 						class={[
 							'rounded-full px-3 py-1.5 text-sm font-medium transition-colors',

@@ -10,6 +10,11 @@
 	import * as DropdownMenu from '$lib/shadcn/dropdown-menu';
 	import * as Tooltip from '$lib/shadcn/tooltip';
 	import { cn } from '$lib/shadcn/utils';
+	import {
+		canStartProgramTemplate,
+		getProgramTemplateStartDisabledReason,
+		getProgramTemplateStatusBadgeVariant
+	} from '$lib/training-log/program-template-status';
 	import EllipsisVerticalIcon from '@lucide/svelte/icons/ellipsis-vertical';
 	import EyeIcon from '@lucide/svelte/icons/eye';
 	import PlayIcon from '@lucide/svelte/icons/play';
@@ -48,7 +53,20 @@
 		activeRunId ? resolve('/(app)/tools/training-log/program-run-[id]', { id: activeRunId }) : null
 	);
 
-	const canStart = $derived(workoutCount > 0 && !activeRunId);
+	const canStart = $derived(
+		canStartProgramTemplate({
+			status: template.status,
+			workoutCount,
+			hasActiveRunForTemplate: !!activeRunId
+		})
+	);
+	const startDisabledReason = $derived(
+		getProgramTemplateStartDisabledReason({
+			status: template.status,
+			workoutCount
+		})
+	);
+	const statusBadgeVariant = $derived(getProgramTemplateStatusBadgeVariant(template.status));
 
 	async function handleStart() {
 		if (!canStart || isActivating) {
@@ -126,10 +144,7 @@
 	<a {href} class="block p-4 pr-12">
 		<div class="flex items-center gap-2.5">
 			<h3 class="min-w-0 truncate text-base font-semibold">{template.name}</h3>
-			<Badge
-				variant={template.status === 'archived' ? 'secondary' : 'default'}
-				class="shrink-0 text-[11px] tracking-wider uppercase"
-			>
+			<Badge variant={statusBadgeVariant} class="shrink-0 text-[11px] tracking-wider uppercase">
 				{template.status}
 			</Badge>
 		</div>
@@ -175,7 +190,7 @@
 						<PlayIcon class="size-3.5" />
 						Start
 					</Tooltip.Trigger>
-					<Tooltip.Content>Add workouts first</Tooltip.Content>
+					<Tooltip.Content>{startDisabledReason}</Tooltip.Content>
 				</Tooltip.Root>
 			</Tooltip.Provider>
 		{/if}

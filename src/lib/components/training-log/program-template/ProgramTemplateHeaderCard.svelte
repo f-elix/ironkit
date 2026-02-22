@@ -3,18 +3,23 @@
 	import { resolve } from '$app/paths';
 	import { api } from '$convex/_generated/api';
 	import { getProgramTemplateEditorContext } from '$lib/components/training-log/program-template/program-template-editor.context.svelte.js';
-	import type {
-		ProgramTemplateDraft,
-		ProgramTemplateStatus
-	} from '$lib/components/training-log/program-template/program-template-editor.types';
+	import type { ProgramTemplateDraft } from '$lib/components/training-log/program-template/program-template-editor.types';
 	import Badge from '$lib/shadcn/badge/badge.svelte';
 	import Button from '$lib/shadcn/button/button.svelte';
 	import { buttonVariants } from '$lib/shadcn/button';
+	import * as DropdownMenu from '$lib/shadcn/dropdown-menu';
 	import Input from '$lib/shadcn/input/input.svelte';
 	import * as Popover from '$lib/shadcn/popover';
 	import * as Tooltip from '$lib/shadcn/tooltip';
 	import { Textarea } from '$lib/shadcn/textarea';
 	import { cn } from '$lib/shadcn/utils';
+	import {
+		PROGRAM_TEMPLATE_STATUS_OPTIONS,
+		canStartProgramTemplate,
+		getProgramTemplateStartDisabledReason,
+		getProgramTemplateStatusBadgeVariant,
+		type ProgramTemplateStatus
+	} from '$lib/training-log/program-template-status';
 	import CheckIcon from '@lucide/svelte/icons/check';
 	import EyeIcon from '@lucide/svelte/icons/eye';
 	import LoaderIcon from '@lucide/svelte/icons/loader';
@@ -26,7 +31,9 @@
 
 	const editorState = getProgramTemplateEditorContext();
 	const client = useConvexClient();
-	const templateQuery = useQuery(api.programTemplates.getById, () => ({ id: editorState.templateId }));
+	const templateQuery = useQuery(api.programTemplates.getById, () => ({
+		id: editorState.templateId
+	}));
 	let template = $derived(templateQuery.data ?? null);
 
 	const activeRunQuery = useQuery(api.programRuns.getActiveRun, {});
@@ -42,7 +49,25 @@
 		activeRun?.programTemplateId === editorState.templateId ? activeRun : null
 	);
 	const hasOtherActiveRun = $derived(activeRun !== null && !activeRunForThisTemplate);
-	const canStart = $derived(workoutCount > 0 && !activeRunForThisTemplate);
+	const canStart = $derived.by(() => {
+		if (!template) {
+			return false;
+		}
+		return canStartProgramTemplate({
+			status: template.status,
+			workoutCount,
+			hasActiveRunForTemplate: !!activeRunForThisTemplate
+		});
+	});
+	const startDisabledReason = $derived.by(() => {
+		if (!template) {
+			return 'Program cannot be started';
+		}
+		return getProgramTemplateStartDisabledReason({
+			status: template.status,
+			workoutCount
+		});
+	});
 
 	const viewActiveRunHref = $derived(
 		activeRunForThisTemplate
@@ -88,7 +113,10 @@
 	let nameValue = $derived(draft.name ?? template?.name ?? '');
 	let notesValue = $derived(draft.notes ?? template?.notes ?? '');
 	let totalWeeksValue = $derived(draft.totalWeeks ?? template?.totalWeeks ?? 1);
-	let statusValue = $derived((draft.status ?? template?.status ?? 'draft') as ProgramTemplateStatus);
+	let statusValue = $derived(
+		(draft.status ?? template?.status ?? 'draft') as ProgramTemplateStatus
+	);
+	let statusBadgeVariant = $derived(getProgramTemplateStatusBadgeVariant(statusValue));
 
 	const normalizePositiveInt = (value: number, fallback = 1) => {
 		if (!Number.isFinite(value)) {
@@ -182,11 +210,13 @@
 		}
 	};
 
-	const toggleStatus = () => {
+	const setStatus = (next: ProgramTemplateStatus) => {
 		if (!template) {
 			return;
 		}
-		const next: ProgramTemplateStatus = statusValue === 'draft' ? 'archived' : 'draft';
+		if (statusValue === next) {
+			return;
+		}
 		draft = { ...draft, status: next };
 		if (saveTimer) {
 			clearTimeout(saveTimer);
@@ -232,17 +262,33 @@
 				<span class="text-muted-foreground text-xs">wk</span>
 			</div>
 
-			<button type="button" onclick={toggleStatus} class="shrink-0">
-				<Badge
-					variant={statusValue === 'draft' ? 'outline' : 'secondary'}
-					class="cursor-pointer capitalize select-none"
-				>
-					{statusValue}
-				</Badge>
-			</button>
+			<DropdownMenu.Root>
+				<DropdownMenu.Trigger class="shrink-0">
+					<Badge variant={statusBadgeVariant} class="cursor-pointer capitalize select-none">
+						{statusValue}
+					</Badge>
+				</DropdownMenu.Trigger>
+				<DropdownMenu.Content align="end">
+					{#each PROGRAM_TEMPLATE_STATUS_OPTIONS as option (option.value)}
+						<DropdownMenu.Item onSelect={() => setStatus(option.value)}>
+							{#if statusValue === option.value}
+								<CheckIcon class="size-4" />
+							{:else}
+								<span class="size-4"></span>
+							{/if}
+							{option.label}
+						</DropdownMenu.Item>
+					{/each}
+				</DropdownMenu.Content>
+			</DropdownMenu.Root>
 
 			{#if viewActiveRunHref}
-				<Button href={viewActiveRunHref} variant="secondary" size="sm" class="h-7 gap-1 px-2 text-xs">
+				<Button
+					href={viewActiveRunHref}
+					variant="secondary"
+					size="sm"
+					class="h-7 gap-1 px-2 text-xs"
+				>
 					<EyeIcon class="size-3.5" />
 					View Run
 				</Button>
@@ -270,7 +316,7 @@
 							<PlayIcon class="size-3.5" />
 							Start
 						</Tooltip.Trigger>
-						<Tooltip.Content>Add workouts first</Tooltip.Content>
+						<Tooltip.Content>{startDisabledReason}</Tooltip.Content>
 					</Tooltip.Root>
 				</Tooltip.Provider>
 			{/if}

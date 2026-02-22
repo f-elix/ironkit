@@ -13,7 +13,11 @@ export const exerciseLoadType = v.union(
 
 export const exerciseExecutionType = v.union(v.literal('reps'), v.literal('time'));
 
-export const programTemplateStatus = v.union(v.literal('draft'), v.literal('archived'));
+export const programTemplateStatus = v.union(
+	v.literal('draft'),
+	v.literal('published'),
+	v.literal('archived')
+);
 
 export const programRunStatus = v.union(
 	v.literal('active'),
