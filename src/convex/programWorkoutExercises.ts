@@ -183,7 +183,7 @@ export const create = mutation({
 			userId,
 			rowId,
 			exercise.executionType,
-			args.initialSetCount ?? 3
+			args.initialSetCount ?? 1
 		);
 		await ctx.db.patch(template._id, { updatedAt: Date.now() });
 		return rowId;
