@@ -42,11 +42,13 @@
 	]}
 	{@attach ref}
 >
-	<button
-		type="button"
-		class="flex w-full flex-col gap-3 p-2 text-left sm:p-3"
-		onclick={() => onSelect(workoutId)}
-	>
+	<div class="flex w-full flex-col gap-3 p-2 text-left sm:p-3" onclick={() => onSelect(workoutId)}>
+		<button
+			type="button"
+			onclick={() => onSelect(workoutId)}
+			aria-label="Edit workout"
+			class="sr-only"
+		></button>
 		<div class="flex items-center gap-2">
 			<div
 				class="text-muted-foreground/30 flex shrink-0 cursor-grab items-start active:cursor-grabbing"
@@ -66,5 +68,5 @@
 			</span>
 		</div>
 		<ProgramTemplateWorkoutCardSummary {groups} />
-	</button>
+	</div>
 </li>

@@ -22,7 +22,9 @@
 
 	const editorState = getProgramTemplateEditorContext();
 	const client = useConvexClient();
-	const templateQuery = useQuery(api.programTemplates.getById, () => ({ id: editorState.templateId }));
+	const templateQuery = useQuery(api.programTemplates.getById, () => ({
+		id: editorState.templateId
+	}));
 
 	const workoutsQuery = useQuery(api.programWorkouts.listByTemplateWithSummaries, () => ({
 		programTemplateId: editorState.templateId
