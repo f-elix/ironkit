@@ -73,14 +73,14 @@
 			event as unknown as Parameters<typeof move>[1]
 		);
 
+		dragSnapshot = null;
+
 		await client.mutation(api.performanceGroups.updateOrder, {
 			updates: reorderedGroups.map((item, index) => ({
 				id: item._id,
 				workoutOrder: index
 			}))
 		});
-
-		dragSnapshot = null;
 	};
 </script>
 
