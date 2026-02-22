@@ -34,9 +34,7 @@
 	const group = $derived(query.data);
 	const performances = $derived(group?.performances ?? []);
 
-	let label = $derived(
-		getPerformanceGroupLabel(performances.length, group?.label)
-	);
+	let label = $derived(getPerformanceGroupLabel(performances.length, group?.label));
 
 	let completedSets = $derived(
 		performances.flatMap((p) => {
@@ -99,7 +97,7 @@
 					{:else}
 						<div class="flex flex-col gap-0.5">
 							{#each performances as perf, i}
-								<div class="flex items-center gap-1.5 text-sm font-medium">
+								<div class="flex items-baseline gap-1.5 text-sm font-medium">
 									<span
 										class="bg-muted text-muted-foreground flex size-4 shrink-0 items-center justify-center rounded text-xs"
 									>
