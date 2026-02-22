@@ -10,7 +10,6 @@
 	import { goto } from '$app/navigation';
 	import Label from '$lib/shadcn/label/label.svelte';
 	import UnitSelector from '$lib/components/ui/UnitSelector.svelte';
-	import { setKeyboardOverlaysContent } from '$lib/virtualKeyboard';
 	import { resolve } from '$app/paths';
 	import { api } from '$convex/_generated/api';
 	import type { Doc } from '$convex/_generated/dataModel';
@@ -69,20 +68,9 @@
 		});
 		goto(resolve('/(app)/tools/training-log/workout-[id]', { id: newWorkoutId }));
 	};
-
-	let cleanupKeyboard: (() => void) | undefined;
 </script>
 
-<Dialog.Root
-	bind:open
-	onOpenChange={(isOpen) => {
-		if (isOpen) {
-			cleanupKeyboard = setKeyboardOverlaysContent(true);
-		} else {
-			cleanupKeyboard?.();
-		}
-	}}
->
+<Dialog.Root bind:open>
 	<Dialog.Trigger>
 		{#snippet child({ props })}
 			{@render trigger({ props })}
