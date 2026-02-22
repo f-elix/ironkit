@@ -40,7 +40,7 @@
 				<Dialog.Trigger
 					class={buttonVariants({
 						variant: 'ghost',
-						class: 'h-auto min-w-0 flex-1 justify-start p-0 text-left hover:bg-transparent'
+						class: 'h-auto min-w-0 flex-1 justify-start p-1 text-left'
 					})}
 				>
 					<span class="text-lg font-semibold whitespace-normal">

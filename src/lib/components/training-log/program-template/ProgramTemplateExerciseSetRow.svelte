@@ -11,24 +11,24 @@
 		onRemove,
 		canRemove
 	}: {
-		setTarget: Doc<'performanceSets'>;
+		setTarget: Doc<'programWorkoutExerciseTargets'>;
 		executionType: 'reps' | 'time';
 		order: number;
 		onUpdate: (
-			id: Id<'performanceSets'>,
+			id: Id<'programWorkoutExerciseTargets'>,
 			executionType: 'reps' | 'time',
 			targetSetRange: string,
 			targetValue: string
 		) => Promise<void> | void;
-		onRemove: (id: Id<'performanceSets'>) => Promise<void> | void;
+		onRemove: (id: Id<'programWorkoutExerciseTargets'>) => Promise<void> | void;
 		canRemove: boolean;
 	} = $props();
 
-	let targetSetRangeValue = $derived(setTarget.programTargetSetRange ?? '1');
+	let targetSetRangeValue = $derived(setTarget.targetSetRange ?? '1');
 	let targetRangeValue = $derived(
 		executionType === 'reps'
-			? (setTarget.programTargetRepsRange ?? '8')
-			: (setTarget.programTargetDuration ?? '60 sec')
+			? (setTarget.targetRepsRange ?? '8')
+			: (setTarget.targetDuration ?? '60 sec')
 	);
 	let targetRangePlaceholder = $derived(
 		executionType === 'reps' ? 'e.g. 8 or 10-15' : 'e.g. 45 sec or 30-45 sec'

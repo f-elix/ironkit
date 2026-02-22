@@ -149,6 +149,17 @@ export const remove = mutation({
 		for (const exercise of exercises.filter(
 			(row) => row.programWorkoutId === group.programWorkoutId
 		)) {
+			const targets = await ctx.db
+				.query('programWorkoutExerciseTargets')
+				.withIndex('by_programWorkoutExerciseId', (q) =>
+					q.eq('programWorkoutExerciseId', exercise._id)
+				)
+				.collect();
+			for (const target of targets) {
+				await ctx.db.delete(target._id);
+			}
+
+			// Legacy cleanup: old templates may still have target rows in performanceSets.
 			const sets = await ctx.db
 				.query('performanceSets')
 				.withIndex('by_performanceId_order', (q) => q.eq('performanceId', exercise._id))

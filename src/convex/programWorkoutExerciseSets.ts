@@ -35,7 +35,7 @@ const assertOwnedProgramWorkoutExercise = async (
 
 const assertOwnedProgramWorkoutExerciseSet = async (
 	ctx: ProgramCtx,
-	id: Id<'performanceSets'>,
+	id: Id<'programWorkoutExerciseTargets'>,
 	userId: string
 ) => {
 	const set = await ctx.db.get(id);
@@ -44,7 +44,7 @@ const assertOwnedProgramWorkoutExerciseSet = async (
 	}
 	const { exerciseTarget, exercise, workout, template } = await assertOwnedProgramWorkoutExercise(
 		ctx,
-		set.performanceId,
+		set.programWorkoutExerciseId,
 		userId
 	);
 	return { set, exerciseTarget, exercise, workout, template };
@@ -61,12 +61,12 @@ export const list = query({
 		}
 		await assertOwnedProgramWorkoutExercise(ctx, args.programWorkoutExerciseId, userId);
 		const rows = await ctx.db
-			.query('performanceSets')
-			.withIndex('by_performanceId_order', (q) =>
-				q.eq('performanceId', args.programWorkoutExerciseId)
+			.query('programWorkoutExerciseTargets')
+			.withIndex('by_programWorkoutExerciseId_order', (q) =>
+				q.eq('programWorkoutExerciseId', args.programWorkoutExerciseId)
 			)
 			.collect();
-		return rows.toSorted((a, b) => a.performanceOrder - b.performanceOrder);
+		return rows.toSorted((a, b) => a.targetOrder - b.targetOrder);
 	}
 });
 
@@ -97,18 +97,20 @@ export const create = mutation({
 			args.targetDuration ?? defaults.targetDuration
 		);
 		const currentRows = await ctx.db
-			.query('performanceSets')
-			.withIndex('by_performanceId_order', (q) => q.eq('performanceId', exerciseTarget._id))
+			.query('programWorkoutExerciseTargets')
+			.withIndex('by_programWorkoutExerciseId_order', (q) =>
+				q.eq('programWorkoutExerciseId', exerciseTarget._id)
+			)
 			.collect();
 		const lastRow = currentRows.length ? currentRows[currentRows.length - 1] : undefined;
 
-		const rowId = await ctx.db.insert('performanceSets', {
+		const rowId = await ctx.db.insert('programWorkoutExerciseTargets', {
 			userId,
-			performanceId: exerciseTarget._id,
-			performanceOrder: args.setOrder ?? (lastRow?.performanceOrder ?? -1) + 1,
-			programTargetSetRange: normalizedTargets.targetSetRange,
-			programTargetRepsRange: normalizedTargets.targetRepsRange,
-			programTargetDuration: normalizedTargets.targetDuration,
+			programWorkoutExerciseId: exerciseTarget._id,
+			targetOrder: args.setOrder ?? (lastRow?.targetOrder ?? -1) + 1,
+			targetSetRange: normalizedTargets.targetSetRange,
+			targetRepsRange: normalizedTargets.targetRepsRange,
+			targetDuration: normalizedTargets.targetDuration,
 			updatedAt: Date.now()
 		});
 
@@ -119,7 +121,7 @@ export const create = mutation({
 
 export const update = mutation({
 	args: {
-		id: v.id('performanceSets'),
+		id: v.id('programWorkoutExerciseTargets'),
 		setOrder: v.optional(v.number()),
 		targetSetRange: v.optional(v.string()),
 		targetRepsRange: v.optional(v.string()),
@@ -137,15 +139,15 @@ export const update = mutation({
 		);
 		const normalizedTargets = normalizeSetRangeTargetsForExecution(
 			exercise.executionType,
-			args.targetSetRange ?? set.programTargetSetRange,
-			args.targetRepsRange ?? set.programTargetRepsRange,
-			args.targetDuration ?? set.programTargetDuration
+			args.targetSetRange ?? set.targetSetRange,
+			args.targetRepsRange ?? set.targetRepsRange,
+			args.targetDuration ?? set.targetDuration
 		);
 		await ctx.db.patch(set._id, {
-			...(args.setOrder !== undefined && { performanceOrder: args.setOrder }),
-			programTargetSetRange: normalizedTargets.targetSetRange,
-			programTargetRepsRange: normalizedTargets.targetRepsRange,
-			programTargetDuration: normalizedTargets.targetDuration,
+			...(args.setOrder !== undefined && { targetOrder: args.setOrder }),
+			targetSetRange: normalizedTargets.targetSetRange,
+			targetRepsRange: normalizedTargets.targetRepsRange,
+			targetDuration: normalizedTargets.targetDuration,
 			updatedAt: Date.now()
 		});
 		await ctx.db.patch(template._id, { updatedAt: Date.now() });
@@ -157,7 +159,7 @@ export const updateOrder = mutation({
 	args: {
 		updates: v.array(
 			v.object({
-				id: v.id('performanceSets'),
+				id: v.id('programWorkoutExerciseTargets'),
 				setOrder: v.number()
 			})
 		)
@@ -171,7 +173,7 @@ export const updateOrder = mutation({
 		for (const update of args.updates) {
 			const { set, template } = await assertOwnedProgramWorkoutExerciseSet(ctx, update.id, userId);
 			await ctx.db.patch(set._id, {
-				performanceOrder: update.setOrder,
+				targetOrder: update.setOrder,
 				updatedAt: Date.now()
 			});
 			await ctx.db.patch(template._id, { updatedAt: Date.now() });
@@ -208,8 +210,10 @@ export const replaceAll = mutation({
 		const defaults = defaultSetTargetForExecution(exercise.executionType);
 
 		const existingRows = await ctx.db
-			.query('performanceSets')
-			.withIndex('by_performanceId_order', (q) => q.eq('performanceId', exerciseTarget._id))
+			.query('programWorkoutExerciseTargets')
+			.withIndex('by_programWorkoutExerciseId_order', (q) =>
+				q.eq('programWorkoutExerciseId', exerciseTarget._id)
+			)
 			.collect();
 		for (const row of existingRows) {
 			await ctx.db.delete(row._id);
@@ -222,13 +226,13 @@ export const replaceAll = mutation({
 				set.targetRepsRange ?? defaults.targetRepsRange,
 				set.targetDuration ?? defaults.targetDuration
 			);
-			await ctx.db.insert('performanceSets', {
+			await ctx.db.insert('programWorkoutExerciseTargets', {
 				userId,
-				performanceId: exerciseTarget._id,
-				performanceOrder: index,
-				programTargetSetRange: normalizedTargets.targetSetRange,
-				programTargetRepsRange: normalizedTargets.targetRepsRange,
-				programTargetDuration: normalizedTargets.targetDuration,
+				programWorkoutExerciseId: exerciseTarget._id,
+				targetOrder: index,
+				targetSetRange: normalizedTargets.targetSetRange,
+				targetRepsRange: normalizedTargets.targetRepsRange,
+				targetDuration: normalizedTargets.targetDuration,
 				updatedAt: Date.now()
 			});
 		}
@@ -240,7 +244,7 @@ export const replaceAll = mutation({
 
 export const remove = mutation({
 	args: {
-		id: v.id('performanceSets')
+		id: v.id('programWorkoutExerciseTargets')
 	},
 	handler: async (ctx, args) => {
 		const userId = await getAuthUserId(ctx);
@@ -249,8 +253,10 @@ export const remove = mutation({
 		}
 		const { set, template } = await assertOwnedProgramWorkoutExerciseSet(ctx, args.id, userId);
 		const siblingRows = await ctx.db
-			.query('performanceSets')
-			.withIndex('by_performanceId_order', (q) => q.eq('performanceId', set.performanceId))
+			.query('programWorkoutExerciseTargets')
+			.withIndex('by_programWorkoutExerciseId_order', (q) =>
+				q.eq('programWorkoutExerciseId', set.programWorkoutExerciseId)
+			)
 			.collect();
 		if (siblingRows.length <= 1) {
 			throw new Error('At least one set target is required');

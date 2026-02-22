@@ -35,7 +35,7 @@
 		) => Promise<void> | void;
 		onRemoveExercise: (exerciseTargetId: Id<'performances'>) => Promise<void> | void;
 		onUpdateSetTarget: (
-			setId: Id<'performanceSets'>,
+			setId: Id<'programWorkoutExerciseTargets'>,
 			executionType: 'reps' | 'time',
 			targetSetRange: string,
 			targetValue: string
