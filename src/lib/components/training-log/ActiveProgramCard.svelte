@@ -6,6 +6,7 @@
 	import { Button, buttonVariants } from '$lib/shadcn/button';
 	import * as DropdownMenu from '$lib/shadcn/dropdown-menu';
 	import { cn } from '$lib/shadcn/utils';
+	import { NotebookPenIcon } from '@lucide/svelte';
 	import EllipsisVerticalIcon from '@lucide/svelte/icons/ellipsis-vertical';
 	import EyeIcon from '@lucide/svelte/icons/eye';
 	import FastForwardIcon from '@lucide/svelte/icons/fast-forward';
@@ -91,6 +92,10 @@
 	};
 
 	const handleViewProgram = () => {
+		goto(resolve('/(app)/tools/training-log/program-template-[id]', { id: template._id }));
+	};
+
+	const handleViewRun = () => {
 		goto(resolve('/(app)/tools/training-log/program-run-[id]', { id: run._id }));
 	};
 
@@ -141,8 +146,12 @@
 						Skip session
 					</DropdownMenu.Item>
 				{/if}
-				<DropdownMenu.Item onSelect={handleViewProgram}>
+				<DropdownMenu.Item onSelect={handleViewRun}>
 					<EyeIcon />
+					View current run
+				</DropdownMenu.Item>
+				<DropdownMenu.Item onSelect={handleViewProgram}>
+					<NotebookPenIcon />
 					View program
 				</DropdownMenu.Item>
 				<DropdownMenu.Item onSelect={handlePauseProgram} disabled={isPausing}>
