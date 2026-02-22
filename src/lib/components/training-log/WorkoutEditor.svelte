@@ -52,10 +52,12 @@
 	};
 
 	const onDragStart: DragDropEvents['dragstart'] = () => {
-		dragSnapshot = performanceGroups.map((pg) => ({
-			...pg,
-			id: pg._id
-		}));
+		dragSnapshot = $state.snapshot(
+			performanceGroups.map((pg) => ({
+				...pg,
+				id: pg._id
+			}))
+		);
 	};
 
 	const onDragEnd: DragDropEvents['dragend'] = async (event) => {
