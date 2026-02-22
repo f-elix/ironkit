@@ -120,8 +120,7 @@ export default defineSchema({
 	})
 		.index('by_userId', ['userId'])
 		.index('by_performanceId', ['performanceId'])
-		.index('by_performanceId_order', ['performanceId', 'performanceOrder'])
-		.index('by_workoutId', ['workoutId']),
+		.index('by_performanceId_order', ['performanceId', 'performanceOrder']),
 
 	programTemplates: defineTable({
 		...baseSchema(),

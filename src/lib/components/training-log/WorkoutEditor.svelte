@@ -3,7 +3,7 @@
 	import { api } from '$convex/_generated/api';
 	import ExerciseSelection from '$lib/components/training-log/ExerciseSelection.svelte';
 	import * as Dialog from '$lib/shadcn/dialog';
-	import Button, { buttonVariants } from '$lib/shadcn/button/button.svelte';
+	import { buttonVariants } from '$lib/shadcn/button/button.svelte';
 	import PlusIcon from '@lucide/svelte/icons/plus';
 	import { addExerciseToWorkout } from '$lib/training-log/addExerciseToWorkout';
 	import { DragDropProvider, type DragDropEvents } from '@dnd-kit-svelte/svelte';
