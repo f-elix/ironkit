@@ -26,8 +26,8 @@
 	const client = useConvexClient();
 </script>
 
-<div class="flex items-center gap-2">
-	<div class="flex min-w-0 flex-1 items-center gap-2">
+<div class="flex flex-col gap-2">
+	<div class="flex items-baseline gap-2">
 		<ExerciseSelection
 			onExerciseAdded={async (exerciseId) => {
 				await client.mutation(api.performances.update, {
@@ -65,6 +65,16 @@
 				{/snippet}
 			</ExerciseInfoDialog>
 		{/if}
+		{#if showDeleteButton}
+			<Button
+				variant="ghost"
+				size="icon"
+				class="text-muted-foreground hover:text-destructive size-8"
+				onclick={() => onDelete(performance._id)}
+			>
+				<Trash2 class="size-4" />
+			</Button>
+		{/if}
 	</div>
 	<div class="flex items-center gap-2">
 		{#if performance.exercise}
@@ -79,15 +89,5 @@
 				});
 			}}
 		/>
-		{#if showDeleteButton}
-			<Button
-				variant="ghost"
-				size="icon"
-				class="text-muted-foreground hover:text-destructive size-8"
-				onclick={() => onDelete(performance._id)}
-			>
-				<Trash2 class="size-4" />
-			</Button>
-		{/if}
 	</div>
 </div>
