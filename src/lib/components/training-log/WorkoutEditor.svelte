@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { useConvexClient, useQuery } from 'convex-svelte';
+	import { RestrictToVerticalAxis } from '@dnd-kit/abstract/modifiers';
 	import { api } from '$convex/_generated/api';
 	import ExerciseSelection from '$lib/components/training-log/ExerciseSelection.svelte';
 	import * as Dialog from '$lib/shadcn/dialog';
 	import { buttonVariants } from '$lib/shadcn/button/button.svelte';
 	import PlusIcon from '@lucide/svelte/icons/plus';
 	import { addExerciseToWorkout } from '$lib/training-log/addExerciseToWorkout';
-	import { DragDropProvider, type DragDropEvents } from '@dnd-kit-svelte/svelte';
+	import { DragDropProvider } from '@dnd-kit/svelte';
 	import { move } from '@dnd-kit/helpers';
 	import SortableExerciseCard from '$lib/components/training-log/SortableExerciseCard.svelte';
 	import type { Id } from '$convex/_generated/dataModel';
@@ -14,6 +15,7 @@
 	import WorkoutStats from '$lib/components/training-log/WorkoutStats.svelte';
 	import type { Workout } from '$lib/db/types';
 	import { toast } from 'svelte-sonner';
+	import type { ComponentProps } from 'svelte';
 
 	let { workoutId, workout }: { workoutId: Id<'workouts'>; workout: Workout } = $props();
 
@@ -22,7 +24,6 @@
 
 	let performanceGroups = $derived(groupsQuery.data ?? []);
 	let lastOrder = $derived(performanceGroups?.at(-1)?.workoutOrder ?? 0);
-	let dragSnapshot = $state<typeof performanceGroups | null>(null);
 
 	// Using a simple array to track expanded state - reactive via $state
 	let expandedGroupIds = $state<string[]>([]);
@@ -52,30 +53,15 @@
 		expandedGroupIds = [...expandedGroupIds, result.performanceGroupId];
 	};
 
-	const onDragStart: DragDropEvents['dragstart'] = () => {
-		dragSnapshot = $state.snapshot(
-			performanceGroups.map((pg) => ({
-				...pg,
-				id: pg._id
-			}))
-		);
-	};
-
-	const onDragEnd: DragDropEvents['dragend'] = async (event) => {
-		if (!dragSnapshot) {
-			return;
-		}
-
+	const onDragEnd: ComponentProps<typeof DragDropProvider>['onDragEnd'] = async (event) => {
+		const { resume, abort } = event.suspend();
 		const reorderedGroups = move(
-			dragSnapshot.map((item) => ({
+			$state.snapshot(performanceGroups).map((item) => ({
 				...item,
 				id: item._id
 			})),
-			event as unknown as Parameters<typeof move>[1]
+			event
 		);
-
-		dragSnapshot = null;
-
 		try {
 			await client.mutation(api.performanceGroups.updateOrder, {
 				updates: reorderedGroups.map((item, index) => ({
@@ -83,7 +69,9 @@
 					workoutOrder: index
 				}))
 			});
+			resume();
 		} catch (error) {
+			abort();
 			toast.error(error instanceof Error ? error.message : 'Could not reorder exercises.');
 		}
 	};
@@ -108,7 +96,7 @@
 
 	<div class="px-4 pb-24 md:pb-4">
 		{#if performanceGroups.length}
-			<DragDropProvider {onDragStart} {onDragEnd}>
+			<DragDropProvider {onDragEnd} modifiers={[RestrictToVerticalAxis]}>
 				<ul class="flex flex-col gap-3">
 					{#each performanceGroups as performanceGroup, index (performanceGroup._id)}
 						{@const isExpanded = expandedGroupIds.includes(performanceGroup._id)}

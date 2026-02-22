@@ -15,10 +15,12 @@
 		normalizeTrackKey
 	} from '$lib/components/training-log/program-template/program-template-track.utils';
 	import SortableWorkoutCard from '$lib/components/training-log/program-template/SortableWorkoutCard.svelte';
-	import { DragDropProvider, type DragDropEvents } from '@dnd-kit-svelte/svelte';
+	import { RestrictToHorizontalAxis } from '@dnd-kit/abstract/modifiers';
+	import { DragDropProvider } from '@dnd-kit/svelte';
 	import { move } from '@dnd-kit/helpers';
 	import { useConvexClient, useQuery } from 'convex-svelte';
 	import { toast } from 'svelte-sonner';
+	import type { ComponentProps } from 'svelte';
 
 	const editorState = getProgramTemplateEditorContext();
 	const client = useConvexClient();
@@ -70,7 +72,7 @@
 	let dragSnapshot = $state<WorkoutSummaryWithGroups[] | null>(null);
 
 	const makeDragStart =
-		(weekNumber: number): DragDropEvents['dragstart'] =>
+		(weekNumber: number): ComponentProps<typeof DragDropProvider>['onDragStart'] =>
 		() => {
 			const weekItems = workouts
 				.filter((w) => w.weekNumber === weekNumber)
@@ -80,12 +82,13 @@
 		};
 
 	const makeDragEnd =
-		(weekNumber: number): DragDropEvents['dragend'] =>
+		(weekNumber: number): ComponentProps<typeof DragDropProvider>['onDragEnd'] =>
 		async (event) => {
 			if (!dragSnapshot) {
 				return;
 			}
 
+			const { resume, abort } = event.suspend();
 			const reordered = move(
 				dragSnapshot.map((item) => ({ ...item, id: item._id })),
 				event as unknown as Parameters<typeof move>[1]
@@ -99,7 +102,9 @@
 					weekNumber,
 					updates: reordered.map((w, i) => ({ id: w._id, slotOrder: i }))
 				});
+				resume();
 			} catch (error) {
+				abort();
 				toast.error(error instanceof Error ? error.message : 'Could not reorder workouts.');
 			}
 		};
@@ -177,6 +182,7 @@
 						<DragDropProvider
 							onDragStart={makeDragStart(week.weekNumber)}
 							onDragEnd={makeDragEnd(week.weekNumber)}
+							modifiers={[RestrictToHorizontalAxis]}
 						>
 							<ol class="flex min-w-0 shrink-0 gap-2 sm:gap-3">
 								{#each week.items as workout, index (workout._id)}

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { useSortable } from '@dnd-kit-svelte/svelte/sortable';
+	import { createSortable } from '@dnd-kit/svelte/sortable';
 	import type { Id } from '$convex/_generated/dataModel';
 	import type { WorkoutSummaryGroup } from '$lib/components/training-log/program-template/program-template-editor.types';
 	import ProgramTemplateWorkoutCardSummary from '$lib/components/training-log/program-template/ProgramTemplateWorkoutCardSummary.svelte';
@@ -25,22 +25,24 @@
 		onSelect: (id: Id<'programWorkouts'>) => void;
 	} = $props();
 
-	const { ref, isDragging } = useSortable({
-		id: workoutId,
-		index: () => index
-	});
+	const { attach: attachRef, isDragging } = $derived(
+		createSortable({
+			id: workoutId,
+			index
+		})
+	);
 </script>
 
 <li
 	class={[
 		'w-64 shrink-0 rounded-lg border transition-[backgroud-color,border-color,box-shadow] duration-150 sm:w-72',
-		isDragging.current
+		isDragging
 			? 'border-primary/50 bg-primary/10 ring-primary/20 z-10 ring-1'
 			: isSelected
 				? 'border-primary/50 bg-primary/5'
 				: 'border-border/40 bg-card/25 hover:border-border/70 hover:bg-card/50'
 	]}
-	{@attach ref}
+	{@attach attachRef}
 >
 	<div
 		class="flex size-full flex-col gap-3 p-2 text-left sm:p-3"

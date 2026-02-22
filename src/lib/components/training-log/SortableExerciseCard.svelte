@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { useSortable } from '@dnd-kit-svelte/svelte/sortable';
+	import { createSortable } from '@dnd-kit/svelte/sortable';
 	import { useConvexClient, useQuery } from 'convex-svelte';
 	import { api } from '$convex/_generated/api';
 	import type { Id } from '$convex/_generated/dataModel';
@@ -25,10 +25,16 @@
 	} = $props();
 
 	const client = useConvexClient();
-	const { ref, isDragging } = useSortable({
-		id: performanceGroup._id,
-		index: () => index
-	});
+	const {
+		attach: attachRef,
+		attachHandle: attachHandleRef,
+		isDragging
+	} = $derived(
+		createSortable({
+			id: performanceGroup._id,
+			index
+		})
+	);
 
 	const query = useQuery(api.performanceGroups.getById, { id: performanceGroup._id });
 	const group = $derived(query.data);
@@ -56,12 +62,10 @@
 
 <li
 	class={cn(
-		'group relative overflow-hidden rounded-xl border transition-[transform,background-color,border-color] duration-200',
-		isDragging.current
-			? 'border-primary bg-card z-10 scale-[1.02]'
-			: 'border-border bg-card hover:bg-card/80'
+		'group relative overflow-hidden rounded-xl border transition-[scale,background-color,border-color] duration-200',
+		isDragging ? 'border-primary bg-card scale-[1.02]' : 'border-border bg-card hover:bg-card/80'
 	)}
-	{@attach ref}
+	{@attach attachRef}
 >
 	<!-- Progress bar background -->
 	{#if totalSets > 0}
@@ -76,7 +80,8 @@
 			<div class="flex w-full items-center gap-3 p-4">
 				<!-- Drag handle -->
 				<div
-					class="flex cursor-grab flex-col gap-0.5 opacity-30 transition-opacity group-hover:opacity-100"
+					{@attach attachHandleRef}
+					class="flex cursor-grab flex-col gap-0.5 py-2 opacity-30 transition-opacity group-hover:opacity-100"
 				>
 					<div class="h-0.5 w-4 rounded-full bg-current"></div>
 					<div class="h-0.5 w-4 rounded-full bg-current"></div>
