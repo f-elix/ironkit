@@ -42,7 +42,10 @@
 	]}
 	{@attach ref}
 >
-	<div class="flex w-full flex-col gap-3 p-2 text-left sm:p-3" onclick={() => onSelect(workoutId)}>
+	<div
+		class="flex size-full flex-col gap-3 p-2 text-left sm:p-3"
+		onclick={() => onSelect(workoutId)}
+	>
 		<button
 			type="button"
 			onclick={() => onSelect(workoutId)}
