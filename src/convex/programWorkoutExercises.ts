@@ -55,10 +55,12 @@ const assertOwnedProgramWorkoutExercise = async (
 
 const listSetTargets = async (ctx: ProgramCtx, performanceId: Id<'performances'>) => {
 	const rows = await ctx.db
-		.query('performanceSets')
-		.withIndex('by_performanceId_order', (q) => q.eq('performanceId', performanceId))
+		.query('programWorkoutExerciseTargets')
+		.withIndex('by_programWorkoutExerciseId_order', (q) =>
+			q.eq('programWorkoutExerciseId', performanceId)
+		)
 		.collect();
-	return rows.toSorted((a, b) => a.performanceOrder - b.performanceOrder);
+	return rows.toSorted((a, b) => a.targetOrder - b.targetOrder);
 };
 
 const createDefaultSetTargets = async (
@@ -72,13 +74,13 @@ const createDefaultSetTargets = async (
 	const defaults = defaultSetTargetForExecution(executionType);
 
 	for (let i = 0; i < totalSets; i += 1) {
-		await ctx.db.insert('performanceSets', {
+		await ctx.db.insert('programWorkoutExerciseTargets', {
 			userId,
-			performanceId,
-			performanceOrder: i,
-			programTargetSetRange: defaults.targetSetRange,
-			programTargetRepsRange: defaults.targetRepsRange,
-			programTargetDuration: defaults.targetDuration,
+			programWorkoutExerciseId: performanceId,
+			targetOrder: i,
+			targetSetRange: defaults.targetSetRange,
+			targetRepsRange: defaults.targetRepsRange,
+			targetDuration: defaults.targetDuration,
 			updatedAt: Date.now()
 		});
 	}
@@ -94,9 +96,9 @@ const resetSetTargetsForExecution = async (
 
 	for (const set of existingSets) {
 		await ctx.db.patch(set._id, {
-			programTargetSetRange: defaults.targetSetRange,
-			programTargetRepsRange: defaults.targetRepsRange,
-			programTargetDuration: defaults.targetDuration,
+			targetSetRange: defaults.targetSetRange,
+			targetRepsRange: defaults.targetRepsRange,
+			targetDuration: defaults.targetDuration,
 			updatedAt: Date.now()
 		});
 	}

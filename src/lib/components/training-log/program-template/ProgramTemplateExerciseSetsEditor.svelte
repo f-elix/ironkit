@@ -15,19 +15,19 @@
 	}: {
 		exerciseTargetId: Id<'performances'>;
 		executionType: 'reps' | 'time';
-		exactSets: Doc<'performanceSets'>[];
+		exactSets: Doc<'programWorkoutExerciseTargets'>[];
 		onUpdate?: (
-			id: Id<'performanceSets'>,
+			id: Id<'programWorkoutExerciseTargets'>,
 			executionType: 'reps' | 'time',
 			targetSetRange: string,
 			targetValue: string
 		) => Promise<void> | void;
-		onRemove?: (id: Id<'performanceSets'>) => Promise<void> | void;
+		onRemove?: (id: Id<'programWorkoutExerciseTargets'>) => Promise<void> | void;
 	} = $props();
 
 	const client = useConvexClient();
 	let sortedSets = $derived(
-		(exactSets ?? []).slice().toSorted((a, b) => a.performanceOrder - b.performanceOrder)
+		(exactSets ?? []).slice().toSorted((a, b) => a.targetOrder - b.targetOrder)
 	);
 	let targetExamples = $derived(
 		executionType === 'reps'
@@ -39,7 +39,7 @@
 		const last = sortedSets.at(-1);
 		await client.mutation(api.programWorkoutExerciseSets.create, {
 			programWorkoutExerciseId: exerciseTargetId,
-			setOrder: (last?.performanceOrder ?? -1) + 1,
+			setOrder: (last?.targetOrder ?? -1) + 1,
 			targetSetRange: '1',
 			targetRepsRange: executionType === 'reps' ? '8' : undefined,
 			targetDuration: executionType === 'time' ? '60 sec' : undefined
@@ -47,7 +47,7 @@
 	};
 
 	const updateSetValue = async (
-		id: Id<'performanceSets'>,
+		id: Id<'programWorkoutExerciseTargets'>,
 		nextExecutionType: 'reps' | 'time',
 		targetSetRange: string,
 		targetValue: string
@@ -64,7 +64,7 @@
 		});
 	};
 
-	const removeSet = async (id: Id<'performanceSets'>) => {
+	const removeSet = async (id: Id<'programWorkoutExerciseTargets'>) => {
 		if (onRemove) {
 			await onRemove(id);
 			return;

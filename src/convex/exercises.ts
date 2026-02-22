@@ -168,6 +168,23 @@ export const remove = mutation({
 		for (const set of sets) {
 			await ctx.db.delete(set._id);
 		}
+
+		const programTargets = (
+			await Promise.all(
+				performances.map(async (performance) => {
+					return ctx.db
+						.query('programWorkoutExerciseTargets')
+						.withIndex('by_programWorkoutExerciseId', (q) =>
+							q.eq('programWorkoutExerciseId', performance._id)
+						)
+						.collect();
+				})
+			)
+		).flat();
+		for (const target of programTargets) {
+			await ctx.db.delete(target._id);
+		}
+
 		for (const performance of performances) {
 			await ctx.db.delete(performance._id);
 		}

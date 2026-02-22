@@ -66,21 +66,19 @@ const cloneProgramWorkoutStructure = async (
 			});
 
 			const setTargets = await ctx.db
-				.query('performanceSets')
-				.withIndex('by_performanceId_order', (q) => q.eq('performanceId', exercise._id))
+				.query('programWorkoutExerciseTargets')
+				.withIndex('by_programWorkoutExerciseId_order', (q) =>
+					q.eq('programWorkoutExerciseId', exercise._id)
+				)
 				.collect();
-			for (const setTarget of setTargets.toSorted((a, b) => a.performanceOrder - b.performanceOrder)) {
-				await ctx.db.insert('performanceSets', {
+			for (const setTarget of setTargets.toSorted((a, b) => a.targetOrder - b.targetOrder)) {
+				await ctx.db.insert('programWorkoutExerciseTargets', {
 					userId,
-					performanceId: newExerciseId,
-					weight: setTarget.weight,
-					reps: setTarget.reps,
-					durationSeconds: setTarget.durationSeconds,
-					programTargetSetRange: setTarget.programTargetSetRange,
-					programTargetRepsRange: setTarget.programTargetRepsRange,
-					programTargetDuration: setTarget.programTargetDuration,
-					note: setTarget.note,
-					performanceOrder: setTarget.performanceOrder,
+					programWorkoutExerciseId: newExerciseId,
+					targetSetRange: setTarget.targetSetRange,
+					targetRepsRange: setTarget.targetRepsRange,
+					targetDuration: setTarget.targetDuration,
+					targetOrder: setTarget.targetOrder,
 					updatedAt: Date.now()
 				});
 			}
@@ -103,6 +101,17 @@ const removeProgramWorkoutStructure = async (
 			.withIndex('by_performanceGroupId', (q) => q.eq('performanceGroupId', group._id))
 			.collect();
 		for (const exercise of exercises.filter((item) => item.programWorkoutId === programWorkoutId)) {
+			const targetRows = await ctx.db
+				.query('programWorkoutExerciseTargets')
+				.withIndex('by_programWorkoutExerciseId', (q) =>
+					q.eq('programWorkoutExerciseId', exercise._id)
+				)
+				.collect();
+			for (const targetRow of targetRows) {
+				await ctx.db.delete(targetRow._id);
+			}
+
+			// Legacy cleanup: old templates may still have target rows in performanceSets.
 			const setTargets = await ctx.db
 				.query('performanceSets')
 				.withIndex('by_performanceId_order', (q) => q.eq('performanceId', exercise._id))
@@ -120,6 +129,17 @@ const removeProgramWorkoutStructure = async (
 		.withIndex('by_programWorkoutId', (q) => q.eq('programWorkoutId', programWorkoutId))
 		.collect();
 	for (const exercise of leftoverExercises) {
+		const targetRows = await ctx.db
+			.query('programWorkoutExerciseTargets')
+			.withIndex('by_programWorkoutExerciseId', (q) =>
+				q.eq('programWorkoutExerciseId', exercise._id)
+			)
+			.collect();
+		for (const targetRow of targetRows) {
+			await ctx.db.delete(targetRow._id);
+		}
+
+		// Legacy cleanup: old templates may still have target rows in performanceSets.
 		const setTargets = await ctx.db
 			.query('performanceSets')
 			.withIndex('by_performanceId_order', (q) => q.eq('performanceId', exercise._id))

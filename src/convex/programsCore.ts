@@ -176,13 +176,15 @@ export const getProgramWorkoutWithDetails = async (
 								throw new Error('Exercise parent mismatch');
 							}
 							const sets = await ctx.db
-								.query('performanceSets')
-								.withIndex('by_performanceId_order', (q) => q.eq('performanceId', item._id))
+								.query('programWorkoutExerciseTargets')
+								.withIndex('by_programWorkoutExerciseId_order', (q) =>
+									q.eq('programWorkoutExerciseId', item._id)
+								)
 								.collect();
 							return {
 								...item,
 								exercise: await ctx.db.get(item.exerciseId),
-								exactSets: sets.toSorted((a, b) => a.performanceOrder - b.performanceOrder)
+								exactSets: sets.toSorted((a, b) => a.targetOrder - b.targetOrder)
 							};
 						})
 				);

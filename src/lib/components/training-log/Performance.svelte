@@ -32,7 +32,7 @@
 	let exerciseName = $derived(exercise?.name);
 	let workout = $derived(performance.workout);
 	let unit = $derived(performance.weightUnit);
-	let sets = $derived(performance.sets ?? []);
+	let programTargets = $derived(performance.programTargets ?? []);
 	let bodyweight = $derived(
 		workout?.bodyweight ? `${workout?.bodyweight} ${workout?.bodyweightUnit}` : ''
 	);
@@ -44,19 +44,16 @@
 	};
 	let programTargetSummary = $derived.by(() => {
 		const executionType = exercise?.executionType ?? 'reps';
-		const plannedValues = sets
+		const plannedValues = programTargets
 			.slice()
-			.toSorted((a, b) => a.performanceOrder - b.performanceOrder)
-			.map((set) => {
+			.map((target) => {
 				const targetRange =
-					executionType === 'reps'
-						? set.programTargetRepsRange?.trim()
-						: set.programTargetDuration?.trim();
+					executionType === 'reps' ? target.targetRepsRange?.trim() : target.targetDuration?.trim();
 				if (!targetRange) {
 					return null;
 				}
 				const formattedTarget = formatTargetValue(targetRange, executionType);
-				const targetSetRange = set.programTargetSetRange?.trim();
+				const targetSetRange = target.targetSetRange?.trim();
 				if (!targetSetRange) {
 					return formattedTarget;
 				}

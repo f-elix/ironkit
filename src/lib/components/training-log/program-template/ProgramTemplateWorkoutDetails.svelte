@@ -263,7 +263,7 @@
 	};
 
 	const updateSetTarget = async (
-		setId: Id<'performanceSets'>,
+		setId: Id<'programWorkoutExerciseTargets'>,
 		executionType: 'reps' | 'time',
 		targetSetRange: string,
 		targetValue: string

@@ -16,65 +16,47 @@ import { defaultSetTargetForExecution } from './programValidation';
 
 type ProgramCtx = MutationCtx | QueryCtx;
 
-const buildCombinedProgramTargetRange = (
+const buildProgramTargetsSnapshot = (
 	executionType: 'reps' | 'time',
-	sourceSets: Array<{
-		programTargetSetRange?: string;
-		programTargetRepsRange?: string;
-		programTargetDuration?: string;
+	sourceTargets: Array<{
+		targetSetRange: string;
+		targetRepsRange?: string;
+		targetDuration?: string;
 	}>,
 	defaultTargets: ReturnType<typeof defaultSetTargetForExecution>
 ) => {
-	const segments = sourceSets
-		.map((sourceSet) => {
-			const targetValue =
-				executionType === 'reps'
-					? sourceSet.programTargetRepsRange?.trim()
-					: sourceSet.programTargetDuration?.trim();
-			if (!targetValue) {
-				return null;
-			}
-			const targetSetRange = sourceSet.programTargetSetRange?.trim() || '1';
-			return {
-				targetSetRange,
-				targetValue,
-				summary: `${targetSetRange} set(s): ${targetValue}`
-			};
-		})
-		.filter(
-			(
-				segment
-			): segment is {
-				targetSetRange: string;
-				targetValue: string;
-				summary: string;
-			} => segment !== null
-		);
-
-	if (!segments.length) {
-		return {
-			programTargetSetRange: defaultTargets.targetSetRange,
-			programTargetRepsRange: defaultTargets.targetRepsRange,
-			programTargetDuration: defaultTargets.targetDuration
-		};
+	const targets: Array<{
+		targetSetRange: string;
+		targetRepsRange?: string;
+		targetDuration?: string;
+	}> = [];
+	for (const sourceTarget of sourceTargets) {
+		const targetValue =
+			executionType === 'reps'
+				? sourceTarget.targetRepsRange?.trim()
+				: sourceTarget.targetDuration?.trim();
+		if (!targetValue) {
+			continue;
+		}
+		const targetSetRange = sourceTarget.targetSetRange.trim() || defaultTargets.targetSetRange;
+		targets.push({
+			targetSetRange,
+			targetRepsRange: executionType === 'reps' ? targetValue : undefined,
+			targetDuration: executionType === 'time' ? targetValue : undefined
+		});
 	}
 
-	if (segments.length === 1) {
-		const only = segments[0];
-		return {
-			programTargetSetRange: only.targetSetRange,
-			programTargetRepsRange: executionType === 'reps' ? only.targetValue : undefined,
-			programTargetDuration: executionType === 'time' ? only.targetValue : undefined
-		};
+	if (targets.length) {
+		return targets;
 	}
 
-	return {
-		programTargetSetRange: undefined,
-		programTargetRepsRange:
-			executionType === 'reps' ? segments.map((segment) => segment.summary).join('; ') : undefined,
-		programTargetDuration:
-			executionType === 'time' ? segments.map((segment) => segment.summary).join('; ') : undefined
-	};
+	return [
+		{
+			targetSetRange: defaultTargets.targetSetRange,
+			targetRepsRange: defaultTargets.targetRepsRange,
+			targetDuration: defaultTargets.targetDuration
+		}
+	];
 };
 
 const getRunSessionWithDetails = async (
@@ -183,6 +165,19 @@ export const startNextAsWorkout = mutation({
 			for (const sourceExercise of sourceGroup.exercises.toSorted(
 				(a, b) => a.groupOrder - b.groupOrder
 			)) {
+				const defaultTargets = defaultSetTargetForExecution(
+					sourceExercise.exercise?.executionType ?? 'reps'
+				);
+				const executionType = sourceExercise.exercise?.executionType ?? 'reps';
+				const orderedSourceTargets = sourceExercise.exactSets
+					.slice()
+					.toSorted((a, b) => a.targetOrder - b.targetOrder);
+				const programTargets = buildProgramTargetsSnapshot(
+					executionType,
+					orderedSourceTargets,
+					defaultTargets
+				);
+
 				const performanceId = await ctx.db.insert('performances', {
 					userId,
 					performanceGroupId,
@@ -191,36 +186,10 @@ export const startNextAsWorkout = mutation({
 					programWorkoutId: undefined,
 					groupOrder: sourceExercise.groupOrder,
 					note: sourceExercise.note,
+					programTargets,
 					weightUnit: sourceExercise.weightUnit,
 					updatedAt: Date.now()
 				});
-
-				const defaultTargets = defaultSetTargetForExecution(
-					sourceExercise.exercise?.executionType ?? 'reps'
-				);
-				const executionType = sourceExercise.exercise?.executionType ?? 'reps';
-				const sourceSets = sourceExercise.exactSets.length
-					? sourceExercise.exactSets
-					: [
-						{
-							weight: undefined,
-							reps: undefined,
-							durationSeconds: undefined,
-							programTargetSetRange: defaultTargets.targetSetRange,
-							programTargetRepsRange: defaultTargets.targetRepsRange,
-							programTargetDuration: defaultTargets.targetDuration,
-							note: undefined,
-							performanceOrder: 0
-						}
-					];
-				const orderedSourceSets = sourceSets
-					.slice()
-					.toSorted((a, b) => a.performanceOrder - b.performanceOrder);
-				const combinedProgramTargets = buildCombinedProgramTargetRange(
-					executionType,
-					orderedSourceSets,
-					defaultTargets
-				);
 
 				await ctx.db.insert('performanceSets', {
 					userId,
@@ -228,9 +197,6 @@ export const startNextAsWorkout = mutation({
 					weight: undefined,
 					reps: undefined,
 					durationSeconds: undefined,
-					programTargetSetRange: combinedProgramTargets.programTargetSetRange,
-					programTargetRepsRange: combinedProgramTargets.programTargetRepsRange,
-					programTargetDuration: combinedProgramTargets.programTargetDuration,
 					note: undefined,
 					performanceOrder: 0,
 					updatedAt: Date.now()

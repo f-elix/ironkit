@@ -17,7 +17,7 @@ export type ExerciseOption = Pick<Doc<'exercises'>, '_id' | 'name'>;
 
 export type ProgramWorkoutExercise = Doc<'performances'> & {
 	exercise: Doc<'exercises'> | null;
-	exactSets: Doc<'performanceSets'>[];
+	exactSets: Doc<'programWorkoutExerciseTargets'>[];
 };
 
 export type ProgramWorkoutGroup = Doc<'performanceGroups'> & {

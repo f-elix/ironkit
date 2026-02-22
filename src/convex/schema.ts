@@ -98,6 +98,15 @@ export default defineSchema({
 		programWorkoutId: v.optional(v.id('programWorkouts')),
 		groupOrder: v.number(),
 		note: v.optional(v.string()),
+		programTargets: v.optional(
+			v.array(
+				v.object({
+					targetSetRange: v.string(),
+					targetRepsRange: v.optional(v.string()),
+					targetDuration: v.optional(v.string())
+				})
+			)
+		),
 		weightUnit: weightUnit
 	})
 		.index('by_userId', ['userId'])
@@ -112,15 +121,24 @@ export default defineSchema({
 		weight: v.optional(v.number()),
 		reps: v.optional(v.number()),
 		durationSeconds: v.optional(v.number()),
-		programTargetSetRange: v.optional(v.string()),
-		programTargetRepsRange: v.optional(v.string()),
-		programTargetDuration: v.optional(v.string()),
 		note: v.optional(v.string()),
 		performanceOrder: v.number()
 	})
 		.index('by_userId', ['userId'])
 		.index('by_performanceId', ['performanceId'])
 		.index('by_performanceId_order', ['performanceId', 'performanceOrder']),
+
+	programWorkoutExerciseTargets: defineTable({
+		...baseSchema(),
+		programWorkoutExerciseId: v.id('performances'),
+		targetSetRange: v.string(),
+		targetRepsRange: v.optional(v.string()),
+		targetDuration: v.optional(v.string()),
+		targetOrder: v.number()
+	})
+		.index('by_userId', ['userId'])
+		.index('by_programWorkoutExerciseId', ['programWorkoutExerciseId'])
+		.index('by_programWorkoutExerciseId_order', ['programWorkoutExerciseId', 'targetOrder']),
 
 	programTemplates: defineTable({
 		...baseSchema(),

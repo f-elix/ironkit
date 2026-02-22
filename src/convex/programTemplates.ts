@@ -169,6 +169,17 @@ export const remove = mutation({
 				for (const exercise of groupExercises.filter(
 					(row) => row.programWorkoutId === programWorkout._id
 				)) {
+					const targetRows = await ctx.db
+						.query('programWorkoutExerciseTargets')
+						.withIndex('by_programWorkoutExerciseId', (q) =>
+							q.eq('programWorkoutExerciseId', exercise._id)
+						)
+						.collect();
+					for (const targetRow of targetRows) {
+						await ctx.db.delete(targetRow._id);
+					}
+
+					// Legacy cleanup: old templates may still have target rows in performanceSets.
 					const setTargets = await ctx.db
 						.query('performanceSets')
 						.withIndex('by_performanceId_order', (q) => q.eq('performanceId', exercise._id))
@@ -186,6 +197,17 @@ export const remove = mutation({
 				.withIndex('by_programWorkoutId', (q) => q.eq('programWorkoutId', programWorkout._id))
 				.collect();
 			for (const exercise of leftoverExercises) {
+				const targetRows = await ctx.db
+					.query('programWorkoutExerciseTargets')
+					.withIndex('by_programWorkoutExerciseId', (q) =>
+						q.eq('programWorkoutExerciseId', exercise._id)
+					)
+					.collect();
+				for (const targetRow of targetRows) {
+					await ctx.db.delete(targetRow._id);
+				}
+
+				// Legacy cleanup: old templates may still have target rows in performanceSets.
 				const setTargets = await ctx.db
 					.query('performanceSets')
 					.withIndex('by_performanceId_order', (q) => q.eq('performanceId', exercise._id))

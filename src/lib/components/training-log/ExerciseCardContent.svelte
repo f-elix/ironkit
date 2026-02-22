@@ -74,7 +74,7 @@
 
 	<!-- Exercise performances -->
 	{#each performances as performance (performance._id)}
-		<div class="flex flex-col gap-4">
+		<div class="flex flex-col gap-2">
 			<ExerciseCardExerciseRow
 				{performance}
 				showDeleteButton={performances.length > 1}

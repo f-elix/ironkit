@@ -1,17 +1,16 @@
 <script lang="ts">
-	import type { PerformanceSet, PerformanceWithRelations } from '$lib/db/types';
+	import type { PerformanceWithRelations } from '$lib/db/types';
 
 	let { performance }: { performance: PerformanceWithRelations } = $props();
 
+	const exercise = $derived(performance.exercise);
+	const programTargets = $derived(performance.programTargets ?? []);
+	const executionType = $derived(exercise?.executionType ?? 'reps');
 	const showSummary = $derived(
-		performance.sets?.some(
-			(set) =>
-				!!set.programTargetSetRange || !!set.programTargetRepsRange || !!set.programTargetDuration
+		programTargets.some((target) =>
+			executionType === 'reps' ? !!target.targetRepsRange?.trim() : !!target.targetDuration?.trim()
 		)
 	);
-	const exercise = $derived(performance.exercise);
-	const sets = $derived(performance.sets ?? []);
-	const executionType = $derived(exercise?.executionType ?? 'reps');
 
 	const formatTargetValue = (value: string, executionType: 'reps' | 'time') => {
 		if (/[a-zA-Z]/.test(value)) {
@@ -20,16 +19,16 @@
 		return executionType === 'reps' ? `${value} reps` : `${value} sec`;
 	};
 
-	const formatSetRange = (set: PerformanceSet) => {
+	const formatSetRange = (
+		target: NonNullable<PerformanceWithRelations['programTargets']>[number]
+	) => {
 		const targetRange =
-			executionType === 'reps'
-				? set.programTargetRepsRange?.trim()
-				: set.programTargetDuration?.trim();
+			executionType === 'reps' ? target.targetRepsRange?.trim() : target.targetDuration?.trim();
 		if (!targetRange) {
 			return null;
 		}
 		const formattedTarget = formatTargetValue(targetRange, executionType);
-		const programTargetSetRange = set.programTargetSetRange?.trim() || '1';
+		const programTargetSetRange = target.targetSetRange?.trim() || '1';
 		const targetSetRange =
 			programTargetSetRange === '1' ? '1 set' : `${programTargetSetRange} sets`;
 		return `${targetSetRange} &times; ${formattedTarget}`;
@@ -37,13 +36,19 @@
 </script>
 
 {#if showSummary}
-	<div class="text-primary text-xs font-medium">
-		<p>Planned:</p>
-		<ul>
-			{#each sets as set}
-				<li>
-					{@html formatSetRange(set)}
-				</li>
+	<div class="text-primary bg-muted/50 space-y-2 rounded-xl border p-2">
+		<p class="text-xs">Planned:</p>
+		<ul class="text-sm font-medium">
+			{#each programTargets as target, index (`${index}-${target.targetSetRange}`)}
+				{@const formatted = formatSetRange(target)}
+				{#if formatted}
+					<li>
+						{#if programTargets.length > 1}
+							-
+						{/if}
+						{@html formatted}
+					</li>
+				{/if}
 			{/each}
 		</ul>
 	</div>
