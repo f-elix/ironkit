@@ -119,14 +119,16 @@ export const updateOrder = mutation({
 			throw new Error('Not authenticated');
 		}
 
-		for (const update of args.updates) {
-			const { group, template } = await assertOwnedProgramWorkoutGroup(ctx, update.id, userId);
-			await ctx.db.patch(group._id, {
-				workoutOrder: update.workoutOrder,
-				updatedAt: Date.now()
-			});
-			await ctx.db.patch(template._id, { updatedAt: Date.now() });
-		}
+		await Promise.all(
+			args.updates.map(async (update) => {
+				const { group, template } = await assertOwnedProgramWorkoutGroup(ctx, update.id, userId);
+				await ctx.db.patch(group._id, {
+					workoutOrder: update.workoutOrder,
+					updatedAt: Date.now()
+				});
+				await ctx.db.patch(template._id, { updatedAt: Date.now() });
+			})
+		);
 
 		return true;
 	}
@@ -146,29 +148,27 @@ export const remove = mutation({
 			.query('performances')
 			.withIndex('by_performanceGroupId', (q) => q.eq('performanceGroupId', group._id))
 			.collect();
-		for (const exercise of exercises.filter(
-			(row) => row.programWorkoutId === group.programWorkoutId
-		)) {
-			const targets = await ctx.db
-				.query('programWorkoutExerciseTargets')
-				.withIndex('by_programWorkoutExerciseId', (q) =>
-					q.eq('programWorkoutExerciseId', exercise._id)
-				)
-				.collect();
-			for (const target of targets) {
-				await ctx.db.delete(target._id);
-			}
+		await Promise.all(
+			exercises
+				.filter((row) => row.programWorkoutId === group.programWorkoutId)
+				.map(async (exercise) => {
+					const targets = await ctx.db
+						.query('programWorkoutExerciseTargets')
+						.withIndex('by_programWorkoutExerciseId', (q) =>
+							q.eq('programWorkoutExerciseId', exercise._id)
+						)
+						.collect();
+					await Promise.all(targets.map(async (target) => ctx.db.delete(target._id)));
 
-			// Legacy cleanup: old templates may still have target rows in performanceSets.
-			const sets = await ctx.db
-				.query('performanceSets')
-				.withIndex('by_performanceId_order', (q) => q.eq('performanceId', exercise._id))
-				.collect();
-			for (const set of sets) {
-				await ctx.db.delete(set._id);
-			}
-			await ctx.db.delete(exercise._id);
-		}
+					// Legacy cleanup: old templates may still have target rows in performanceSets.
+					const sets = await ctx.db
+						.query('performanceSets')
+						.withIndex('by_performanceId_order', (q) => q.eq('performanceId', exercise._id))
+						.collect();
+					await Promise.all(sets.map(async (set) => ctx.db.delete(set._id)));
+					await ctx.db.delete(exercise._id);
+				})
+		);
 		await ctx.db.delete(group._id);
 		await ctx.db.patch(template._id, { updatedAt: Date.now() });
 		return args.id;

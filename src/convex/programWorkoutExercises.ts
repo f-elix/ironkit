@@ -94,14 +94,16 @@ const resetSetTargetsForExecution = async (
 	const existingSets = await listSetTargets(ctx, performanceId);
 	const defaults = defaultSetTargetForExecution(executionType);
 
-	for (const set of existingSets) {
-		await ctx.db.patch(set._id, {
-			targetSetRange: defaults.targetSetRange,
-			targetRepsRange: defaults.targetRepsRange,
-			targetDuration: defaults.targetDuration,
-			updatedAt: Date.now()
-		});
-	}
+	await Promise.all(
+		existingSets.map(async (set) =>
+			ctx.db.patch(set._id, {
+				targetSetRange: defaults.targetSetRange,
+				targetRepsRange: defaults.targetRepsRange,
+				targetDuration: defaults.targetDuration,
+				updatedAt: Date.now()
+			})
+		)
+	);
 };
 
 export const list = query({
@@ -253,14 +255,16 @@ export const updateOrder = mutation({
 		if (!userId) {
 			throw new Error('Not authenticated');
 		}
-		for (const update of args.updates) {
-			const { item, template } = await assertOwnedProgramWorkoutExercise(ctx, update.id, userId);
-			await ctx.db.patch(item._id, {
-				groupOrder: update.groupOrder,
-				updatedAt: Date.now()
-			});
-			await ctx.db.patch(template._id, { updatedAt: Date.now() });
-		}
+		await Promise.all(
+			args.updates.map(async (update) => {
+				const { item, template } = await assertOwnedProgramWorkoutExercise(ctx, update.id, userId);
+				await ctx.db.patch(item._id, {
+					groupOrder: update.groupOrder,
+					updatedAt: Date.now()
+				});
+				await ctx.db.patch(template._id, { updatedAt: Date.now() });
+			})
+		);
 		return true;
 	}
 });
@@ -276,9 +280,7 @@ export const remove = mutation({
 		}
 		const { item, template } = await assertOwnedProgramWorkoutExercise(ctx, args.id, userId);
 		const setTargets = await listSetTargets(ctx, item._id);
-		for (const setTarget of setTargets) {
-			await ctx.db.delete(setTarget._id);
-		}
+		await Promise.all(setTargets.map(async (setTarget) => ctx.db.delete(setTarget._id)));
 		await ctx.db.delete(item._id);
 		await ctx.db.patch(template._id, { updatedAt: Date.now() });
 		return args.id;

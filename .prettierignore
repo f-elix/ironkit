@@ -7,3 +7,4 @@ bun.lockb
 
 # Svelte
 src/lib/shadcn
+src/convex/_generated

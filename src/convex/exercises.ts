@@ -120,40 +120,46 @@ export const remove = mutation({
 			)
 		];
 
-		for (const programWorkoutId of programWorkoutIds) {
-			if (!programWorkoutId) {
-				continue;
-			}
-			const programWorkout = await ctx.db.get(programWorkoutId);
-			if (!programWorkout) {
-				continue;
-			}
-			const template = await ctx.db.get(programWorkout.programTemplateId);
-			if (template && template.userId === userId && template.status === 'draft') {
-				throw new Error('Exercise is used in at least one draft program workout');
-			}
-		}
+		await Promise.all(
+			programWorkoutIds.map(async (programWorkoutId) => {
+				if (!programWorkoutId) {
+					return;
+				}
+				const programWorkout = await ctx.db.get(programWorkoutId);
+				if (!programWorkout) {
+					return;
+				}
+				const template = await ctx.db.get(programWorkout.programTemplateId);
+				if (template && template.userId === userId && template.status === 'draft') {
+					throw new Error('Exercise is used in at least one draft program workout');
+				}
+			})
+		);
 
-		for (const programWorkoutId of programWorkoutIds) {
-			if (!programWorkoutId) {
-				continue;
-			}
-			const runSessions = await ctx.db
-				.query('programRunSessions')
-				.withIndex('by_programWorkoutId', (q) => q.eq('programWorkoutId', programWorkoutId))
-				.collect();
-			for (const runSession of runSessions) {
-				if (runSession.workoutId !== undefined || runSession.skippedAt !== undefined) {
-					continue;
+		await Promise.all(
+			programWorkoutIds.map(async (programWorkoutId) => {
+				if (!programWorkoutId) {
+					return;
 				}
-				const run = await ctx.db.get(runSession.programRunId);
-				if (run && run.userId === userId) {
-					throw new Error(
-						'Exercise is used in a program workout referenced by unfinished run sessions'
-					);
-				}
-			}
-		}
+				const runSessions = await ctx.db
+					.query('programRunSessions')
+					.withIndex('by_programWorkoutId', (q) => q.eq('programWorkoutId', programWorkoutId))
+					.collect();
+				await Promise.all(
+					runSessions.map(async (runSession) => {
+						if (runSession.workoutId !== undefined || runSession.skippedAt !== undefined) {
+							return;
+						}
+						const run = await ctx.db.get(runSession.programRunId);
+						if (run && run.userId === userId) {
+							throw new Error(
+								'Exercise is used in a program workout referenced by unfinished run sessions'
+							);
+						}
+					})
+				);
+			})
+		);
 
 		const sets = (
 			await Promise.all(
@@ -165,9 +171,7 @@ export const remove = mutation({
 				})
 			)
 		).flat();
-		for (const set of sets) {
-			await ctx.db.delete(set._id);
-		}
+		await Promise.all(sets.map(async (set) => ctx.db.delete(set._id)));
 
 		const programTargets = (
 			await Promise.all(
@@ -181,13 +185,10 @@ export const remove = mutation({
 				})
 			)
 		).flat();
-		for (const target of programTargets) {
-			await ctx.db.delete(target._id);
-		}
-
-		for (const performance of performances) {
-			await ctx.db.delete(performance._id);
-		}
+		await Promise.all([
+			...programTargets.map(async (target) => ctx.db.delete(target._id)),
+			...performances.map(async (performance) => ctx.db.delete(performance._id))
+		]);
 
 		const performanceGroupIds = [
 			...new Set(performances.map((performance) => performance.performanceGroupId))
@@ -210,9 +211,9 @@ export const remove = mutation({
 					(performance) => performance.performanceGroupId === performanceGroupId
 				)
 		);
-		for (const performanceGroupId of emptyPerformanceGroupIds) {
-			await ctx.db.delete(performanceGroupId);
-		}
+		await Promise.all(
+			emptyPerformanceGroupIds.map(async (performanceGroupId) => ctx.db.delete(performanceGroupId))
+		);
 
 		await ctx.db.delete(args.id);
 	}

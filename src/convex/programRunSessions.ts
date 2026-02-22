@@ -150,59 +150,63 @@ export const startNextAsWorkout = mutation({
 			updatedAt: Date.now()
 		});
 
-		for (const sourceGroup of sourceProgramWorkout.groups.toSorted(
-			(a, b) => a.workoutOrder - b.workoutOrder
-		)) {
-			const performanceGroupId = await ctx.db.insert('performanceGroups', {
-				userId,
-				workoutId,
-				programWorkoutId: undefined,
-				label: sourceGroup.label,
-				workoutOrder: sourceGroup.workoutOrder,
-				updatedAt: Date.now()
-			});
+		await Promise.all(
+			sourceProgramWorkout.groups
+				.toSorted((a, b) => a.workoutOrder - b.workoutOrder)
+				.map(async (sourceGroup) => {
+					const performanceGroupId = await ctx.db.insert('performanceGroups', {
+						userId,
+						workoutId,
+						programWorkoutId: undefined,
+						label: sourceGroup.label,
+						workoutOrder: sourceGroup.workoutOrder,
+						updatedAt: Date.now()
+					});
 
-			for (const sourceExercise of sourceGroup.exercises.toSorted(
-				(a, b) => a.groupOrder - b.groupOrder
-			)) {
-				const defaultTargets = defaultSetTargetForExecution(
-					sourceExercise.exercise?.executionType ?? 'reps'
-				);
-				const executionType = sourceExercise.exercise?.executionType ?? 'reps';
-				const orderedSourceTargets = sourceExercise.exactSets
-					.slice()
-					.toSorted((a, b) => a.targetOrder - b.targetOrder);
-				const programTargets = buildProgramTargetsSnapshot(
-					executionType,
-					orderedSourceTargets,
-					defaultTargets
-				);
+					await Promise.all(
+						sourceGroup.exercises
+							.toSorted((a, b) => a.groupOrder - b.groupOrder)
+							.map(async (sourceExercise) => {
+								const defaultTargets = defaultSetTargetForExecution(
+									sourceExercise.exercise?.executionType ?? 'reps'
+								);
+								const executionType = sourceExercise.exercise?.executionType ?? 'reps';
+								const orderedSourceTargets = sourceExercise.exactSets
+									.slice()
+									.toSorted((a, b) => a.targetOrder - b.targetOrder);
+								const programTargets = buildProgramTargetsSnapshot(
+									executionType,
+									orderedSourceTargets,
+									defaultTargets
+								);
 
-				const performanceId = await ctx.db.insert('performances', {
-					userId,
-					performanceGroupId,
-					exerciseId: sourceExercise.exerciseId,
-					workoutId,
-					programWorkoutId: undefined,
-					groupOrder: sourceExercise.groupOrder,
-					note: sourceExercise.note,
-					programTargets,
-					weightUnit: sourceExercise.weightUnit,
-					updatedAt: Date.now()
-				});
+								const performanceId = await ctx.db.insert('performances', {
+									userId,
+									performanceGroupId,
+									exerciseId: sourceExercise.exerciseId,
+									workoutId,
+									programWorkoutId: undefined,
+									groupOrder: sourceExercise.groupOrder,
+									note: sourceExercise.note,
+									programTargets,
+									weightUnit: sourceExercise.weightUnit,
+									updatedAt: Date.now()
+								});
 
-				await ctx.db.insert('performanceSets', {
-					userId,
-					performanceId,
-					weight: undefined,
-					reps: undefined,
-					durationSeconds: undefined,
-					note: undefined,
-					performanceOrder: 0,
-					updatedAt: Date.now()
-				});
-			}
-		}
+								await ctx.db.insert('performanceSets', {
+									userId,
+									performanceId,
+									weight: undefined,
+									reps: undefined,
+									durationSeconds: undefined,
+									note: undefined,
+									performanceOrder: 0,
+									updatedAt: Date.now()
+								});
+							})
+					);
+				})
+		);
 
 		await ctx.db.patch(nextSession._id, {
 			workoutId,

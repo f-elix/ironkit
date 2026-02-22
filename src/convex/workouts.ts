@@ -175,25 +175,18 @@ export const remove = mutation({
 			.withIndex('by_workoutId', (q) => q.eq('workoutId', args.id))
 			.collect();
 
-		for (const perf of performances) {
-			const sets = await ctx.db
-				.query('performanceSets')
-				.withIndex('by_performanceId', (q) => q.eq('performanceId', perf._id))
-				.collect();
-			for (const set of sets) {
-				await ctx.db.delete(set._id);
-			}
-		}
-
-		for (const perf of performances) {
-			await ctx.db.delete(perf._id);
-		}
-
-		for (const group of performanceGroups) {
-			await ctx.db.delete(group._id);
-		}
-
-		await ctx.db.delete(args.id);
+		await Promise.all([
+			...performances.map(async (perf) => {
+				const sets = await ctx.db
+					.query('performanceSets')
+					.withIndex('by_performanceId', (q) => q.eq('performanceId', perf._id))
+					.collect();
+				await Promise.all(sets.map(async (set) => ctx.db.delete(set._id)));
+			}),
+			...performances.map(async (perf) => ctx.db.delete(perf._id)),
+			...performanceGroups.map(async (group) => ctx.db.delete(group._id)),
+			ctx.db.delete(args.id)
+		]);
 
 		return args.id;
 	}

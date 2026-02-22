@@ -142,84 +142,90 @@ export const remove = mutation({
 			.withIndex('by_programTemplateId', (q) => q.eq('programTemplateId', args.id))
 			.collect();
 
-		for (const programWorkout of programWorkouts) {
-			const runSessions = await ctx.db
-				.query('programRunSessions')
-				.withIndex('by_programWorkoutId', (q) => q.eq('programWorkoutId', programWorkout._id))
-				.collect();
-			const hasUnfinishedSession = runSessions.some(
-				(session) => session.workoutId === undefined && session.skippedAt === undefined
-			);
-			if (hasUnfinishedSession) {
-				throw new Error('Cannot delete template referenced by unfinished program run sessions');
-			}
-		}
+		await Promise.all(
+			programWorkouts.map(async (programWorkout) => {
+				const runSessions = await ctx.db
+					.query('programRunSessions')
+					.withIndex('by_programWorkoutId', (q) => q.eq('programWorkoutId', programWorkout._id))
+					.collect();
+				const hasUnfinishedSession = runSessions.some(
+					(session) => session.workoutId === undefined && session.skippedAt === undefined
+				);
+				if (hasUnfinishedSession) {
+					throw new Error('Cannot delete template referenced by unfinished program run sessions');
+				}
+			})
+		);
 
-		for (const programWorkout of programWorkouts) {
-			const groups = await ctx.db
-				.query('performanceGroups')
-				.withIndex('by_programWorkoutId', (q) => q.eq('programWorkoutId', programWorkout._id))
-				.collect();
+		await Promise.all(
+			programWorkouts.map(async (programWorkout) => {
+				const groups = await ctx.db
+					.query('performanceGroups')
+					.withIndex('by_programWorkoutId', (q) => q.eq('programWorkoutId', programWorkout._id))
+					.collect();
 
-			for (const group of groups) {
-				const groupExercises = await ctx.db
+				await Promise.all(
+					groups.map(async (group) => {
+						const groupExercises = await ctx.db
+							.query('performances')
+							.withIndex('by_performanceGroupId', (q) => q.eq('performanceGroupId', group._id))
+							.collect();
+						await Promise.all(
+							groupExercises
+								.filter((row) => row.programWorkoutId === programWorkout._id)
+								.map(async (exercise) => {
+									const targetRows = await ctx.db
+										.query('programWorkoutExerciseTargets')
+										.withIndex('by_programWorkoutExerciseId', (q) =>
+											q.eq('programWorkoutExerciseId', exercise._id)
+										)
+										.collect();
+									await Promise.all(
+										targetRows.map(async (targetRow) => ctx.db.delete(targetRow._id))
+									);
+
+									// Legacy cleanup: old templates may still have target rows in performanceSets.
+									const setTargets = await ctx.db
+										.query('performanceSets')
+										.withIndex('by_performanceId_order', (q) => q.eq('performanceId', exercise._id))
+										.collect();
+									await Promise.all(
+										setTargets.map(async (setTarget) => ctx.db.delete(setTarget._id))
+									);
+									await ctx.db.delete(exercise._id);
+								})
+						);
+						await ctx.db.delete(group._id);
+					})
+				);
+
+				const leftoverExercises = await ctx.db
 					.query('performances')
-					.withIndex('by_performanceGroupId', (q) => q.eq('performanceGroupId', group._id))
+					.withIndex('by_programWorkoutId', (q) => q.eq('programWorkoutId', programWorkout._id))
 					.collect();
-				for (const exercise of groupExercises.filter(
-					(row) => row.programWorkoutId === programWorkout._id
-				)) {
-					const targetRows = await ctx.db
-						.query('programWorkoutExerciseTargets')
-						.withIndex('by_programWorkoutExerciseId', (q) =>
-							q.eq('programWorkoutExerciseId', exercise._id)
-						)
-						.collect();
-					for (const targetRow of targetRows) {
-						await ctx.db.delete(targetRow._id);
-					}
+				await Promise.all(
+					leftoverExercises.map(async (exercise) => {
+						const targetRows = await ctx.db
+							.query('programWorkoutExerciseTargets')
+							.withIndex('by_programWorkoutExerciseId', (q) =>
+								q.eq('programWorkoutExerciseId', exercise._id)
+							)
+							.collect();
+						await Promise.all(targetRows.map(async (targetRow) => ctx.db.delete(targetRow._id)));
 
-					// Legacy cleanup: old templates may still have target rows in performanceSets.
-					const setTargets = await ctx.db
-						.query('performanceSets')
-						.withIndex('by_performanceId_order', (q) => q.eq('performanceId', exercise._id))
-						.collect();
-					for (const setTarget of setTargets) {
-						await ctx.db.delete(setTarget._id);
-					}
-					await ctx.db.delete(exercise._id);
-				}
-				await ctx.db.delete(group._id);
-			}
+						// Legacy cleanup: old templates may still have target rows in performanceSets.
+						const setTargets = await ctx.db
+							.query('performanceSets')
+							.withIndex('by_performanceId_order', (q) => q.eq('performanceId', exercise._id))
+							.collect();
+						await Promise.all(setTargets.map(async (setTarget) => ctx.db.delete(setTarget._id)));
+						await ctx.db.delete(exercise._id);
+					})
+				);
 
-			const leftoverExercises = await ctx.db
-				.query('performances')
-				.withIndex('by_programWorkoutId', (q) => q.eq('programWorkoutId', programWorkout._id))
-				.collect();
-			for (const exercise of leftoverExercises) {
-				const targetRows = await ctx.db
-					.query('programWorkoutExerciseTargets')
-					.withIndex('by_programWorkoutExerciseId', (q) =>
-						q.eq('programWorkoutExerciseId', exercise._id)
-					)
-					.collect();
-				for (const targetRow of targetRows) {
-					await ctx.db.delete(targetRow._id);
-				}
-
-				// Legacy cleanup: old templates may still have target rows in performanceSets.
-				const setTargets = await ctx.db
-					.query('performanceSets')
-					.withIndex('by_performanceId_order', (q) => q.eq('performanceId', exercise._id))
-					.collect();
-				for (const setTarget of setTargets) {
-					await ctx.db.delete(setTarget._id);
-				}
-				await ctx.db.delete(exercise._id);
-			}
-
-			await ctx.db.delete(programWorkout._id);
-		}
+				await ctx.db.delete(programWorkout._id);
+			})
+		);
 
 		await ctx.db.delete(args.id);
 		return args.id;

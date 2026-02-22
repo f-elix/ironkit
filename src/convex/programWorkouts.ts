@@ -35,55 +35,66 @@ const cloneProgramWorkoutStructure = async (
 		.withIndex('by_programWorkoutId_order', (q) => q.eq('programWorkoutId', sourceProgramWorkoutId))
 		.collect();
 
-	for (const group of groups.toSorted((a, b) => a.workoutOrder - b.workoutOrder)) {
-		const newGroupId = await ctx.db.insert('performanceGroups', {
-			userId,
-			workoutId: undefined,
-			programWorkoutId: targetProgramWorkoutId,
-			label: group.label,
-			workoutOrder: group.workoutOrder,
-			updatedAt: Date.now()
-		});
-
-		const exercises = await ctx.db
-			.query('performances')
-			.withIndex('by_performanceGroupId', (q) => q.eq('performanceGroupId', group._id))
-			.collect();
-
-		for (const exercise of exercises
-			.filter((item) => item.programWorkoutId === sourceProgramWorkoutId)
-			.toSorted((a, b) => a.groupOrder - b.groupOrder)) {
-			const newExerciseId = await ctx.db.insert('performances', {
-				userId,
-				performanceGroupId: newGroupId,
-				exerciseId: exercise.exerciseId,
-				workoutId: undefined,
-				programWorkoutId: targetProgramWorkoutId,
-				groupOrder: exercise.groupOrder,
-				note: exercise.note,
-				weightUnit: exercise.weightUnit,
-				updatedAt: Date.now()
-			});
-
-			const setTargets = await ctx.db
-				.query('programWorkoutExerciseTargets')
-				.withIndex('by_programWorkoutExerciseId_order', (q) =>
-					q.eq('programWorkoutExerciseId', exercise._id)
-				)
-				.collect();
-			for (const setTarget of setTargets.toSorted((a, b) => a.targetOrder - b.targetOrder)) {
-				await ctx.db.insert('programWorkoutExerciseTargets', {
+	await Promise.all(
+		groups
+			.toSorted((a, b) => a.workoutOrder - b.workoutOrder)
+			.map(async (group) => {
+				const newGroupId = await ctx.db.insert('performanceGroups', {
 					userId,
-					programWorkoutExerciseId: newExerciseId,
-					targetSetRange: setTarget.targetSetRange,
-					targetRepsRange: setTarget.targetRepsRange,
-					targetDuration: setTarget.targetDuration,
-					targetOrder: setTarget.targetOrder,
+					workoutId: undefined,
+					programWorkoutId: targetProgramWorkoutId,
+					label: group.label,
+					workoutOrder: group.workoutOrder,
 					updatedAt: Date.now()
 				});
-			}
-		}
-	}
+
+				const exercises = await ctx.db
+					.query('performances')
+					.withIndex('by_performanceGroupId', (q) => q.eq('performanceGroupId', group._id))
+					.collect();
+
+				await Promise.all(
+					exercises
+						.filter((item) => item.programWorkoutId === sourceProgramWorkoutId)
+						.toSorted((a, b) => a.groupOrder - b.groupOrder)
+						.map(async (exercise) => {
+							const newExerciseId = await ctx.db.insert('performances', {
+								userId,
+								performanceGroupId: newGroupId,
+								exerciseId: exercise.exerciseId,
+								workoutId: undefined,
+								programWorkoutId: targetProgramWorkoutId,
+								groupOrder: exercise.groupOrder,
+								note: exercise.note,
+								weightUnit: exercise.weightUnit,
+								updatedAt: Date.now()
+							});
+
+							const setTargets = await ctx.db
+								.query('programWorkoutExerciseTargets')
+								.withIndex('by_programWorkoutExerciseId_order', (q) =>
+									q.eq('programWorkoutExerciseId', exercise._id)
+								)
+								.collect();
+							await Promise.all(
+								setTargets
+									.toSorted((a, b) => a.targetOrder - b.targetOrder)
+									.map(async (setTarget) =>
+										ctx.db.insert('programWorkoutExerciseTargets', {
+											userId,
+											programWorkoutExerciseId: newExerciseId,
+											targetSetRange: setTarget.targetSetRange,
+											targetRepsRange: setTarget.targetRepsRange,
+											targetDuration: setTarget.targetDuration,
+											targetOrder: setTarget.targetOrder,
+											updatedAt: Date.now()
+										})
+									)
+							);
+						})
+				);
+			})
+	);
 };
 
 const removeProgramWorkoutStructure = async (
@@ -95,60 +106,60 @@ const removeProgramWorkoutStructure = async (
 		.withIndex('by_programWorkoutId', (q) => q.eq('programWorkoutId', programWorkoutId))
 		.collect();
 
-	for (const group of groups) {
-		const exercises = await ctx.db
-			.query('performances')
-			.withIndex('by_performanceGroupId', (q) => q.eq('performanceGroupId', group._id))
-			.collect();
-		for (const exercise of exercises.filter((item) => item.programWorkoutId === programWorkoutId)) {
+	await Promise.all(
+		groups.map(async (group) => {
+			const exercises = await ctx.db
+				.query('performances')
+				.withIndex('by_performanceGroupId', (q) => q.eq('performanceGroupId', group._id))
+				.collect();
+			await Promise.all(
+				exercises
+					.filter((item) => item.programWorkoutId === programWorkoutId)
+					.map(async (exercise) => {
+						const targetRows = await ctx.db
+							.query('programWorkoutExerciseTargets')
+							.withIndex('by_programWorkoutExerciseId', (q) =>
+								q.eq('programWorkoutExerciseId', exercise._id)
+							)
+							.collect();
+						await Promise.all(targetRows.map(async (targetRow) => ctx.db.delete(targetRow._id)));
+
+						// Legacy cleanup: old templates may still have target rows in performanceSets.
+						const setTargets = await ctx.db
+							.query('performanceSets')
+							.withIndex('by_performanceId_order', (q) => q.eq('performanceId', exercise._id))
+							.collect();
+						await Promise.all(setTargets.map(async (setTarget) => ctx.db.delete(setTarget._id)));
+						await ctx.db.delete(exercise._id);
+					})
+			);
+			await ctx.db.delete(group._id);
+		})
+	);
+
+	const leftoverExercises = await ctx.db
+		.query('performances')
+		.withIndex('by_programWorkoutId', (q) => q.eq('programWorkoutId', programWorkoutId))
+		.collect();
+	await Promise.all(
+		leftoverExercises.map(async (exercise) => {
 			const targetRows = await ctx.db
 				.query('programWorkoutExerciseTargets')
 				.withIndex('by_programWorkoutExerciseId', (q) =>
 					q.eq('programWorkoutExerciseId', exercise._id)
 				)
 				.collect();
-			for (const targetRow of targetRows) {
-				await ctx.db.delete(targetRow._id);
-			}
+			await Promise.all(targetRows.map(async (targetRow) => ctx.db.delete(targetRow._id)));
 
 			// Legacy cleanup: old templates may still have target rows in performanceSets.
 			const setTargets = await ctx.db
 				.query('performanceSets')
 				.withIndex('by_performanceId_order', (q) => q.eq('performanceId', exercise._id))
 				.collect();
-			for (const setTarget of setTargets) {
-				await ctx.db.delete(setTarget._id);
-			}
+			await Promise.all(setTargets.map(async (setTarget) => ctx.db.delete(setTarget._id)));
 			await ctx.db.delete(exercise._id);
-		}
-		await ctx.db.delete(group._id);
-	}
-
-	const leftoverExercises = await ctx.db
-		.query('performances')
-		.withIndex('by_programWorkoutId', (q) => q.eq('programWorkoutId', programWorkoutId))
-		.collect();
-	for (const exercise of leftoverExercises) {
-		const targetRows = await ctx.db
-			.query('programWorkoutExerciseTargets')
-			.withIndex('by_programWorkoutExerciseId', (q) =>
-				q.eq('programWorkoutExerciseId', exercise._id)
-			)
-			.collect();
-		for (const targetRow of targetRows) {
-			await ctx.db.delete(targetRow._id);
-		}
-
-		// Legacy cleanup: old templates may still have target rows in performanceSets.
-		const setTargets = await ctx.db
-			.query('performanceSets')
-			.withIndex('by_performanceId_order', (q) => q.eq('performanceId', exercise._id))
-			.collect();
-		for (const setTarget of setTargets) {
-			await ctx.db.delete(setTarget._id);
-		}
-		await ctx.db.delete(exercise._id);
-	}
+		})
+	);
 };
 
 export const listByTemplate = query({
@@ -342,16 +353,18 @@ export const reorderWithinWeek = mutation({
 		}
 		const template = await assertOwnedProgramTemplate(ctx, args.programTemplateId, userId);
 
-		for (const update of args.updates) {
-			const { workout } = await assertOwnedProgramWorkout(ctx, update.id, userId);
-			if (workout.programTemplateId !== template._id || workout.weekNumber !== args.weekNumber) {
-				throw new Error('Program workout does not belong to this week');
-			}
-			await ctx.db.patch(workout._id, {
-				slotOrder: Math.floor(update.slotOrder),
-				updatedAt: Date.now()
-			});
-		}
+		await Promise.all(
+			args.updates.map(async (update) => {
+				const { workout } = await assertOwnedProgramWorkout(ctx, update.id, userId);
+				if (workout.programTemplateId !== template._id || workout.weekNumber !== args.weekNumber) {
+					throw new Error('Program workout does not belong to this week');
+				}
+				await ctx.db.patch(workout._id, {
+					slotOrder: Math.floor(update.slotOrder),
+					updatedAt: Date.now()
+				});
+			})
+		);
 		await ctx.db.patch(template._id, { updatedAt: Date.now() });
 		return true;
 	}

@@ -170,14 +170,20 @@ export const updateOrder = mutation({
 			throw new Error('Not authenticated');
 		}
 
-		for (const update of args.updates) {
-			const { set, template } = await assertOwnedProgramWorkoutExerciseSet(ctx, update.id, userId);
-			await ctx.db.patch(set._id, {
-				targetOrder: update.setOrder,
-				updatedAt: Date.now()
-			});
-			await ctx.db.patch(template._id, { updatedAt: Date.now() });
-		}
+		await Promise.all(
+			args.updates.map(async (update) => {
+				const { set, template } = await assertOwnedProgramWorkoutExerciseSet(
+					ctx,
+					update.id,
+					userId
+				);
+				await ctx.db.patch(set._id, {
+					targetOrder: update.setOrder,
+					updatedAt: Date.now()
+				});
+				await ctx.db.patch(template._id, { updatedAt: Date.now() });
+			})
+		);
 
 		return true;
 	}
@@ -215,27 +221,27 @@ export const replaceAll = mutation({
 				q.eq('programWorkoutExerciseId', exerciseTarget._id)
 			)
 			.collect();
-		for (const row of existingRows) {
-			await ctx.db.delete(row._id);
-		}
+		await Promise.all(existingRows.map(async (row) => ctx.db.delete(row._id)));
 
-		for (const [index, set] of args.sets.entries()) {
-			const normalizedTargets = normalizeSetRangeTargetsForExecution(
-				exercise.executionType,
-				set.targetSetRange ?? defaults.targetSetRange,
-				set.targetRepsRange ?? defaults.targetRepsRange,
-				set.targetDuration ?? defaults.targetDuration
-			);
-			await ctx.db.insert('programWorkoutExerciseTargets', {
-				userId,
-				programWorkoutExerciseId: exerciseTarget._id,
-				targetOrder: index,
-				targetSetRange: normalizedTargets.targetSetRange,
-				targetRepsRange: normalizedTargets.targetRepsRange,
-				targetDuration: normalizedTargets.targetDuration,
-				updatedAt: Date.now()
-			});
-		}
+		await Promise.all(
+			args.sets.map(async (set, index) => {
+				const normalizedTargets = normalizeSetRangeTargetsForExecution(
+					exercise.executionType,
+					set.targetSetRange ?? defaults.targetSetRange,
+					set.targetRepsRange ?? defaults.targetRepsRange,
+					set.targetDuration ?? defaults.targetDuration
+				);
+				await ctx.db.insert('programWorkoutExerciseTargets', {
+					userId,
+					programWorkoutExerciseId: exerciseTarget._id,
+					targetOrder: index,
+					targetSetRange: normalizedTargets.targetSetRange,
+					targetRepsRange: normalizedTargets.targetRepsRange,
+					targetDuration: normalizedTargets.targetDuration,
+					updatedAt: Date.now()
+				});
+			})
+		);
 
 		await ctx.db.patch(template._id, { updatedAt: Date.now() });
 		return true;

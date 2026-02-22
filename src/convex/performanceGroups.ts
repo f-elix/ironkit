@@ -199,15 +199,17 @@ export const updateOrder = mutation({
 		}
 
 		// Update all the orders
-		for (const update of args.updates) {
-			const group = await ctx.db.get(update.id);
-			if (group && group.userId === userId) {
-				await ctx.db.patch(update.id, {
-					workoutOrder: update.workoutOrder,
-					updatedAt: Date.now()
-				});
-			}
-		}
+		await Promise.all(
+			args.updates.map(async (update) => {
+				const group = await ctx.db.get(update.id);
+				if (group && group.userId === userId) {
+					await ctx.db.patch(update.id, {
+						workoutOrder: update.workoutOrder,
+						updatedAt: Date.now()
+					});
+				}
+			})
+		);
 
 		return true;
 	}
@@ -233,16 +235,16 @@ export const remove = mutation({
 			.collect();
 
 		// Delete all sets for each performance
-		for (const perf of performances) {
-			const sets = await ctx.db
-				.query('performanceSets')
-				.withIndex('by_performanceId', (q) => q.eq('performanceId', perf._id))
-				.collect();
-			for (const set of sets) {
-				await ctx.db.delete(set._id);
-			}
-			await ctx.db.delete(perf._id);
-		}
+		await Promise.all(
+			performances.map(async (perf) => {
+				const sets = await ctx.db
+					.query('performanceSets')
+					.withIndex('by_performanceId', (q) => q.eq('performanceId', perf._id))
+					.collect();
+				await Promise.all(sets.map(async (set) => ctx.db.delete(set._id)));
+				await ctx.db.delete(perf._id);
+			})
+		);
 
 		// Delete the group
 		await ctx.db.delete(args.id);

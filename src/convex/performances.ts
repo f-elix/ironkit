@@ -247,9 +247,7 @@ export const remove = mutation({
 			.withIndex('by_performanceId', (q) => q.eq('performanceId', args.id))
 			.collect();
 
-		for (const set of sets) {
-			await ctx.db.delete(set._id);
-		}
+		await Promise.all(sets.map(async (set) => ctx.db.delete(set._id)));
 
 		await ctx.db.delete(args.id);
 

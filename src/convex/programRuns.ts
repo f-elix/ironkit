@@ -46,18 +46,18 @@ export const getById = query({
 					...session,
 					programWorkout: programWorkout
 						? {
-							weekNumber: programWorkout.weekNumber,
-							slotOrder: programWorkout.slotOrder,
-							trackKey: programWorkout.trackKey,
-							label: programWorkout.label
-						}
+								weekNumber: programWorkout.weekNumber,
+								slotOrder: programWorkout.slotOrder,
+								trackKey: programWorkout.trackKey,
+								label: programWorkout.label
+							}
 						: null,
 					workout: workout
 						? {
-							_id: workout._id,
-							title: workout.title,
-							date: workout.date
-						}
+								_id: workout._id,
+								title: workout.title,
+								date: workout.date
+							}
 						: null
 				};
 			})
@@ -140,9 +140,9 @@ export const getActiveRunWithDetails = query({
 			template,
 			nextSession: nextSession
 				? {
-					...nextSession,
-					...nextSessionDetails
-				}
+						...nextSession,
+						...nextSessionDetails
+					}
 				: null,
 			totalSessions,
 			completedSessions
@@ -215,16 +215,18 @@ export const activateTemplate = mutation({
 			updatedAt: Date.now()
 		});
 
-		for (const programWorkout of orderedProgramWorkouts) {
-			await ctx.db.insert('programRunSessions', {
-				userId,
-				programRunId: runId,
-				programWorkoutId: programWorkout._id,
-				workoutId: undefined,
-				skippedAt: undefined,
-				updatedAt: Date.now()
-			});
-		}
+		await Promise.all(
+			orderedProgramWorkouts.map(async (programWorkout) =>
+				ctx.db.insert('programRunSessions', {
+					userId,
+					programRunId: runId,
+					programWorkoutId: programWorkout._id,
+					workoutId: undefined,
+					skippedAt: undefined,
+					updatedAt: Date.now()
+				})
+			)
+		);
 
 		return runId;
 	}
