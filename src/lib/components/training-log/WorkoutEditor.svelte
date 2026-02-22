@@ -64,10 +64,12 @@
 		);
 		try {
 			await client.mutation(api.performanceGroups.updateOrder, {
-				updates: reorderedGroups.map((item, index) => ({
-					id: item._id,
-					workoutOrder: index
-				}))
+				updates: reorderedGroups
+					.filter((item, index) => item.workoutOrder !== index)
+					.map((item, index) => ({
+						id: item._id,
+						workoutOrder: index
+					}))
 			});
 			resume();
 		} catch (error) {

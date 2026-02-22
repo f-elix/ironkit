@@ -100,7 +100,9 @@
 				await client.mutation(api.programWorkouts.reorderWithinWeek, {
 					programTemplateId: editorState.templateId,
 					weekNumber,
-					updates: reordered.map((w, i) => ({ id: w._id, slotOrder: i }))
+					updates: reordered
+						.filter((item, index) => item.slotOrder !== index)
+						.map((w, i) => ({ id: w._id, slotOrder: i }))
 				});
 				resume();
 			} catch (error) {
