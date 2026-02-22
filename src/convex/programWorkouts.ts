@@ -1,5 +1,5 @@
 import { getAuthUserId } from '@convex-dev/auth/server';
-import { v } from 'convex/values';
+import { ConvexError, v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 import type { Id } from './_generated/dataModel';
 import type { MutationCtx } from './_generated/server';
@@ -471,7 +471,9 @@ export const remove = mutation({
 			(session) => session.workoutId === undefined && session.skippedAt === undefined
 		);
 		if (hasUnfinishedRunSession) {
-			throw new Error('Cannot delete a program workout referenced by unfinished run sessions');
+			throw new ConvexError(
+				'Cannot delete this workout because it is referenced by an unfinished run session.'
+			);
 		}
 
 		await removeProgramWorkoutStructure(ctx, workout._id);

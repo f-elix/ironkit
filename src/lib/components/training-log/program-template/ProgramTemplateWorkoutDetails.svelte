@@ -79,7 +79,9 @@
 	let availableTrackKeys = $derived.by(() => {
 		const currentWeek = workoutWeekNumber;
 		const currentTrackKey = normalizeTrackKey(workoutTrackKey);
-		const allTracks = [...new Set(workouts.map((workout) => normalizeTrackKey(workout.trackKey)))].toSorted();
+		const allTracks = [
+			...new Set(workouts.map((workout) => normalizeTrackKey(workout.trackKey)))
+		].toSorted();
 		const takenInWeek = new Set(
 			workouts
 				.filter(
@@ -114,10 +116,34 @@
 	};
 
 	const toErrorMessage = (error: unknown, fallback: string) => {
-		if (error instanceof Error && error.message) {
-			return error.message;
+		if (!(error instanceof Error) || !error.message) {
+			return fallback;
 		}
-		return fallback;
+
+		const rawMessage = error.message.trim();
+		if (
+			rawMessage.includes(
+				'Cannot delete a program workout referenced by unfinished run sessions'
+			) ||
+			rawMessage.includes(
+				'Cannot delete this workout because it is referenced by an unfinished run session.'
+			)
+		) {
+			return 'This workout is used by an unfinished run session. Finish or remove those sessions first.';
+		}
+
+		const normalized = rawMessage
+			.split('\n')[0]
+			.replace(/^\[CONVEX [^\]]+\]\s*/, '')
+			.replace(/^Uncaught (?:Error|ConvexError):\s*/, '')
+			.replace(/^\[Request ID:[^\]]+\]\s*/, '')
+			.trim();
+
+		if (!normalized || normalized === 'Server Error') {
+			return fallback;
+		}
+
+		return normalized || fallback;
 	};
 
 	const updateSelectedWorkoutDraft = (update: WorkoutMetaUpdate) => {
