@@ -13,6 +13,7 @@
 	import { cn } from '$lib/shadcn/utils';
 	import WorkoutStats from '$lib/components/training-log/WorkoutStats.svelte';
 	import type { Workout } from '$lib/db/types';
+	import { toast } from 'svelte-sonner';
 
 	let { workoutId, workout }: { workoutId: Id<'workouts'>; workout: Workout } = $props();
 
@@ -75,12 +76,16 @@
 
 		dragSnapshot = null;
 
-		await client.mutation(api.performanceGroups.updateOrder, {
-			updates: reorderedGroups.map((item, index) => ({
-				id: item._id,
-				workoutOrder: index
-			}))
-		});
+		try {
+			await client.mutation(api.performanceGroups.updateOrder, {
+				updates: reorderedGroups.map((item, index) => ({
+					id: item._id,
+					workoutOrder: index
+				}))
+			});
+		} catch (error) {
+			toast.error(error instanceof Error ? error.message : 'Could not reorder exercises.');
+		}
 	};
 </script>
 
