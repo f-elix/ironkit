@@ -85,7 +85,7 @@
 		const currentTrackKey = normalizeTrackKey(workoutTrackKey);
 		const allTracks = [
 			...new Set(workouts.map((workout) => normalizeTrackKey(workout.trackKey)))
-		].sort();
+		].toSorted();
 		const takenInWeek = new Set(
 			workouts
 				.filter(
@@ -100,13 +100,13 @@
 		const available = allTracks.filter((track) => !takenInWeek.has(track));
 		if (!available.includes(currentTrackKey)) {
 			available.push(currentTrackKey);
-			available.sort();
+			available.toSorted();
 		}
 
 		const nextTrack = getNextAvailableTrack(currentWeek) ?? getFirstAvailableTrackKey(takenInWeek);
 		if (!available.includes(nextTrack)) {
 			available.push(nextTrack);
-			available.sort();
+			available.toSorted();
 		}
 
 		return available;
@@ -287,7 +287,7 @@
 		return workouts
 			.filter((workout) => workout.weekNumber === selectedWorkout.weekNumber)
 			.slice()
-			.sort((a, b) => a.slotOrder - b.slotOrder);
+			.toSorted((a, b) => a.slotOrder - b.slotOrder);
 	});
 	let positionInWeek = $derived(
 		selectedWorkoutId ? weekWorkouts.findIndex((workout) => workout._id === selectedWorkoutId) : -1

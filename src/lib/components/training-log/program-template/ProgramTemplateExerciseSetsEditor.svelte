@@ -27,7 +27,7 @@
 
 	const client = useConvexClient();
 	let sortedSets = $derived(
-		(exactSets ?? []).slice().sort((a, b) => a.performanceOrder - b.performanceOrder)
+		(exactSets ?? []).slice().toSorted((a, b) => a.performanceOrder - b.performanceOrder)
 	);
 	let targetExamples = $derived(
 		executionType === 'reps'

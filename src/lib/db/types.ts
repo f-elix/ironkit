@@ -19,3 +19,9 @@ export type WorkoutWithRelations = Workout & {
 		}
 	>;
 };
+
+export type PerformanceWithRelations = Performance & {
+	exercise: Exercise | null;
+	sets: PerformanceSet[];
+	workout?: Workout | null;
+};

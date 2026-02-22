@@ -13,7 +13,7 @@ export type WorkoutWeek = {
 	items: WorkoutSummary[];
 };
 
-type ExerciseOption = Pick<Doc<'exercises'>, '_id' | 'name'>;
+export type ExerciseOption = Pick<Doc<'exercises'>, '_id' | 'name'>;
 
 export type ProgramWorkoutExercise = Doc<'performances'> & {
 	exercise: Doc<'exercises'> | null;
@@ -42,7 +42,7 @@ export type ProgramTemplateDraft = {
 	status?: ProgramTemplateStatus;
 };
 
-type TemplateDisplay = {
+export type TemplateDisplay = {
 	name: string;
 	status: ProgramTemplateStatus;
 };

@@ -52,13 +52,17 @@
 	let isActivating = $state(false);
 
 	async function handleStart() {
-		if (!canStart || isActivating) return;
+		if (!canStart || isActivating) {
+			return;
+		}
 
 		if (hasOtherActiveRun) {
 			const confirmed = window.confirm(
 				'Starting this will replace your current program. Continue?'
 			);
-			if (!confirmed) return;
+			if (!confirmed) {
+				return;
+			}
 		}
 
 		isActivating = true;

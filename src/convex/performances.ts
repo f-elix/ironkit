@@ -61,7 +61,7 @@ export const getByExercise = query({
 		const workouts = await Promise.all(workoutIds.map((id) => ctx.db.get(id)));
 		const workoutMap = new Map(workouts.filter((w) => w !== null).map((w) => [w!._id, w]));
 
-		filteredPerformances.sort((a, b) => {
+		filteredPerformances.toSorted((a, b) => {
 			const workoutA = a.workoutId ? workoutMap.get(a.workoutId) : null;
 			const workoutB = b.workoutId ? workoutMap.get(b.workoutId) : null;
 			if (!workoutA || !workoutB) {
@@ -92,7 +92,7 @@ export const getByExercise = query({
 					...perf,
 					exercise,
 					workout: perf.workoutId ? workoutMap.get(perf.workoutId) || null : null,
-					sets: validSets.sort((a, b) => a.performanceOrder - b.performanceOrder)
+					sets: validSets.toSorted((a, b) => a.performanceOrder - b.performanceOrder)
 				};
 			})
 		);

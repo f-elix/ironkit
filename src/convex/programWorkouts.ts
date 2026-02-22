@@ -35,7 +35,7 @@ const cloneProgramWorkoutStructure = async (
 		.withIndex('by_programWorkoutId_order', (q) => q.eq('programWorkoutId', sourceProgramWorkoutId))
 		.collect();
 
-	for (const group of groups.sort((a, b) => a.workoutOrder - b.workoutOrder)) {
+	for (const group of groups.toSorted((a, b) => a.workoutOrder - b.workoutOrder)) {
 		const newGroupId = await ctx.db.insert('performanceGroups', {
 			userId,
 			workoutId: undefined,
@@ -52,7 +52,7 @@ const cloneProgramWorkoutStructure = async (
 
 		for (const exercise of exercises
 			.filter((item) => item.programWorkoutId === sourceProgramWorkoutId)
-			.sort((a, b) => a.groupOrder - b.groupOrder)) {
+			.toSorted((a, b) => a.groupOrder - b.groupOrder)) {
 			const newExerciseId = await ctx.db.insert('performances', {
 				userId,
 				performanceGroupId: newGroupId,
@@ -69,7 +69,7 @@ const cloneProgramWorkoutStructure = async (
 				.query('performanceSets')
 				.withIndex('by_performanceId_order', (q) => q.eq('performanceId', exercise._id))
 				.collect();
-			for (const setTarget of setTargets.sort((a, b) => a.performanceOrder - b.performanceOrder)) {
+			for (const setTarget of setTargets.toSorted((a, b) => a.performanceOrder - b.performanceOrder)) {
 				await ctx.db.insert('performanceSets', {
 					userId,
 					performanceId: newExerciseId,
@@ -145,7 +145,7 @@ export const listByTemplate = query({
 			.query('programWorkouts')
 			.withIndex('by_programTemplateId', (q) => q.eq('programTemplateId', args.programTemplateId))
 			.collect();
-		return workouts.sort((a, b) => a.weekNumber - b.weekNumber || a.slotOrder - b.slotOrder);
+		return workouts.toSorted((a, b) => a.weekNumber - b.weekNumber || a.slotOrder - b.slotOrder);
 	}
 });
 
@@ -166,7 +166,7 @@ export const listByWeek = query({
 				q.eq('programTemplateId', args.programTemplateId).eq('weekNumber', args.weekNumber)
 			)
 			.collect();
-		return workouts.sort((a, b) => a.slotOrder - b.slotOrder);
+		return workouts.toSorted((a, b) => a.slotOrder - b.slotOrder);
 	}
 });
 
@@ -249,7 +249,7 @@ export const copyPreviousTrackOccurrenceToWeek = mutation({
 			.collect();
 		const sourceWorkout = candidates
 			.filter((workout) => workout.weekNumber < targetWeekNumber)
-			.sort((a, b) => b.weekNumber - a.weekNumber || b.slotOrder - a.slotOrder)[0];
+			.toSorted((a, b) => b.weekNumber - a.weekNumber || b.slotOrder - a.slotOrder)[0];
 
 		if (!sourceWorkout) {
 			throw new Error('No previous workout found for this track');

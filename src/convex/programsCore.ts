@@ -44,7 +44,7 @@ export const getOrderedRunSessions = async (ctx: ProgramCtx, programRunId: Id<'p
 		}))
 	);
 	return sessionsWithOrder
-		.sort((a, b) => {
+		.toSorted((a, b) => {
 			const aWeek = a.programWorkout?.weekNumber ?? Number.MAX_SAFE_INTEGER;
 			const bWeek = b.programWorkout?.weekNumber ?? Number.MAX_SAFE_INTEGER;
 			if (aWeek !== bWeek) {
@@ -154,7 +154,7 @@ export const getProgramWorkoutWithDetails = async (
 
 	const groupsWithExercises = await Promise.all(
 		groups
-			.sort((a, b) => a.workoutOrder - b.workoutOrder)
+			.toSorted((a, b) => a.workoutOrder - b.workoutOrder)
 			.map(async (group) => {
 				assertExactlyOneParent(group.workoutId, group.programWorkoutId);
 				if (group.programWorkoutId !== programWorkoutId) {
@@ -169,7 +169,7 @@ export const getProgramWorkoutWithDetails = async (
 				const exercisesWithDetails = await Promise.all(
 					performances
 						.filter((item) => item.programWorkoutId === programWorkoutId)
-						.sort((a, b) => a.groupOrder - b.groupOrder)
+						.toSorted((a, b) => a.groupOrder - b.groupOrder)
 						.map(async (item) => {
 							assertExactlyOneParent(item.workoutId, item.programWorkoutId);
 							if (item.programWorkoutId !== programWorkoutId) {
@@ -182,7 +182,7 @@ export const getProgramWorkoutWithDetails = async (
 							return {
 								...item,
 								exercise: await ctx.db.get(item.exerciseId),
-								exactSets: sets.sort((a, b) => a.performanceOrder - b.performanceOrder)
+								exactSets: sets.toSorted((a, b) => a.performanceOrder - b.performanceOrder)
 							};
 						})
 				);

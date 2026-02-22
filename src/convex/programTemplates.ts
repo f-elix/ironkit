@@ -28,7 +28,7 @@ export const list = query({
 			})
 		);
 
-		return templatesWithCounts.sort((a, b) => b.updatedAt - a.updatedAt);
+		return templatesWithCounts.toSorted((a, b) => b.updatedAt - a.updatedAt);
 	}
 });
 

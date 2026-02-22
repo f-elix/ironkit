@@ -18,7 +18,7 @@
 
 <Dialog.Root>
 	<Dialog.Trigger
-		class={buttonVariants({ variant: 'secondary', size: 'icon', class: 'text-amber-500' })}
+		class={buttonVariants({ variant: 'secondary', size: 'icon', class: 'text-primary' })}
 		aria-label="View exercise history"
 	>
 		<History />

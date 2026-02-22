@@ -21,7 +21,7 @@ export const listRuns = query({
 			.query('programRuns')
 			.withIndex('by_userId', (q) => q.eq('userId', userId))
 			.collect();
-		return runs.sort((a, b) => b.startedAt - a.startedAt);
+		return runs.toSorted((a, b) => b.startedAt - a.startedAt);
 	}
 });
 
@@ -46,18 +46,18 @@ export const getById = query({
 					...session,
 					programWorkout: programWorkout
 						? {
-								weekNumber: programWorkout.weekNumber,
-								slotOrder: programWorkout.slotOrder,
-								trackKey: programWorkout.trackKey,
-								label: programWorkout.label
-							}
+							weekNumber: programWorkout.weekNumber,
+							slotOrder: programWorkout.slotOrder,
+							trackKey: programWorkout.trackKey,
+							label: programWorkout.label
+						}
 						: null,
 					workout: workout
 						? {
-								_id: workout._id,
-								title: workout.title,
-								date: workout.date
-							}
+							_id: workout._id,
+							title: workout.title,
+							date: workout.date
+						}
 						: null
 				};
 			})
@@ -103,9 +103,7 @@ export const getActiveRunWithDetails = query({
 		const activeRun = await ctx.db
 			.query('programRuns')
 			.withIndex('by_userId', (q) => q.eq('userId', userId))
-			.filter((q) =>
-				q.or(q.eq(q.field('status'), 'active'), q.eq(q.field('status'), 'paused'))
-			)
+			.filter((q) => q.or(q.eq(q.field('status'), 'active'), q.eq(q.field('status'), 'paused')))
 			.first();
 		if (!activeRun) {
 			return null;
@@ -142,9 +140,9 @@ export const getActiveRunWithDetails = query({
 			template,
 			nextSession: nextSession
 				? {
-						...nextSession,
-						...nextSessionDetails
-					}
+					...nextSession,
+					...nextSessionDetails
+				}
 				: null,
 			totalSessions,
 			completedSessions
@@ -202,7 +200,7 @@ export const activateTemplate = mutation({
 			.query('programWorkouts')
 			.withIndex('by_programTemplateId', (q) => q.eq('programTemplateId', template._id))
 			.collect();
-		const orderedProgramWorkouts = programWorkouts.sort(
+		const orderedProgramWorkouts = programWorkouts.toSorted(
 			(a, b) => a.weekNumber - b.weekNumber || a.slotOrder - b.slotOrder
 		);
 		if (!orderedProgramWorkouts.length) {

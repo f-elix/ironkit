@@ -23,8 +23,9 @@
 	let executionType = $derived(exercise?.executionType ?? 'reps');
 	let firstEmptySetId = $derived.by(
 		() =>
-			sets.find((set) => (executionType === 'time' ? set.durationSeconds == null : set.reps == null))
-				?._id
+			sets.find((set) =>
+				executionType === 'time' ? set.durationSeconds == null : set.reps == null
+			)?._id
 	);
 
 	const addSet = (currentOrder: number, nextOrder: Maybe<number>) => {

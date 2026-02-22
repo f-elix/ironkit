@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { api } from '$convex/_generated/api';
 	import type { Doc } from '$convex/_generated/dataModel';
 	import { Button, buttonVariants } from '$lib/shadcn/button';
@@ -32,7 +33,9 @@
 	const progressLabel = $derived(`Session ${completedSessions + 1} of ${totalSessions}`);
 
 	const handleResumeProgram = async () => {
-		if (isResuming) return;
+		if (isResuming) {
+			return;
+		}
 		isResuming = true;
 		try {
 			await client.mutation(api.programRuns.resumeRun, {
@@ -47,11 +50,13 @@
 	};
 
 	const handleViewProgram = () => {
-		goto(`/tools/training-log/program-run-${run._id}`);
+		goto(resolve('/(app)/tools/training-log/program-run-[id]', { id: run._id }));
 	};
 
 	const handleCancelProgram = async () => {
-		if (isCanceling) return;
+		if (isCanceling) {
+			return;
+		}
 		isCanceling = true;
 		try {
 			await client.mutation(api.programRuns.cancelRun, {

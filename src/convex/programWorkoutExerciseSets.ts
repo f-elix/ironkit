@@ -66,7 +66,7 @@ export const list = query({
 				q.eq('performanceId', args.programWorkoutExerciseId)
 			)
 			.collect();
-		return rows.sort((a, b) => a.performanceOrder - b.performanceOrder);
+		return rows.toSorted((a, b) => a.performanceOrder - b.performanceOrder);
 	}
 });
 
