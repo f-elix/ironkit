@@ -180,6 +180,88 @@ export const listByTemplate = query({
 	}
 });
 
+export const listByTemplateWithSummaries = query({
+	args: {
+		programTemplateId: v.id('programTemplates')
+	},
+	handler: async (ctx, args) => {
+		const userId = await getAuthUserId(ctx);
+		if (!userId) {
+			return [];
+		}
+		await assertOwnedProgramTemplate(ctx, args.programTemplateId, userId);
+		const workouts = await ctx.db
+			.query('programWorkouts')
+			.withIndex('by_programTemplateId', (q) => q.eq('programTemplateId', args.programTemplateId))
+			.collect();
+		const sorted = workouts.toSorted(
+			(a, b) => a.weekNumber - b.weekNumber || a.slotOrder - b.slotOrder
+		);
+
+		const withSummaries = await Promise.all(
+			sorted.map(async (workout) => {
+				const groups = await ctx.db
+					.query('performanceGroups')
+					.withIndex('by_programWorkoutId_order', (q) =>
+						q.eq('programWorkoutId', workout._id)
+					)
+					.collect();
+
+				const groupsWithExercises = await Promise.all(
+					groups
+						.toSorted((a, b) => a.workoutOrder - b.workoutOrder)
+						.map(async (group) => {
+							const performances = await ctx.db
+								.query('performances')
+								.withIndex('by_performanceGroupId', (q) =>
+									q.eq('performanceGroupId', group._id)
+								)
+								.collect();
+
+							const exercises = await Promise.all(
+								performances
+									.filter((p) => p.programWorkoutId === workout._id)
+									.toSorted((a, b) => a.groupOrder - b.groupOrder)
+									.map(async (perf) => {
+										const exercise = await ctx.db.get(perf.exerciseId);
+										const sets = await ctx.db
+											.query('programWorkoutExerciseTargets')
+											.withIndex('by_programWorkoutExerciseId_order', (q) =>
+												q.eq('programWorkoutExerciseId', perf._id)
+											)
+											.collect();
+										return {
+											name: exercise?.name ?? 'Select exercise',
+											executionType: exercise?.executionType ?? 'reps',
+											sets: sets
+												.toSorted((a, b) => a.targetOrder - b.targetOrder)
+												.map((s) => ({
+													targetSetRange: s.targetSetRange,
+													targetRepsRange: s.targetRepsRange,
+													targetDuration: s.targetDuration
+												}))
+										};
+									})
+							);
+
+							return {
+								label: group.label,
+								exercises
+							};
+						})
+				);
+
+				return {
+					...workout,
+					groups: groupsWithExercises
+				};
+			})
+		);
+
+		return withSummaries;
+	}
+});
+
 export const listByWeek = query({
 	args: {
 		programTemplateId: v.id('programTemplates'),

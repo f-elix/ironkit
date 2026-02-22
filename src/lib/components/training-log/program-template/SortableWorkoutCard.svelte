@@ -1,12 +1,15 @@
 <script lang="ts">
 	import { useSortable } from '@dnd-kit-svelte/svelte/sortable';
 	import type { Id } from '$convex/_generated/dataModel';
+	import type { WorkoutSummaryGroup } from '$lib/components/training-log/program-template/program-template-editor.types';
+	import ProgramTemplateWorkoutCardSummary from '$lib/components/training-log/program-template/ProgramTemplateWorkoutCardSummary.svelte';
 	import GripVerticalIcon from '@lucide/svelte/icons/grip-vertical';
 
 	let {
 		workoutId,
 		trackKey,
 		label,
+		groups = [],
 		index,
 		isSelected,
 		trackColorClass,
@@ -15,6 +18,7 @@
 		workoutId: Id<'programWorkouts'>;
 		trackKey: string;
 		label: string | undefined;
+		groups?: WorkoutSummaryGroup[];
 		index: number;
 		isSelected: boolean;
 		trackColorClass: string;
@@ -29,35 +33,38 @@
 
 <li
 	class={[
-		'flex max-w-48 min-w-28 rounded-lg border transition-all duration-150 sm:max-w-56 sm:min-w-36',
+		'w-64 shrink-0 rounded-lg border transition-[backgroud-color,border-color,box-shadow] duration-150 sm:w-72',
 		isDragging.current
-			? 'border-primary/50 bg-primary/10 shadow-primary/10 ring-primary/20 z-10 shadow-lg ring-1'
+			? 'border-primary/50 bg-primary/10 ring-primary/20 z-10 ring-1'
 			: isSelected
-				? 'border-primary/50 bg-primary/5 shadow-primary/5 shadow-sm'
+				? 'border-primary/50 bg-primary/5'
 				: 'border-border/40 bg-card/25 hover:border-border/70 hover:bg-card/50'
 	]}
 	{@attach ref}
 >
-	<div
-		class="text-muted-foreground/30 flex shrink-0 cursor-grab items-center px-2 active:cursor-grabbing"
-	>
-		<GripVerticalIcon class="size-3.5" />
-	</div>
 	<button
 		type="button"
-		class="flex min-w-0 flex-1 flex-col gap-1.5 p-2 pl-0.5 text-left sm:gap-2 sm:p-3 sm:pl-1"
+		class="flex w-full flex-col gap-3 p-2 text-left sm:p-3"
 		onclick={() => onSelect(workoutId)}
 	>
-		<span
-			class={[
-				'inline-flex w-fit rounded border px-1.5 py-px text-[10px] font-bold tracking-wider uppercase sm:px-2 sm:py-0.5 sm:text-[11px]',
-				trackColorClass
-			]}
-		>
-			{trackKey}
-		</span>
-		<span class="truncate text-sm leading-snug font-medium sm:text-[15px]">
-			{label || 'Untitled'}
-		</span>
+		<div class="flex items-center gap-2">
+			<div
+				class="text-muted-foreground/30 flex shrink-0 cursor-grab items-start active:cursor-grabbing"
+			>
+				<GripVerticalIcon class="size-4" />
+			</div>
+			<span
+				class={[
+					'inline-flex w-fit rounded border px-1.5 py-px text-[10px] font-bold tracking-wider uppercase sm:px-2 sm:py-0.5 sm:text-[11px]',
+					trackColorClass
+				]}
+			>
+				{trackKey}
+			</span>
+			<span class="truncate text-sm leading-snug font-medium sm:text-[15px]">
+				{label || 'Untitled'}
+			</span>
+		</div>
+		<ProgramTemplateWorkoutCardSummary {groups} />
 	</button>
 </li>

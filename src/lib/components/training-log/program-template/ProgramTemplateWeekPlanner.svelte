@@ -2,10 +2,11 @@
 	import { api } from '$convex/_generated/api';
 	import type { Id } from '$convex/_generated/dataModel';
 	import ProgramTemplateAddWorkoutPopover from '$lib/components/training-log/program-template/ProgramTemplateAddWorkoutPopover.svelte';
+	import ProgramTemplateWorkoutCardSummary from '$lib/components/training-log/program-template/ProgramTemplateWorkoutCardSummary.svelte';
 	import { getProgramTemplateEditorContext } from '$lib/components/training-log/program-template/program-template-editor.context.svelte.js';
 	import type {
 		CreateWorkoutMode,
-		WorkoutSummary,
+		WorkoutSummaryWithGroups,
 		WorkoutWeek
 	} from '$lib/components/training-log/program-template/program-template-editor.types';
 	import {
@@ -30,11 +31,11 @@
 	const editorState = getProgramTemplateEditorContext();
 	const client = useConvexClient();
 
-	const workoutsQuery = useQuery(api.programWorkouts.listByTemplate, () => ({
+	const workoutsQuery = useQuery(api.programWorkouts.listByTemplateWithSummaries, () => ({
 		programTemplateId: templateId
 	}));
 
-	let workouts = $derived((workoutsQuery.data ?? []) as WorkoutSummary[]);
+	let workouts = $derived((workoutsQuery.data ?? []) as WorkoutSummaryWithGroups[]);
 	let selectedWorkoutId = $derived(editorState.selectedWorkoutId);
 
 	let maxWeekNumber = $derived(
@@ -70,7 +71,7 @@
 	};
 	let isCreating = $state(false);
 
-	let dragSnapshot = $state<WorkoutSummary[] | null>(null);
+	let dragSnapshot = $state<WorkoutSummaryWithGroups[] | null>(null);
 
 	const makeDragStart =
 		(weekNumber: number): DragDropEvents['dragstart'] =>
@@ -166,72 +167,80 @@
 				>
 					Week {week.weekNumber}
 				</span>
-				<div class="bg-border/20 h-px flex-1"></div>
 				{#if week.items.length > 0}
-					<span class="text-muted-foreground/50 text-[11px] tabular-nums">
+					<span class="text-muted-foreground/70 text-sm tabular-nums">
 						{week.items.length}
 					</span>
 				{/if}
+				<div class="bg-border/20 h-px flex-1"></div>
 			</div>
 
-			<div class="flex flex-wrap gap-2 sm:gap-3">
-				{#if week.items.length > 1}
-					<DragDropProvider
-						onDragStart={makeDragStart(week.weekNumber)}
-						onDragEnd={makeDragEnd(week.weekNumber)}
-					>
-						<ol class="flex flex-wrap gap-2 sm:gap-3">
-							{#each week.items as workout, index (workout._id)}
-								<SortableWorkoutCard
-									workoutId={workout._id}
-									trackKey={workout.trackKey}
-									label={workout.label}
-									{index}
-									isSelected={selectedWorkoutId === workout._id}
-									trackColorClass={getTrackColor(workout.trackKey)}
-									onSelect={selectWorkout}
-								/>
-							{/each}
-						</ol>
-					</DragDropProvider>
-				{:else}
-					{#each week.items as workout (workout._id)}
-						<button
-							type="button"
-							class={[
-								'flex max-w-48 min-w-28 flex-col gap-1.5 rounded-lg border p-2.5 text-left transition-all duration-150 sm:max-w-56 sm:min-w-36 sm:gap-2 sm:p-3',
-								selectedWorkoutId === workout._id
-									? 'border-primary/50 bg-primary/5 shadow-primary/5 shadow-sm'
-									: 'border-border/40 bg-card/25 hover:border-border/70 hover:bg-card/50'
-							]}
-							onclick={() => selectWorkout(workout._id)}
+			<div class="touch:scrollbar-none -mx-4 flex overflow-x-auto">
+				<div class="flex grow gap-2 px-4 sm:gap-3">
+					{#if week.items.length > 1}
+						<DragDropProvider
+							onDragStart={makeDragStart(week.weekNumber)}
+							onDragEnd={makeDragEnd(week.weekNumber)}
 						>
-							<span
+							<ol class="flex min-w-0 shrink-0 gap-2 sm:gap-3">
+								{#each week.items as workout, index (workout._id)}
+									<SortableWorkoutCard
+										workoutId={workout._id}
+										trackKey={workout.trackKey}
+										label={workout.label}
+										groups={workout.groups ?? []}
+										{index}
+										isSelected={selectedWorkoutId === workout._id}
+										trackColorClass={getTrackColor(workout.trackKey)}
+										onSelect={selectWorkout}
+									/>
+								{/each}
+							</ol>
+						</DragDropProvider>
+					{:else}
+						{#each week.items as workout (workout._id)}
+							<button
+								type="button"
 								class={[
-									'inline-flex w-fit rounded border px-1.5 py-px text-[10px] font-bold tracking-wider uppercase sm:px-2 sm:py-0.5 sm:text-[11px]',
-									getTrackColor(workout.trackKey)
+									'flex max-w-80 min-w-64 shrink-0 flex-col gap-2 rounded-lg border p-2.5 text-left transition-all duration-150 sm:max-w-96 sm:min-w-72 sm:gap-2.5 sm:p-3',
+									selectedWorkoutId === workout._id
+										? 'border-primary/50 bg-primary/5 shadow-primary/5 shadow-sm'
+										: 'border-border/40 bg-card/25 hover:border-border/70 hover:bg-card/50'
 								]}
+								onclick={() => selectWorkout(workout._id)}
 							>
-								{workout.trackKey}
-							</span>
-							<span class="truncate text-sm leading-snug font-medium sm:text-[15px]">
-								{workout.label || 'Untitled'}
-							</span>
-						</button>
-					{/each}
-				{/if}
+								<div class="flex flex-col gap-1.5 sm:gap-2">
+									<span
+										class={[
+											'inline-flex w-fit rounded border px-1.5 py-px text-[10px] font-bold tracking-wider uppercase sm:px-2 sm:py-0.5 sm:text-[11px]',
+											getTrackColor(workout.trackKey)
+										]}
+									>
+										{workout.trackKey}
+									</span>
+									<span class="truncate text-sm leading-snug font-medium sm:text-[15px]">
+										{workout.label || 'Untitled'}
+									</span>
+								</div>
+								<ProgramTemplateWorkoutCardSummary groups={workout.groups ?? []} />
+							</button>
+						{/each}
+					{/if}
 
-				<ProgramTemplateAddWorkoutPopover
-					weekNumber={week.weekNumber}
-					defaultTrackKey={getNextTrack(week.weekNumber)}
-					{isCreating}
-					canCopyPrior={(trackKey) => canCopyPrior(week.weekNumber, trackKey)}
-					onCreate={createWorkout}
-				/>
+					<div class="shrink-0">
+						<ProgramTemplateAddWorkoutPopover
+							weekNumber={week.weekNumber}
+							defaultTrackKey={getNextTrack(week.weekNumber)}
+							{isCreating}
+							canCopyPrior={(trackKey) => canCopyPrior(week.weekNumber, trackKey)}
+							onCreate={createWorkout}
+						/>
+					</div>
 
-				{#if !week.items.length}
-					<span class="text-muted-foreground/30 flex items-center text-xs">No workouts</span>
-				{/if}
+					{#if !week.items.length}
+						<p class="text-muted-foreground/30 flex shrink-0 items-center text-xs">No workouts</p>
+					{/if}
+				</div>
 			</div>
 		</section>
 	{/each}

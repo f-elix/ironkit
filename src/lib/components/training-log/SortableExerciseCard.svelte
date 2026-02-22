@@ -4,6 +4,7 @@
 	import { api } from '$convex/_generated/api';
 	import type { Id } from '$convex/_generated/dataModel';
 	import ExerciseCardContent from '$lib/components/training-log/ExerciseCardContent.svelte';
+	import { getPerformanceGroupLabel } from '$lib/training-log/performance-group.utils';
 	import ChevronDown from '@lucide/svelte/icons/chevron-down';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
 	import { cn } from '$lib/shadcn/utils';
@@ -34,22 +35,9 @@
 	const group = $derived(query.data);
 	const performances = $derived(group?.performances ?? []);
 
-	let label = $derived.by(() => {
-		if (group?.label) {
-			return group.label;
-		}
-		const count = performances.length;
-		if (count === 2) {
-			return 'Superset';
-		}
-		if (count === 3) {
-			return 'Triset';
-		}
-		if (count >= 4) {
-			return 'Circuit';
-		}
-		return null;
-	});
+	let label = $derived(
+		getPerformanceGroupLabel(performances.length, group?.label)
+	);
 
 	let completedSets = $derived(
 		performances.flatMap((p) => {

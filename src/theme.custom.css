@@ -1,3 +1,5 @@
+@plugin 'tailwind-scrollbar';
+
 @custom-variant touch {
 	@media (pointer: coarse) {
 		@slot;

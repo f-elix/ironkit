@@ -8,9 +8,30 @@ export type WorkoutSummary = Pick<
 	'_id' | 'weekNumber' | 'slotOrder' | 'trackKey' | 'label'
 >;
 
+export type WorkoutSummaryExerciseSet = {
+	targetSetRange?: string;
+	targetRepsRange?: string;
+	targetDuration?: string;
+};
+
+export type WorkoutSummaryExercise = {
+	name: string;
+	executionType: 'reps' | 'time';
+	sets: WorkoutSummaryExerciseSet[];
+};
+
+export type WorkoutSummaryGroup = {
+	label?: string;
+	exercises: WorkoutSummaryExercise[];
+};
+
+export type WorkoutSummaryWithGroups = WorkoutSummary & {
+	groups: WorkoutSummaryGroup[];
+};
+
 export type WorkoutWeek = {
 	weekNumber: number;
-	items: WorkoutSummary[];
+	items: WorkoutSummaryWithGroups[];
 };
 
 type ExerciseOption = Pick<Doc<'exercises'>, '_id' | 'name'>;
