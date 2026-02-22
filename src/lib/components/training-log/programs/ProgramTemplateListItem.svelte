@@ -3,6 +3,7 @@
 	import { resolve } from '$app/paths';
 	import { api } from '$convex/_generated/api';
 	import type { Doc, Id } from '$convex/_generated/dataModel';
+	import DeleteProgramTemplateDialog from '$lib/components/training-log/programs/DeleteProgramTemplateDialog.svelte';
 	import Badge from '$lib/shadcn/badge/badge.svelte';
 	import Button from '$lib/shadcn/button/button.svelte';
 	import { buttonVariants } from '$lib/shadcn/button';
@@ -22,7 +23,6 @@
 		workoutCount,
 		activeRunId,
 		hasOtherActiveRun,
-		onDelete,
 		animationDelay = 0
 	}: {
 		template: Doc<'programTemplates'>;
@@ -30,13 +30,15 @@
 		workoutCount: number;
 		activeRunId?: Id<'programRuns'>;
 		hasOtherActiveRun: boolean;
-		onDelete: () => void;
 		animationDelay?: number;
 	} = $props();
 
 	const client = useConvexClient();
 
 	let isActivating = $state(false);
+	let isDeleteDialogOpen = $state(false);
+	let isDeleting = $state(false);
+	let deleteError = $state('');
 
 	const href = $derived(
 		resolve('/(app)/tools/training-log/program-template-[id]', { id: template._id })
@@ -75,6 +77,42 @@
 			isActivating = false;
 		}
 	}
+
+	const openDeleteDialog = () => {
+		deleteError = '';
+		isDeleteDialogOpen = true;
+	};
+
+	const deleteTemplate = async () => {
+		if (isDeleting) {
+			return;
+		}
+		isDeleting = true;
+		deleteError = '';
+
+		try {
+			await client.mutation(
+				api.programTemplates.remove,
+				{ id: template._id },
+				{
+					optimisticUpdate: (localStore) => {
+						localStore.setQuery(
+							api.programTemplates.list,
+							{},
+							(localStore.getQuery(api.programTemplates.list, {}) ?? []).filter(
+								(item) => item._id !== template._id
+							)
+						);
+					}
+				}
+			);
+			isDeleteDialogOpen = false;
+		} catch (error) {
+			deleteError = error instanceof Error ? error.message : 'Could not delete template.';
+		} finally {
+			isDeleting = false;
+		}
+	};
 </script>
 
 <li
@@ -155,7 +193,7 @@
 				<EllipsisVerticalIcon class="size-4" />
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Content align="end">
-				<DropdownMenu.Item variant="destructive" onSelect={onDelete}>
+				<DropdownMenu.Item variant="destructive" onSelect={openDeleteDialog}>
 					<TrashIcon />
 					Delete
 				</DropdownMenu.Item>
@@ -163,3 +201,11 @@
 		</DropdownMenu.Root>
 	</div>
 </li>
+
+<DeleteProgramTemplateDialog
+	bind:open={isDeleteDialogOpen}
+	{template}
+	{isDeleting}
+	{deleteError}
+	onConfirmDelete={deleteTemplate}
+/>

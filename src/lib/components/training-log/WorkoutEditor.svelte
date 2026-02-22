@@ -110,9 +110,6 @@
 							{index}
 							{isExpanded}
 							onToggle={() => toggleExpand(performanceGroup._id)}
-							onDelete={() => {
-								client.mutation(api.performanceGroups.remove, { id: performanceGroup._id });
-							}}
 						/>
 					{/each}
 				</ul>

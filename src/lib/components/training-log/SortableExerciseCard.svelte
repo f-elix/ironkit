@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { useSortable } from '@dnd-kit-svelte/svelte/sortable';
-	import { useQuery } from 'convex-svelte';
+	import { useConvexClient, useQuery } from 'convex-svelte';
 	import { api } from '$convex/_generated/api';
 	import type { Id } from '$convex/_generated/dataModel';
 	import ExerciseCardContent from '$lib/components/training-log/ExerciseCardContent.svelte';
@@ -16,16 +16,15 @@
 		performanceGroup,
 		index,
 		isExpanded,
-		onToggle,
-		onDelete
+		onToggle
 	}: {
 		performanceGroup: { _id: Id<'performanceGroups'> };
 		index: number;
 		isExpanded: boolean;
 		onToggle: () => void;
-		onDelete?: () => void;
 	} = $props();
 
+	const client = useConvexClient();
 	const { ref, isDragging } = useSortable({
 		id: performanceGroup._id,
 		index: () => index
@@ -51,6 +50,10 @@
 	);
 	let totalSets = $derived(performances.flatMap((p) => p.sets ?? []).length);
 	let progress = $derived(totalSets > 0 ? (completedSets / totalSets) * 100 : 0);
+
+	const handleDelete = () => {
+		client.mutation(api.performanceGroups.remove, { id: performanceGroup._id });
+	};
 </script>
 
 <li
@@ -146,17 +149,15 @@
 				</div>
 
 				<!-- Delete action -->
-				{#if onDelete}
-					<div class="border-border border-t px-4 py-3">
-						<button
-							class="text-destructive hover:bg-destructive/10 flex w-full items-center justify-center gap-2 rounded-lg py-2 text-sm font-medium transition-colors"
-							onclick={onDelete}
-						>
-							<Trash2 class="size-4" />
-							Remove
-						</button>
-					</div>
-				{/if}
+				<div class="border-border border-t px-4 py-3">
+					<button
+						class="text-destructive hover:bg-destructive/10 flex w-full items-center justify-center gap-2 rounded-lg py-2 text-sm font-medium transition-colors"
+						onclick={handleDelete}
+					>
+						<Trash2 class="size-4" />
+						Remove
+					</button>
+				</div>
 			</div>
 		{/if}
 	</Collapsible.Root>

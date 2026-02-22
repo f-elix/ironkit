@@ -2,8 +2,6 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { api } from '$convex/_generated/api';
-	import type { Doc } from '$convex/_generated/dataModel';
-	import DeleteProgramTemplateDialog from '$lib/components/training-log/programs/DeleteProgramTemplateDialog.svelte';
 	import ProgramTemplateListItem from '$lib/components/training-log/programs/ProgramTemplateListItem.svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import { Button } from '$lib/shadcn/button';
@@ -30,10 +28,6 @@
 	let filter = $state<Filter>('all');
 	let isCreating = $state(false);
 	let createError = $state('');
-	let templateToDelete = $state<Doc<'programTemplates'> | null>(null);
-	let deleteDialogOpen = $state(false);
-	let isDeleting = $state(false);
-	let deleteError = $state('');
 
 	let templates = $derived(templatesQuery.data ?? []);
 	let draftCount = $derived(templates.filter((t) => t.status === 'draft').length);
@@ -62,43 +56,6 @@
 		}
 	};
 
-	const askDeleteTemplate = (template: Doc<'programTemplates'>) => {
-		deleteError = '';
-		templateToDelete = template;
-		deleteDialogOpen = true;
-	};
-
-	const deleteTemplate = async () => {
-		if (!templateToDelete || isDeleting) {
-			return;
-		}
-		isDeleting = true;
-		deleteError = '';
-		const templateId = templateToDelete._id;
-		try {
-			await client.mutation(
-				api.programTemplates.remove,
-				{ id: templateId },
-				{
-					optimisticUpdate: (localStore) => {
-						localStore.setQuery(
-							api.programTemplates.list,
-							{},
-							(localStore.getQuery(api.programTemplates.list, {}) ?? []).filter(
-								(template) => template._id !== templateId
-							)
-						);
-					}
-				}
-			);
-			deleteDialogOpen = false;
-			templateToDelete = null;
-		} catch (error) {
-			deleteError = error instanceof Error ? error.message : 'Could not delete template.';
-		} finally {
-			isDeleting = false;
-		}
-	};
 </script>
 
 <div class="flex grow flex-col p-4 md:p-0">
@@ -161,7 +118,6 @@
 						workoutCount={template.workoutCount}
 						activeRunId={isActiveTemplate ? activeRun._id : undefined}
 						hasOtherActiveRun={!!activeRun && !isActiveTemplate}
-						onDelete={() => askDeleteTemplate(template)}
 						animationDelay={i * 50}
 					/>
 				{/each}
@@ -190,11 +146,3 @@
 		{/if}
 	</div>
 </div>
-
-<DeleteProgramTemplateDialog
-	bind:open={deleteDialogOpen}
-	template={templateToDelete}
-	{isDeleting}
-	{deleteError}
-	onConfirmDelete={deleteTemplate}
-/>
