@@ -11,6 +11,7 @@
 	import Minus from '@lucide/svelte/icons/minus';
 	import Copy from '@lucide/svelte/icons/copy';
 	import Check from '@lucide/svelte/icons/check';
+	import { tick, untrack } from 'svelte';
 
 	let {
 		set,
@@ -78,6 +79,17 @@
 	const deleteSet = () => {
 		client.mutation(api.performanceSets.remove, { id: set._id });
 	};
+
+	const focusIfEmpty = (element: HTMLInputElement) => {
+		const isEmpty = untrack(() => !set.weight);
+		const hasPreviousSet = untrack(() => previousSet != null);
+		const isPreviousSetEmpty = untrack(() => !previousSet?.weight);
+		if (isEmpty && (!hasPreviousSet || !isPreviousSetEmpty)) {
+			tick().then(() => {
+				element.focus();
+			});
+		}
+	};
 </script>
 
 <div
@@ -113,6 +125,7 @@
 				placeholder="0"
 				class="h-10 w-full text-center text-base font-semibold tabular-nums"
 				inputmode="numeric"
+				{@attach focusIfEmpty}
 			/>
 		</Label>
 
