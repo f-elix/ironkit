@@ -21,7 +21,7 @@
 	let {
 		exercise,
 		trigger,
-		name = exercise?.name,
+		name,
 		onExerciseCreated,
 		triggerSize = 'default'
 	}: {
@@ -35,16 +35,18 @@
 	const client = useConvexClient();
 	let open = $state(false);
 
-	const title = exercise ? 'Edit exercise' : 'Create exercise';
-	const buttonText = exercise ? 'Save changes' : 'Create';
+	const title = $derived(exercise ? 'Edit exercise' : 'Create exercise');
+	const buttonText = $derived(exercise ? 'Save changes' : 'Create');
 
-	let executionType = $state<(typeof EXERCISE_EXECUTION_TYPES)[number]>(
+	let exerciseName = $derived(name ?? exercise?.name ?? '');
+
+	let executionType = $derived<(typeof EXERCISE_EXECUTION_TYPES)[number]>(
 		exercise?.executionType ?? DEFAULT_EXERCISE_EXECUTION_TYPE
 	);
-	let loadType = $state<(typeof EXERCISE_LOAD_TYPES)[number]>(
+	let loadType = $derived<(typeof EXERCISE_LOAD_TYPES)[number]>(
 		exerciseLoadType(exercise) ?? DEFAULT_EXERCISE_LOAD_TYPE
 	);
-	let muscleGroups = $state<string[]>(Array.from(exercise?.muscleGroups ?? []) ?? []);
+	let muscleGroups = $derived<string[]>(Array.from(exercise?.muscleGroups ?? []) ?? []);
 
 	const resetState = () => {
 		name = '';
@@ -99,8 +101,8 @@
 		>
 			<span>
 				Create exercise
-				{#if name}
-					"<span class="font-normal">{name}</span>"
+				{#if exerciseName}
+					"<span class="font-normal">{exerciseName}</span>"
 				{/if}
 			</span>
 			<PlusIcon />
@@ -111,7 +113,7 @@
 		<form class="flex flex-col gap-6" onsubmit={onSave}>
 			<label>
 				<span class="sr-only">Exercise name</span>
-				<Input type="text" placeholder="Exercise name" bind:value={name} />
+				<Input type="text" placeholder="Exercise name" bind:value={exerciseName} />
 			</label>
 			<LargeRadioButtons
 				label="Execution type"
