@@ -4,6 +4,7 @@
 	import type { Id } from '$convex/_generated/dataModel';
 	import ExerciseSelection from './ExerciseSelection.svelte';
 	import ExerciseInfoDialog from './ExerciseInfoDialog.svelte';
+	import ExerciseCardPerformanceNotesPopover from './ExerciseCardPerformanceNotesPopover.svelte';
 	import UnitSelector from '$lib/components/ui/UnitSelector.svelte';
 	import ExerciseHistoryDialog from './ExerciseHistoryDialog.svelte';
 	import * as Dialog from '$lib/shadcn/dialog';
@@ -89,5 +90,6 @@
 				});
 			}}
 		/>
+		<ExerciseCardPerformanceNotesPopover performanceId={performance._id} note={performance.note} />
 	</div>
 </div>
