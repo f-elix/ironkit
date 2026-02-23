@@ -78,9 +78,6 @@
 		{/if}
 	</div>
 	<div class="flex items-center gap-2">
-		{#if performance.exercise}
-			<ExerciseHistoryDialog exerciseId={performance.exerciseId} />
-		{/if}
 		<UnitSelector
 			value={performance.weightUnit}
 			onValueChange={(unit) => {
@@ -90,6 +87,9 @@
 				});
 			}}
 		/>
+		{#if performance.exercise}
+			<ExerciseHistoryDialog exerciseId={performance.exerciseId} />
+		{/if}
 		<ExerciseCardPerformanceNotesPopover performanceId={performance._id} note={performance.note} />
 	</div>
 </div>
