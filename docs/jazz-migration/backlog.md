@@ -23,7 +23,7 @@ This is a personal app with one operator and two accounts:
 
 ## Backlog
 
-- [ ] 1. Pre-flight cutover guardrails (`todo`)
+- [x] 1. Pre-flight cutover guardrails (`done`)
   - Define the exact final sequence: final prod migration run -> smoke validation -> deploy.
   - Capture baseline Convex snapshot counts per table (source of truth for parity checks).
   - Define explicit pass/fail gates for every rehearsal and final prod run:
@@ -31,12 +31,18 @@ This is a personal app with one operator and two accounts:
     - referential and invariant checks pass
     - app smoke checks pass on migrated data
   - Define abort criteria and rerun procedure when any gate fails.
+  - Implemented:
+    - `docs/jazz-migration/cutover-guardrails.md`
+    - `src/lib/jazz-migration/preflight-guardrails.ts`
+    - `scripts/jazz-migration/preflight-guardrails.ts`
+    - `docs/jazz-migration/baselines/README.md`
 
-- [ ] 2. Jazz schema parity from Convex schema (`todo`)
+- [ ] 2. Jazz schema parity from Convex schema (`in-progress`)
   - Port Convex entities and enums into Jazz schema types.
   - Encode ownership/permissions by user-owned containers.
   - Preserve ordering constraints (`slotOrder`, `workoutOrder`, `groupOrder`, `performanceOrder`, `targetOrder`).
   - Document nullable/optional relationship fields and allowed parent contexts.
+  - Initial scaffold implemented in `src/lib/jazz-migration/schema-parity-scaffold.ts`.
 
 - [ ] 3. Auth migration to Better Auth + Jazz (`todo`)
   - Keep Google provider config.

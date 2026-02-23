@@ -93,6 +93,17 @@ Must preserve current Convex invariants:
 - Maintain explicit derived ordering lists in Jazz where needed to avoid expensive full-graph scans for hot paths.
 - No runtime Convex/Jazz switching or feature-flagged dual path is required.
 
+## Implemented Guardrail Artifacts
+
+- Machine-readable guardrail policy and evaluator:
+  - `src/lib/jazz-migration/preflight-guardrails.ts`
+- Operator CLI for baseline capture + gate evaluation:
+  - `scripts/jazz-migration/preflight-guardrails.ts`
+- Runbook for final cutover sequence, pass/fail gates, abort criteria, and rerun procedure:
+  - `docs/jazz-migration/cutover-guardrails.md`
+- Baseline/report artifact folder:
+  - `docs/jazz-migration/baselines/`
+
 ## Auth Architecture (Better Auth + Jazz + Google)
 
 - Keep Better Auth as the auth system and reuse Google provider config.
@@ -140,6 +151,18 @@ Reference used: [Jazz LLM docs](https://jazz.tools/llms-full.txt) (Better Auth p
   - row counts per logical entity
   - referential integrity checks
 - invariant checks (active run uniqueness, unfinished-session constraints)
+
+## Implemented Schema Parity Scaffold
+
+- Initial Convex -> Jazz schema parity scaffold is defined in:
+  - `src/lib/jazz-migration/schema-parity-scaffold.ts`
+- Current scaffold includes:
+  - Convex enum parity (`weightUnit`, `genderClass`, execution/load types, statuses)
+  - Entity field parity for all training-log/tool tables
+  - User-owned container/permission policy for Jazz user-space root
+  - Ordering constraints (`slotOrder`, `workoutOrder`, `groupOrder`, `performanceOrder`, `targetOrder`)
+  - Nullable relationship and parent-context rules (`workoutId` xor `programWorkoutId`)
+- Next step is converting this scaffold into concrete `jazz-tools` `co.map` / `co.list` definitions after adding Jazz runtime dependencies.
 
 ## Cutover Plan
 
