@@ -40,6 +40,18 @@
 		}
 	};
 
+	const openNextGroup = (groupId: string) => {
+		const currentIndex = performanceGroups.findIndex((g) => g._id === groupId);
+		const nextGroupId = performanceGroups[currentIndex + 1]?._id;
+		if (!nextGroupId) {
+			return;
+		}
+
+		expandedGroupIds = [
+			...new Set([...expandedGroupIds.filter((id) => id !== groupId), nextGroupId])
+		];
+	};
+
 	const expandAll = () => {
 		expandedGroupIds = performanceGroups.map((g) => g._id);
 	};
@@ -64,12 +76,10 @@
 		);
 		try {
 			await client.mutation(api.performanceGroups.updateOrder, {
-				updates: reorderedGroups
-					.filter((item, index) => item.workoutOrder !== index)
-					.map((item, index) => ({
-						id: item._id,
-						workoutOrder: index
-					}))
+				updates: reorderedGroups.map((item, index) => ({
+					id: item._id,
+					workoutOrder: index
+				}))
 			});
 			resume();
 		} catch (error) {
@@ -102,11 +112,13 @@
 				<ul class="flex flex-col gap-3">
 					{#each performanceGroups as performanceGroup, index (performanceGroup._id)}
 						{@const isExpanded = expandedGroupIds.includes(performanceGroup._id)}
+						{@const hasNextGroup = index < performanceGroups.length - 1}
 						<SortableExerciseCard
 							{performanceGroup}
 							{index}
 							{isExpanded}
 							onToggle={() => toggleExpand(performanceGroup._id)}
+							onNext={hasNextGroup ? () => openNextGroup(performanceGroup._id) : undefined}
 						/>
 					{/each}
 				</ul>

@@ -6,7 +6,6 @@
 	import ExerciseCardContent from '$lib/components/training-log/ExerciseCardContent.svelte';
 	import { getPerformanceGroupLabel } from '$lib/training-log/performance-group.utils';
 	import ChevronDown from '@lucide/svelte/icons/chevron-down';
-	import Trash2 from '@lucide/svelte/icons/trash-2';
 	import { cn } from '$lib/shadcn/utils';
 	import * as Collapsible from '$lib/shadcn/collapsible';
 	import { slide } from 'svelte/transition';
@@ -16,12 +15,14 @@
 		performanceGroup,
 		index,
 		isExpanded,
-		onToggle
+		onToggle,
+		onNext
 	}: {
 		performanceGroup: { _id: Id<'performanceGroups'> };
 		index: number;
 		isExpanded: boolean;
 		onToggle: () => void;
+		onNext?: () => void;
 	} = $props();
 
 	const client = useConvexClient();
@@ -67,6 +68,7 @@
 	)}
 	{@attach attachRef}
 >
+	{index}
 	<!-- Progress bar background -->
 	{#if totalSets > 0}
 		<div class="bg-muted absolute inset-x-0 top-0 h-1">
@@ -148,18 +150,12 @@
 		{#if isExpanded && group}
 			<div transition:slide={{ duration: 200, easing: cubicOut }}>
 				<div class="border-border border-t">
-					<ExerciseCardContent performanceGroup={group} {performances} />
-				</div>
-
-				<!-- Delete action -->
-				<div class="border-border border-t px-4 py-3">
-					<button
-						class="text-destructive hover:bg-destructive/10 flex w-full items-center justify-center gap-2 rounded-lg py-2 text-sm font-medium transition-colors"
-						onclick={handleDelete}
-					>
-						<Trash2 class="size-4" />
-						Remove
-					</button>
+					<ExerciseCardContent
+						performanceGroup={group}
+						{performances}
+						onRemoveGroup={handleDelete}
+						{onNext}
+					/>
 				</div>
 			</div>
 		{/if}

@@ -14,6 +14,8 @@
 	import Button from '$lib/shadcn/button/button.svelte';
 	import type { PerformanceWithRelations } from '$lib/db/types';
 	import ExerciseCardTargetSummary from '$lib/components/training-log/ExerciseCardTargetSummary.svelte';
+	import ChevronRight from '@lucide/svelte/icons/chevron-right';
+	import Trash2 from '@lucide/svelte/icons/trash-2';
 
 	type PerformanceGroupWithRelations = {
 		_id: Id<'performanceGroups'>;
@@ -24,10 +26,14 @@
 
 	let {
 		performanceGroup,
-		performances
+		performances,
+		onNext,
+		onRemoveGroup
 	}: {
 		performanceGroup: PerformanceGroupWithRelations;
 		performances: PerformanceWithRelations[];
+		onNext?: () => void;
+		onRemoveGroup: () => void;
 	} = $props();
 
 	const client = useConvexClient();
@@ -126,4 +132,19 @@
 			</Dialog.Trigger>
 		{/snippet}
 	</ExerciseSelection>
+
+	<div class="border-border -mx-4 mt-2 border-t px-4 pt-3">
+		<div class="flex gap-2">
+			<Button variant="destructive" class="flex-1" onclick={onRemoveGroup}>
+				<Trash2 class="mr-1 size-4" />
+				Remove
+			</Button>
+			{#if onNext}
+				<Button variant="secondary" class="flex-1" onclick={onNext}>
+					Next
+					<ChevronRight class="size-4" />
+				</Button>
+			{/if}
+		</div>
+	</div>
 </div>
