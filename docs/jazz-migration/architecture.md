@@ -152,17 +152,31 @@ Reference used: [Jazz LLM docs](https://jazz.tools/llms-full.txt) (Better Auth p
   - referential integrity checks
 - invariant checks (active run uniqueness, unfinished-session constraints)
 
-## Implemented Schema Parity Scaffold
+## Implemented Schema Parity Module
 
-- Initial Convex -> Jazz schema parity scaffold is defined in:
+- Executable Convex -> Jazz schema parity (app source of truth) is implemented in:
+  - `src/lib/jazz/schema.ts`
+- Migration parity metadata + validators are implemented in:
   - `src/lib/jazz-migration/schema-parity-scaffold.ts`
-- Current scaffold includes:
-  - Convex enum parity (`weightUnit`, `genderClass`, execution/load types, statuses)
-  - Entity field parity for all training-log/tool tables
-  - User-owned container/permission policy for Jazz user-space root
-  - Ordering constraints (`slotOrder`, `workoutOrder`, `groupOrder`, `performanceOrder`, `targetOrder`)
-  - Nullable relationship and parent-context rules (`workoutId` xor `programWorkoutId`)
-- Next step is converting this scaffold into concrete `jazz-tools` `co.map` / `co.list` definitions after adding Jazz runtime dependencies.
+- Implemented runtime schema definitions include:
+  - `co.map` entity schemas for all migration tables
+  - `co.list`-backed `JazzUserSpace` root container keyed by parity table names
+  - `co.optional` relationship fields for nullable Convex refs
+  - Enum parity for `weightUnit`, `genderClass`, execution/load types, template/run status
+- Permissions model implemented in schema:
+  - User-owned root/container strategy encoded with `withPermissions({ onInlineCreate: 'extendsContainer' })`
+  - Nested entities default to extending container ownership (single-account private graph model)
+- Invariant/reference validation helpers are implemented in the migration parity module for migration script use:
+  - Referential integrity checks across entity links
+  - Parent-context XOR checks (`workoutId` xor `programWorkoutId`) for groups/performances
+  - Ordering checks and uniqueness by context (`slotOrder`, `workoutOrder`, `groupOrder`, `performanceOrder`, `targetOrder`)
+  - Program run/session invariants (single active run, open-session completion semantics, run-session/workout linkage)
+  - Runtime/parity schema drift checks (runtime table keys, ordering metadata, parent-context metadata)
+- Guardrail wiring module for item 4:
+  - `src/lib/jazz-migration/migration-target-report.ts`
+  - Provides builders that convert snapshot/entity rows into guardrail `targetCounts`, `referentialChecks`, and `invariantChecks`.
+- Deterministic validator tests with realistic dataset fixtures are implemented in:
+  - `src/lib/jazz-migration/schema-parity-scaffold.spec.ts`
 
 ## Cutover Plan
 

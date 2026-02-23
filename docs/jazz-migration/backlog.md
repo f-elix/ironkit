@@ -37,12 +37,18 @@ This is a personal app with one operator and two accounts:
     - `scripts/jazz-migration/preflight-guardrails.ts`
     - `docs/jazz-migration/baselines/README.md`
 
-- [ ] 2. Jazz schema parity from Convex schema (`in-progress`)
+- [x] 2. Jazz schema parity from Convex schema (`done`)
   - Port Convex entities and enums into Jazz schema types.
   - Encode ownership/permissions by user-owned containers.
   - Preserve ordering constraints (`slotOrder`, `workoutOrder`, `groupOrder`, `performanceOrder`, `targetOrder`).
   - Document nullable/optional relationship fields and allowed parent contexts.
-  - Initial scaffold implemented in `src/lib/jazz-migration/schema-parity-scaffold.ts`.
+  - Implemented:
+    - Executable Jazz schema definitions (`co.map`, `co.list`, `co.optional`) for all Convex parity entities in `src/lib/jazz/schema.ts`.
+    - User-owned root/container permission defaults via schema-level `withPermissions` and `extendsContainer` inline-create semantics.
+    - Reusable schema validation helpers for referential integrity + invariants (parent-context XOR, ordering keys, run/session constraints) in `src/lib/jazz-migration/schema-parity-scaffold.ts`, wired to consume the app schema module.
+    - Runtime/parity drift guard via `validateSchemaParityRuntimeAlignment()` integrated into invariant validation, so schema-table/order/parent-context drift fails guardrail invariants.
+    - Deterministic realistic dataset tests for schema validators and target-report generation in `src/lib/jazz-migration/schema-parity-scaffold.spec.ts`.
+    - Guardrail target-report bridge module for migration item 4 consumption in `src/lib/jazz-migration/migration-target-report.ts`.
 
 - [ ] 3. Auth migration to Better Auth + Jazz (`todo`)
   - Keep Google provider config.
