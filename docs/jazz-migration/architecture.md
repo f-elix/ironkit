@@ -3,9 +3,9 @@
 ## Goals
 
 - Replace Convex persistence and Convex API calls with Jazz.
-- Preserve existing behavior and user data for all training-log flows.
+- Preserve behavior while expressing the same domain hierarchy in Jazz-native schema form.
 - Keep Better Auth with Google login, migrated to Jazz-compatible account storage.
-- Support repeated full migration rehearsals and final one-shot production cutover.
+- Allow temporary breakage during implementation; restore end-to-end stability at final cutover.
 
 ## Non-goals
 
@@ -32,49 +32,102 @@
 ## Data Ownership Model
 
 - Primary container: one user-owned root graph per account (for private training data).
-- Entities remain normalized (separate objects for workouts, exercises, templates, runs, etc.).
-- References between entities are explicit IDs/links, preserving existing relationships.
+- Performance-tracking data is modeled as a nested hierarchy for direct parent-first traversal:
+  - `workout -> performanceGroups -> performances -> performanceSets`
+  - `programTemplate -> programWorkouts -> performanceGroups -> performances -> programWorkoutExerciseTargets`
+  - `programRun -> programRunSessions`
+- Root-level account lists are: tools/preferences, `exercises`, `workouts`, `programTemplates`, and `programRuns`.
 
 ## Schema Shape (High Level)
 
 ```ts
 import { co, z } from 'jazz-tools';
 
-const ToolPreferences = co.map({
-	weightConverter: co.map({ unit: z.enum(['kg', 'lbs']), round: z.boolean() }),
-	loadPercentageCalculator: co.map({ unit: z.enum(['kg', 'lbs']), round: z.boolean() }),
-	coefficientCalculator: co.map({
-		genderClass: z.enum(['male', 'female']),
-		totalUnit: z.enum(['kg', 'lbs']),
-		bodyweightUnit: z.enum(['kg', 'lbs'])
-	}),
-	plateCalculator: co.map({
-		barWeight: z.number(),
-		heavyCollars: z.boolean(),
-		allowNonStandardConfig: z.boolean()
-	})
+const Workout = co.map({
+	title: z.string(),
+	date: z.number(),
+	get performanceGroups() {
+		return co.list(PerformanceGroup);
+	}
 });
 
-const UserSpace = co.map({
-	tools: ToolPreferences,
+const PerformanceGroup = co.map({
+	get workout() {
+		return co.optional(Workout);
+	},
+	get programWorkout() {
+		return co.optional(ProgramWorkout);
+	},
+	get performances() {
+		return co.list(Performance);
+	},
+	workoutOrder: z.number()
+});
+
+const Performance = co.map({
+	performanceGroup: PerformanceGroup,
+	exercise: Exercise,
+	get performanceSets() {
+		return co.list(PerformanceSet);
+	},
+	get programWorkoutExerciseTargets() {
+		return co.list(ProgramWorkoutExerciseTarget);
+	},
+	groupOrder: z.number()
+});
+
+const ProgramWorkoutExerciseTarget = co.map({
+	performance: Performance,
+	targetOrder: z.number()
+});
+
+const ProgramTemplate = co.map({
+	get programWorkouts() {
+		return co.list(ProgramWorkout);
+	}
+});
+
+const ProgramWorkout = co.map({
+	programTemplate: ProgramTemplate,
+	get performanceGroups() {
+		return co.list(PerformanceGroup);
+	},
+	weekNumber: z.number(),
+	slotOrder: z.number()
+});
+
+const ProgramRun = co.map({
+	programTemplate: ProgramTemplate,
+	get programRunSessions() {
+		return co.list(ProgramRunSession);
+	}
+});
+
+const ProgramRunSession = co.map({
+	programRun: ProgramRun,
+	programWorkout: ProgramWorkout
+});
+
+const JazzUserSpace = co.map({
+	weightConverter: co.list(WeightConverter),
+	coefficientCalculator: co.list(CoefficientCalculator),
+	loadPercentageCalculator: co.list(LoadPercentageCalculator),
+	plateCalculator: co.list(PlateCalculator),
 	exercises: co.list(Exercise),
 	workouts: co.list(Workout),
-	performanceGroups: co.list(PerformanceGroup),
-	performances: co.list(Performance),
-	performanceSets: co.list(PerformanceSet),
 	programTemplates: co.list(ProgramTemplate),
-	programWorkouts: co.list(ProgramWorkout),
-	programWorkoutExerciseTargets: co.list(ProgramWorkoutExerciseTarget),
 	programRuns: co.list(ProgramRun),
-	programRunSessions: co.list(ProgramRunSession)
 });
 ```
 
-## Relationship and Invariant Parity
+## Relationship and Invariants
 
-Must preserve current Convex invariants:
+Current schema modeling:
 
-- Exactly one parent context for a group/performance (`workoutId` xor `programWorkoutId`).
+- Parent-first traversal for workout and program data is preserved, and child-to-parent references are also preserved for bidirectional access.
+- `PerformanceGroup` supports dual ownership context via optional `workout` or optional `programWorkout` links, while parents keep ordered `performanceGroups` lists.
+- `Performance` keeps `performanceGroup` and ordered `programWorkoutExerciseTargets`, while each target keeps `performance`.
+- `ProgramRun` keeps `programRunSessions`, and each `ProgramRunSession` keeps `programRun`.
 - Ordering guarantees:
   - template workout order by `weekNumber` + `slotOrder`
   - workout group order by `workoutOrder`
@@ -117,6 +170,8 @@ Reference used: [Jazz LLM docs](https://jazz.tools/llms-full.txt) (Better Auth p
 
 ## Data Migration Architecture
 
+Data migration is required before cutover because existing Convex data must be moved into Jazz.
+
 ## Export
 
 - Script reads Convex data table-by-table using admin credentials.
@@ -134,9 +189,9 @@ Reference used: [Jazz LLM docs](https://jazz.tools/llms-full.txt) (Better Auth p
 
 ## Import
 
-- Import uses atomic full-replace semantics on every run.
+- Import should use atomic full-replace semantics on every run.
 - Strategy:
-  - build a complete new Jazz user-space graph from snapshot data
+  - build a complete new Jazz account-root graph from snapshot data
   - perform all reference wiring and parity checks on that new graph
   - switch active root pointer only after successful build/validation
   - delete previous user-space graph after successful switch
@@ -149,31 +204,26 @@ Reference used: [Jazz LLM docs](https://jazz.tools/llms-full.txt) (Better Auth p
 
 ## Verification
 
-- Parity report:
+- Parity report should include:
   - row counts per logical entity
   - referential integrity checks
 - invariant checks (active run uniqueness, unfinished-session constraints)
 
-## Implemented Schema Parity Module
+## Implemented Schema Notes
 
-- Executable Convex -> Jazz schema parity (app source of truth) is implemented in:
+- Executable app schema (source of truth) is implemented in:
   - `src/lib/jazz/schema.ts`
-- Migration parity metadata + validators are implemented in:
+- Legacy migration parity metadata + validators are still available in:
   - `src/lib/jazz-migration/schema-parity-scaffold.ts`
-- Implemented runtime schema definitions include:
-  - `co.map` entity schemas for all migration tables
-  - `co.list`-backed `JazzUserSpace` root container keyed by parity table names
-  - `co.optional` relationship fields for nullable Convex refs
-  - Enum parity for `weightUnit`, `genderClass`, execution/load types, template/run status
+- Runtime schema models the existing training-log hierarchy directly in Jazz; Convex previously represented the same structure via table rows and relationship fields.
 - Permissions model implemented in schema:
   - User-owned root/container strategy encoded with `withPermissions({ onInlineCreate: 'extendsContainer' })`
   - Nested entities default to extending container ownership (single-account private graph model)
-- Invariant/reference validation helpers are implemented in the migration parity module for migration script use:
+- Invariant/reference validation helpers in the migration parity module remain available if migration tooling is resumed:
   - Referential integrity checks across entity links
-  - Parent-context XOR checks (`workoutId` xor `programWorkoutId`) for groups/performances
   - Ordering checks and uniqueness by context (`slotOrder`, `workoutOrder`, `groupOrder`, `performanceOrder`, `targetOrder`)
   - Program run/session invariants (single active run, open-session completion semantics, run-session/workout linkage)
-  - Runtime/parity schema drift checks (runtime table keys, ordering metadata, parent-context metadata)
+  - Runtime/parity schema drift checks for migration scaffolds
 - Guardrail wiring module for item 4:
   - `src/lib/jazz-migration/migration-target-report.ts`
   - Provides builders that convert snapshot/entity rows into guardrail `targetCounts`, `referentialChecks`, and `invariantChecks`.
@@ -182,8 +232,8 @@ Reference used: [Jazz LLM docs](https://jazz.tools/llms-full.txt) (Better Auth p
 
 ## Cutover Plan
 
-1. Run migration script repeatedly against `dev` account while implementing endpoint parity.
-2. Validate parity and app behavior after each rehearsal run.
-3. Complete all query/mutation migrations and remove Convex runtime usage.
+1. Complete schema/query/mutation migration to Jazz and remove Convex runtime usage.
+2. Run migration script repeatedly against `dev` account while implementing endpoint parity.
+3. Validate parity and app behavior after each rehearsal run.
 4. Execute one final atomic full-replace migration for `prod` account.
 5. Deploy finished Jazz-backed app immediately after final production migration.

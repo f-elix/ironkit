@@ -2,7 +2,7 @@
 
 ## Scope
 
-Migrate backend data, auth integration, and all Convex query/mutation consumers to Jazz for:
+Migrate backend persistence, auth integration, and all Convex query/mutation consumers to Jazz for:
 
 - Tool preferences/state (`weightConverter`, `plateCalculator`, `coefficientCalculator`, `loadPercentageCalculator`)
 - Exercises
@@ -39,18 +39,18 @@ Temporary app breakage is expected during active migration work; full runtime st
     - `scripts/jazz-migration/preflight-guardrails.ts`
     - `docs/jazz-migration/baselines/README.md`
 
-- [x] 2. Jazz schema parity from Convex schema (`done`)
-  - Port Convex entities and enums into Jazz schema types.
+- [x] 2. Jazz schema modeling of existing hierarchy (`done`)
+  - Port core entities/enums into Jazz schema types.
   - Encode ownership/permissions by user-owned containers.
-  - Preserve ordering constraints (`slotOrder`, `workoutOrder`, `groupOrder`, `performanceOrder`, `targetOrder`).
-  - Document nullable/optional relationship fields and allowed parent contexts.
+  - Keep ordering constraints (`slotOrder`, `workoutOrder`, `groupOrder`, `performanceOrder`, `targetOrder`).
+  - Model the existing training-log hierarchy explicitly as parent-first nesting:
+    - `workout -> performanceGroups -> performances -> performanceSets`
+    - `programTemplate -> programWorkouts -> performanceGroups -> performances -> programWorkoutExerciseTargets`
+    - `programRun -> programRunSessions`
   - Implemented:
-    - Executable Jazz schema definitions (`co.map`, `co.list`, `co.optional`) for all Convex parity entities in `src/lib/jazz/schema.ts`.
+    - Executable Jazz schema definitions in `src/lib/jazz/schema.ts` with explicit parent-first performance graph nesting and preserved bidirectional references for group/performance/set ownership.
     - User-owned root/container permission defaults via schema-level `withPermissions` and `extendsContainer` inline-create semantics.
-    - Reusable schema validation helpers for referential integrity + invariants (parent-context XOR, ordering keys, run/session constraints) in `src/lib/jazz-migration/schema-parity-scaffold.ts`, wired to consume the app schema module.
-    - Runtime/parity drift guard via `validateSchemaParityRuntimeAlignment()` integrated into invariant validation, so schema-table/order/parent-context drift fails guardrail invariants.
-    - Deterministic realistic dataset tests for schema validators and target-report generation in `src/lib/jazz-migration/schema-parity-scaffold.spec.ts`.
-    - Guardrail target-report bridge module for migration item 4 consumption in `src/lib/jazz-migration/migration-target-report.ts`.
+    - Legacy parity scaffolds remain in `src/lib/jazz-migration/schema-parity-scaffold.ts` for optional future migration tooling; Convex and Jazz represent the same domain hierarchy with different modeling patterns.
 
 - [x] 3. Auth migration to Better Auth + Jazz (`done`)
   - Keep Google provider config.
@@ -63,7 +63,7 @@ Temporary app breakage is expected during active migration work; full runtime st
     - Wrapped app rendering with `JazzSvelteProvider` + Jazz Better Auth `AuthProvider` in `src/routes/+layout.svelte`.
     - Kept Convex Better Auth server configuration unchanged (no Convex auth migration hooks added at this stage, and no Convex/Jazz auth mixing in `src/lib/auth-client.ts`).
 
-- [ ] 4. Data migration script: Convex export -> Jazz import (`todo`)
+- [ ] 4. Data migration script: Convex export -> Jazz import (`in-progress`)
   - Implement deterministic export format with stable ordering.
   - Enforce atomic full-replace semantics on each run:
     - clear/replace target Jazz user-space data
@@ -72,7 +72,7 @@ Temporary app breakage is expected during active migration work; full runtime st
   - Implement import with ID mapping tables:
     - old Convex IDs -> new Jazz node IDs
     - user/account mapping (Better Auth + Jazz account IDs)
-  - Support dry-run and repeatable re-runs (script will be executed multiple times).
+  - Support dry-run and repeatable re-runs (`dev` rehearsals before final `prod` run).
   - Add post-import parity report (counts + key invariants).
 
 - [ ] 5. Migrate 5 tools query/mutation layer (`todo`)
@@ -113,11 +113,12 @@ Temporary app breakage is expected during active migration work; full runtime st
 
 Final sequence:
 
-1. Jazz schema from Convex schema
+1. Jazz schema modeling of existing hierarchy and stabilization
 2. Better Auth + Jazz + Google auth migration
-3. Atomic full-replace Convex -> Jazz migration script
+3. Data migration script (Convex export -> Jazz import)
 4. Tools queries/mutations
 5. Exercises queries/mutations
 6. Workouts queries/mutations
 7. Program template and program run queries/mutations
-8. Rehearsal runs on `dev`, final run on `prod`, then single deploy cutover
+8. Rehearsals on `dev`, final run on `prod`
+9. Single deploy cutover

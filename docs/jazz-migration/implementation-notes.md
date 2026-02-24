@@ -260,3 +260,88 @@ This file is a running log. Add a dated entry for every meaningful migration cha
 - Follow-ups:
   - Item 4 migration script should consume Better Auth user/account linkage (`accountID`) as authoritative mapping input when importing Convex data into Jazz user-space.
   - Item 9 should remove `@mmailaender/convex-better-auth-svelte` usage after Convex client removal, then simplify root auth wiring to Jazz-native auth state only.
+
+## 2026-02-24 - Performance graph modeled explicitly in Jazz hierarchy
+
+- Scope:
+  - Reworked the Jazz training-log performance graph to model the existing hierarchy explicitly:
+    - `workout -> performanceGroups -> performances -> performanceSets`
+  - Updated migration docs to reflect that Convex and Jazz encode the same domain structure with different modeling patterns.
+- Files touched:
+  - `src/lib/jazz/schema.ts`
+  - `docs/jazz-migration/backlog.md`
+  - `docs/jazz-migration/architecture.md`
+  - `docs/jazz-migration/implementation-notes.md`
+- Decisions:
+  - Preserved bidirectional ownership links on `PerformanceGroup`, `Performance`, and `PerformanceSet` while also modeling parent-owned nested `co.list(...)` collections.
+  - Removed root-level lists for `performanceGroups`, `performances`, and `performanceSets`; these now hang from workout descendants.
+  - Kept temporary breakage as expected and acceptable during this migration phase.
+  - At the time, data migration scripting was parked pending confirmation of source data requirements.
+- Risks:
+  - Existing app code that assumes flat/root collections or direct backrefs will fail until query/mutation layers are updated.
+  - Migration parity scaffold checks for this subtree are currently historical/deferred and can drift from runtime schema unless explicitly maintained.
+- Validation:
+  - Ran `pnpm exec eslint --no-ignore src/lib/jazz/schema.ts docs/jazz-migration/backlog.md docs/jazz-migration/architecture.md docs/jazz-migration/implementation-notes.md`.
+  - Ran `pnpm exec tsc --noEmit src/lib/jazz/schema.ts --moduleResolution bundler --module esnext --target ESNext --strict --skipLibCheck`.
+- Follow-ups:
+  - Update Jazz query/mutation paths to use the new account-root/workout-owned structure while preserving child-to-parent lookup paths.
+  - Decide whether to adapt or retire `src/lib/jazz-migration/schema-parity-scaffold.ts` now that this subtree is hierarchy-first.
+
+## 2026-02-24 - Program hierarchy bidirectional relationships
+
+- Scope:
+  - Added program-side bidirectional structure in the Jazz schema:
+    - `programTemplate -> programWorkouts -> performanceGroups -> performances -> programWorkoutExerciseTargets`
+    - `programRun -> programRunSessions`
+- Files touched:
+  - `src/lib/jazz/schema.ts`
+  - `docs/jazz-migration/backlog.md`
+  - `docs/jazz-migration/architecture.md`
+  - `docs/jazz-migration/implementation-notes.md`
+- Decisions:
+  - Added `ProgramTemplate.programWorkouts` and `ProgramWorkout.performanceGroups` lists while retaining child refs (`ProgramWorkout.programTemplate`, `PerformanceGroup.programWorkout`).
+  - Added `Performance.programWorkoutExerciseTargets` list while retaining `ProgramWorkoutExerciseTarget.performance`.
+  - Added `ProgramRun.programRunSessions` list while retaining `ProgramRunSession.programRun`.
+  - Kept `PerformanceGroup.workout` and `PerformanceGroup.programWorkout` optional to support both workout and program contexts.
+- Risks:
+  - Because `PerformanceGroup` can belong to either parent type, write-path validation must enforce exactly one parent context.
+- Validation:
+  - Ran `pnpm exec tsc --noEmit src/lib/jazz/schema.ts --moduleResolution bundler --module esnext --target ESNext --strict --skipLibCheck`.
+- Follow-ups:
+  - Update write-path validators/mutations to enforce single-parent ownership (`workout` xor `programWorkout`) for `PerformanceGroup`.
+
+## 2026-02-24 - Schema/docs alignment pass
+
+- Scope:
+  - Re-read `src/lib/jazz/schema.ts` and aligned migration docs to the current runtime schema shape.
+- Files touched:
+  - `docs/jazz-migration/architecture.md`
+  - `docs/jazz-migration/implementation-notes.md`
+- Decisions:
+  - Updated architecture snippet to reflect current parent-child links and root container fields (`JazzUserSpace` root lists only include tool lists, `exercises`, `workouts`, `programTemplates`, and `programRuns`).
+  - Corrected wording to match runtime field names (`ProgramWorkoutExerciseTarget.performance`).
+- Risks:
+  - None; docs-only alignment.
+- Validation:
+  - Re-checked schema/docs consistency manually after edit.
+- Follow-ups:
+  - Keep architecture snippet synced whenever `src/lib/jazz/schema.ts` relationship fields or root lists change.
+
+## 2026-02-24 - Data migration requirement correction (Convex data present)
+
+- Scope:
+  - Corrected migration docs to reflect that Convex data exists and must be migrated into Jazz.
+- Files touched:
+  - `docs/jazz-migration/backlog.md`
+  - `docs/jazz-migration/architecture.md`
+  - `docs/jazz-migration/implementation-notes.md`
+- Decisions:
+  - Set backlog item 4 (`Data migration script: Convex export -> Jazz import`) to `in-progress`.
+  - Removed `n/a`/“no data exists” assumptions from active planning docs.
+  - Restored migration-first sequencing before endpoint migration completion and cutover.
+- Risks:
+  - If migration script quality gates are weak, data mismatch can reach runtime paths before endpoint parity is complete.
+- Validation:
+  - Re-read backlog + architecture for consistency with current requirement that data transfer from Convex to Jazz is mandatory.
+- Follow-ups:
+  - Implement item 4 export/import script with deterministic ordering, ID mapping, and parity/invariant reporting.

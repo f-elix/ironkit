@@ -97,6 +97,9 @@ export const Workout = co
 		get sourceProgramWorkout() {
 			return co.optional(ProgramWorkout);
 		},
+		get performanceGroups() {
+			return co.list(PerformanceGroup);
+		},
 		updatedAt: z.number()
 	})
 	.withPermissions(USER_OWNED_ENTITY_PERMISSIONS);
@@ -109,6 +112,9 @@ export const PerformanceGroup = co
 		get programWorkout() {
 			return co.optional(ProgramWorkout);
 		},
+		get performances() {
+			return co.list(Performance);
+		},
 		label: z.optional(z.string()),
 		workoutOrder: z.number(),
 		updatedAt: z.number()
@@ -119,11 +125,11 @@ export const Performance = co
 	.map({
 		performanceGroup: PerformanceGroup,
 		exercise: Exercise,
-		get workout() {
-			return co.optional(Workout);
+		get performanceSets() {
+			return co.list(PerformanceSet);
 		},
-		get programWorkout() {
-			return co.optional(ProgramWorkout);
+		get programWorkoutExerciseTargets() {
+			return co.list(ProgramWorkoutExerciseTarget);
 		},
 		groupOrder: z.number(),
 		note: z.optional(z.string()),
@@ -147,7 +153,7 @@ export const PerformanceSet = co
 
 export const ProgramWorkoutExerciseTarget = co
 	.map({
-		programWorkoutExercise: Performance,
+		performance: Performance,
 		targetSetRange: z.string(),
 		targetRepsRange: z.optional(z.string()),
 		targetDuration: z.optional(z.string()),
@@ -161,7 +167,10 @@ export const ProgramTemplate = co
 		name: z.string(),
 		notes: z.optional(z.string()),
 		totalWeeks: z.number(),
-		status: PROGRAM_TEMPLATE_STATUS_ENUM,
+		status: z.enum(PROGRAM_TEMPLATE_STATUSES),
+		get programWorkouts() {
+			return co.list(ProgramWorkout);
+		},
 		updatedAt: z.number()
 	})
 	.withPermissions(USER_OWNED_ENTITY_PERMISSIONS);
@@ -169,6 +178,9 @@ export const ProgramTemplate = co
 export const ProgramWorkout = co
 	.map({
 		programTemplate: ProgramTemplate,
+		get performanceGroups() {
+			return co.list(PerformanceGroup);
+		},
 		weekNumber: z.number(),
 		slotOrder: z.number(),
 		trackKey: z.string(),
@@ -184,6 +196,9 @@ export const ProgramRun = co
 		status: PROGRAM_RUN_STATUS_ENUM,
 		startedAt: z.number(),
 		endedAt: z.optional(z.number()),
+		get programRunSessions() {
+			return co.list(ProgramRunSession);
+		},
 		updatedAt: z.number()
 	})
 	.withPermissions(USER_OWNED_ENTITY_PERMISSIONS);
@@ -225,14 +240,8 @@ export const JazzUserSpace = co
 		plateCalculator: co.list(PlateCalculator),
 		exercises: co.list(Exercise),
 		workouts: co.list(Workout),
-		performanceGroups: co.list(PerformanceGroup),
-		performances: co.list(Performance),
-		performanceSets: co.list(PerformanceSet),
-		programWorkoutExerciseTargets: co.list(ProgramWorkoutExerciseTarget),
 		programTemplates: co.list(ProgramTemplate),
-		programWorkouts: co.list(ProgramWorkout),
 		programRuns: co.list(ProgramRun),
-		programRunSessions: co.list(ProgramRunSession)
 	})
 	.withPermissions({
 		onInlineCreate: 'extendsContainer'
