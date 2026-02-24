@@ -345,3 +345,83 @@ This file is a running log. Add a dated entry for every meaningful migration cha
   - Re-read backlog + architecture for consistency with current requirement that data transfer from Convex to Jazz is mandatory.
 - Follow-ups:
   - Implement item 4 export/import script with deterministic ordering, ID mapping, and parity/invariant reporting.
+
+## 2026-02-24 - Backlog item 4 progress: deterministic dry-run migration planner
+
+- Scope:
+  - Implemented the first executable slice of item 4 as a repeatable dry-run planner for Convex -> Jazz migration artifacts.
+  - Kept import writes disabled; this pass focuses on deterministic export, mapping plans, and guardrail target report generation.
+- Files touched:
+  - `src/lib/jazz-migration/snapshot-utils.ts`
+  - `src/lib/jazz-migration/migration-plan.ts`
+  - `src/lib/jazz-migration/migration-plan.spec.ts`
+  - `scripts/jazz-migration/migrate-convex-to-jazz.ts`
+  - `scripts/jazz-migration/run-migrate-convex-to-jazz.mjs`
+  - `scripts/jazz-migration/preflight-guardrails.ts`
+  - `docs/jazz-migration/backlog.md`
+  - `docs/jazz-migration/architecture.md`
+  - `docs/jazz-migration/implementation-notes.md`
+- Decisions:
+  - Standardized snapshot ingestion for migration tooling with one extractor that accepts both:
+    - top-level table map shape
+    - `{ tables: ... }` shape
+  - Added deterministic row ordering across all migration tables so repeated rehearsal runs produce stable artifacts.
+  - Added a migration planner artifact model with:
+    - source Convex ID -> planned Jazz ID mapping per table
+    - explicit `sourceUserId` ownership validation before import readiness
+    - guardrail-compatible target report generation from deterministic snapshot rows
+  - Added CLI command:
+    - `node scripts/jazz-migration/run-migrate-convex-to-jazz.mjs plan --account ... --snapshot ... --source-user-id ... --target-account-id ... --out-dir ...`
+  - Planner exits non-zero when readiness blockers exist unless `--allow-blockers` is set.
+- Risks:
+  - This is still dry-run only; no live Jazz root replacement is performed yet.
+  - Planned Jazz IDs are placeholders until real import writes persist created node IDs.
+- Validation:
+  - Ran `pnpm exec eslint --no-ignore src/lib/jazz-migration/snapshot-utils.ts src/lib/jazz-migration/migration-plan.ts src/lib/jazz-migration/migration-plan.spec.ts scripts/jazz-migration/migrate-convex-to-jazz.ts scripts/jazz-migration/run-migrate-convex-to-jazz.mjs scripts/jazz-migration/preflight-guardrails.ts`.
+  - Ran `pnpm exec tsc --noEmit src/lib/jazz-migration/snapshot-utils.ts src/lib/jazz-migration/migration-plan.ts scripts/jazz-migration/migrate-convex-to-jazz.ts scripts/jazz-migration/preflight-guardrails.ts --moduleResolution bundler --module esnext --target ESNext --strict --skipLibCheck`.
+  - Ran `pnpm exec vitest --run src/lib/jazz-migration/migration-plan.spec.ts`.
+- Follow-ups:
+  - Implement apply mode: build new Jazz account root, wire references, switch root pointer, delete previous root.
+  - Replace planned Jazz IDs with actual created Jazz node IDs in mapping artifacts.
+  - Add runbook integration for generated `target-report.json` + preflight evaluation in one end-to-end migration command.
+
+## 2026-02-24 - Backlog item 4 progress: real apply mode with root switch
+
+- Scope:
+  - Added real migration apply mode that writes imported data into Jazz, switches account root, and deletes the previous root after successful switch.
+  - Kept `plan` mode for dry-run planning/rehearsal artifacts.
+- Files touched:
+  - `src/lib/jazz-migration/apply-import.ts`
+  - `scripts/jazz-migration/migrate-convex-to-jazz.ts`
+  - `scripts/jazz-migration/run-migrate-convex-to-jazz.mjs`
+  - `docs/jazz-migration/backlog.md`
+  - `docs/jazz-migration/architecture.md`
+  - `docs/jazz-migration/implementation-notes.md`
+- Decisions:
+  - Implemented replacement import flow as:
+    - create replacement `JazzUserSpace`
+    - import deterministic snapshot rows in topological order
+    - run post-import target report from rewritten rows using created Jazz IDs
+    - switch `account.root` to replacement root only when checks pass
+    - delete previous root after successful switch
+  - Added strict apply-mode safety flags:
+    - requires `--target-account-secret` (or `JAZZ_WORKER_SECRET`)
+    - requires explicit `--confirm apply-dev|apply-prod`
+  - Apply mode now writes both:
+    - planned mapping (`id-map-plan.json`)
+    - actual mapping (`id-map-actual.json`)
+  - Optional baseline evaluation is now supported in apply mode with `--baseline`.
+  - Switched migration runner implementation to `pnpm exec tsx` for stable module resolution with `jazz-tools/worker`.
+- Risks:
+  - Apply mode has not yet been executed against real `dev`/`prod` account credentials in this workspace session.
+  - Root-switch behavior is implemented but still needs rehearsal validation against live sync/server conditions.
+- Validation:
+  - Ran `pnpm exec eslint --no-ignore src/lib/jazz-migration/apply-import.ts scripts/jazz-migration/migrate-convex-to-jazz.ts scripts/jazz-migration/run-migrate-convex-to-jazz.mjs src/lib/jazz-migration/migration-plan.ts src/lib/jazz-migration/snapshot-utils.ts scripts/jazz-migration/preflight-guardrails.ts`.
+  - Ran `pnpm exec tsc --noEmit src/lib/jazz-migration/apply-import.ts scripts/jazz-migration/migrate-convex-to-jazz.ts src/lib/jazz-migration/migration-plan.ts src/lib/jazz-migration/snapshot-utils.ts scripts/jazz-migration/preflight-guardrails.ts --moduleResolution bundler --module esnext --target ESNext --strict --skipLibCheck`.
+  - Ran `pnpm exec vitest --run src/lib/jazz-migration/migration-plan.spec.ts`.
+  - Ran `node scripts/jazz-migration/run-migrate-convex-to-jazz.mjs plan --account dev --snapshot /tmp/ironkit-convex-snapshot-sample.json --source-user-id user-dev --target-account-id acc_dev --out-dir /tmp/ironkit-jazz-migration-plan-sample` (pass).
+  - Ran `node scripts/jazz-migration/run-migrate-convex-to-jazz.mjs apply --account dev --snapshot /tmp/ironkit-convex-snapshot-sample.json --source-user-id user-dev --target-account-id acc_dev --out-dir /tmp/ironkit-jazz-migration-apply-sample --confirm apply-dev` (expected safe fail without secret: `--target-account-secret` required).
+- Follow-ups:
+  - Execute apply rehearsals against the real `dev` Jazz account and inspect generated `migration-apply-report.json`, `id-map-actual.json`, and `target-report.json`.
+  - Validate guardrail evaluation output with a real baseline on each rehearsal.
+  - Add runtime smoke checks into `smokeChecks` array before final `prod` run.

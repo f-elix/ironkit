@@ -5,9 +5,9 @@ import {
 	evaluatePreflightRun,
 	type ConvexBaselineSnapshot,
 	type MigrationAccount,
-	type PreflightRunInput,
-	type SnapshotRowsByTable
+	type PreflightRunInput
 } from '../../src/lib/jazz-migration/preflight-guardrails';
+import { extractSnapshotRowsByTable } from '../../src/lib/jazz-migration/snapshot-utils';
 
 interface CliArgs {
 	[flag: string]: string | boolean;
@@ -76,21 +76,6 @@ const writeJsonFile = async (filePath: string, payload: unknown) => {
 	await writeFile(absolutePath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
 };
 
-const extractRowsByTable = (source: unknown): SnapshotRowsByTable => {
-	if (!source || typeof source !== 'object') {
-		throw new Error('Snapshot JSON must be an object.');
-	}
-
-	const sourceRecord = source as Record<string, unknown>;
-	const tables = sourceRecord.tables;
-
-	if (tables && typeof tables === 'object' && !Array.isArray(tables)) {
-		return tables as SnapshotRowsByTable;
-	}
-
-	return sourceRecord;
-};
-
 const runBaselineMode = async (args: CliArgs) => {
 	const account = asString(args.account);
 	if (!isMigrationAccount(account)) {
@@ -119,7 +104,7 @@ const runBaselineMode = async (args: CliArgs) => {
 	}
 
 	const snapshotJson = await loadJsonFile<unknown>(resolvedSnapshotPath);
-	const rowsByTable = extractRowsByTable(snapshotJson);
+	const rowsByTable = extractSnapshotRowsByTable(snapshotJson);
 
 	const baseline = createBaselineSnapshot({
 		account,

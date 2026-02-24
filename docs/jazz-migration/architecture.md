@@ -179,6 +179,10 @@ Data migration is required before cutover because existing Convex data must be m
   - source row payload
   - source `_id`
   - source table name
+- Implemented planning utility:
+  - `src/lib/jazz-migration/snapshot-utils.ts`
+  - Supports snapshot extraction from either top-level table maps or `{ tables: ... }` shape.
+  - Produces deterministic per-table row ordering to make reruns diffable/repeatable.
 
 ## Transform
 
@@ -186,6 +190,15 @@ Data migration is required before cutover because existing Convex data must be m
 - Build mapping dictionaries:
   - `convexId -> jazzId`
   - `convexUserId -> jazzAccountId`
+- Implemented dry-run planning artifacts:
+  - `src/lib/jazz-migration/migration-plan.ts`
+  - Builds:
+    - deterministic export snapshot (`convex-deterministic-export.json`)
+    - Convex `_id` to planned Jazz ID mapping (`id-map-plan.json`)
+    - guardrail target report (`target-report.json`)
+    - readiness summary (`migration-plan.json`)
+  - CLI mode:
+    - `node scripts/jazz-migration/run-migrate-convex-to-jazz.mjs plan ...`
 
 ## Import
 
@@ -201,6 +214,15 @@ Data migration is required before cutover because existing Convex data must be m
   - dependent graph nodes (program workouts/groups/exercises/targets, workouts/groups/performances/sets)
   - runs and sessions
   - second-pass patching for cyclic optional references (`workout.programRunSessionId` and `session.workoutId`)
+- Current status:
+  - Atomic import phases are documented and emitted in migration plans.
+  - Live apply mode is implemented in `src/lib/jazz-migration/apply-import.ts` and wired in:
+    - `node scripts/jazz-migration/run-migrate-convex-to-jazz.mjs apply ...`
+  - Apply flow performs:
+    - full replacement root graph build from deterministic rows
+    - post-import guardrail target report build with rewritten Jazz IDs
+    - account root pointer switch on success
+    - previous-root deletion after successful switch
 
 ## Verification
 
@@ -208,6 +230,32 @@ Data migration is required before cutover because existing Convex data must be m
   - row counts per logical entity
   - referential integrity checks
 - invariant checks (active run uniqueness, unfinished-session constraints)
+- Implemented:
+  - `target-report.json` generation wired through `createMigrationTargetReportFromSnapshotRows(...)` during dry-run planning.
+  - `target-report.json` generation after real apply writes is wired through `createMigrationTargetReportFromEntityRows(...)`.
+  - Dry-run planning command:
+
+```bash
+node scripts/jazz-migration/run-migrate-convex-to-jazz.mjs plan \
+  --account dev \
+  --snapshot /absolute/path/to/convex-snapshot.json \
+  --source-user-id <convex-user-id> \
+  --target-account-id <jazz-account-id> \
+  --out-dir ./docs/jazz-migration/runs/dev-rehearsal
+```
+
+  - Apply command:
+
+```bash
+node scripts/jazz-migration/run-migrate-convex-to-jazz.mjs apply \
+  --account dev \
+  --snapshot /absolute/path/to/convex-snapshot.json \
+  --source-user-id <convex-user-id> \
+  --target-account-id <jazz-account-id> \
+  --target-account-secret <sealerSecret_...> \
+  --out-dir ./docs/jazz-migration/runs/dev-rehearsal \
+  --confirm apply-dev
+```
 
 ## Implemented Schema Notes
 

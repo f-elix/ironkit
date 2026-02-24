@@ -74,6 +74,26 @@ Temporary app breakage is expected during active migration work; full runtime st
     - user/account mapping (Better Auth + Jazz account IDs)
   - Support dry-run and repeatable re-runs (`dev` rehearsals before final `prod` run).
   - Add post-import parity report (counts + key invariants).
+  - Implemented (current slice):
+    - Added deterministic Convex snapshot normalization + stable row ordering utilities in `src/lib/jazz-migration/snapshot-utils.ts`.
+    - Added migration planning artifact builder in `src/lib/jazz-migration/migration-plan.ts`:
+      - deterministic source snapshot artifact
+      - source Convex ID -> planned Jazz ID mapping tables
+      - source `userId` ownership validation against explicit `--source-user-id`
+      - guardrail-compatible `target-report.json` generation via `createMigrationTargetReportFromSnapshotRows(...)`
+    - Added migration CLI with `plan` (dry-run) and `apply` (write) modes:
+      - `scripts/jazz-migration/migrate-convex-to-jazz.ts`
+      - `scripts/jazz-migration/run-migrate-convex-to-jazz.mjs`
+    - Added real Jazz apply/write path in `src/lib/jazz-migration/apply-import.ts`:
+      - builds complete replacement account root graph from deterministic snapshot rows
+      - records actual Convex `_id` -> created Jazz node ID mappings
+      - executes root pointer switch (`account.root = replacementRoot`) and deletes previous root on success
+      - emits post-apply guardrail target report from imported rows rewritten to created Jazz IDs
+    - Added deterministic migration planning tests in `src/lib/jazz-migration/migration-plan.spec.ts`.
+  - Remaining for item 4 completion:
+    - Wire rehearsal/final smoke checks from runtime app flows into migration target reports.
+    - Validate apply mode against real `dev` account credentials/sync server and confirm root-switch behavior end-to-end.
+    - Run repeated `dev` rehearsals, then final `prod` run immediately before cutover deployment.
 
 - [ ] 5. Migrate 5 tools query/mutation layer (`todo`)
   - Move tool state persistence reads/writes to Jazz API layer.
