@@ -68,7 +68,6 @@
 	)}
 	{@attach attachRef}
 >
-	{index}
 	<!-- Progress bar background -->
 	{#if totalSets > 0}
 		<div class="bg-muted absolute inset-x-0 top-0 h-1">
