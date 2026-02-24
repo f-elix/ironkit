@@ -1,10 +1,5 @@
 # Baseline Artifacts
 
-Store generated baseline and guardrail reports here.
+Legacy optional folder for manual baseline/guardrail JSON reports.
 
-Suggested files:
-
-- `dev-convex-baseline.json`
-- `dev-guardrail-report.json`
-- `prod-convex-baseline.json`
-- `prod-guardrail-report.json`
+Primary migration artifacts now live under `docs/jazz-migration/runs/seed-*/`.

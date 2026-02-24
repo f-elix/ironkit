@@ -1,344 +1,466 @@
-import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
-import { dirname, resolve } from 'node:path';
+import { readFile, writeFile, mkdir } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { symmetricDecrypt } from 'better-auth/crypto';
 import { startWorker } from 'jazz-tools/worker';
 import { JazzAccount } from '../../src/lib/jazz/schema';
 import { applyDeterministicSnapshotToJazzAccount } from '../../src/lib/jazz-migration/apply-import';
-import { createConvexToJazzMigrationPlanArtifacts } from '../../src/lib/jazz-migration/migration-plan';
-import {
-	evaluatePreflightRun,
-	type ConvexBaselineSnapshot,
-	type MigrationAccount
-} from '../../src/lib/jazz-migration/preflight-guardrails';
-import { extractSnapshotRowsByTable } from '../../src/lib/jazz-migration/snapshot-utils';
+import { createDeterministicConvexSnapshotExport } from '../../src/lib/jazz-migration/snapshot-utils';
+import { getWorkspaceRoot, loadConvexExportData } from './convex-export';
 
-interface CliArgs {
-	[flag: string]: string | boolean;
+interface UserIdMapEntry {
+	convexUserId: string;
+	jazzUserId: string;
 }
 
-interface ParsedMigrationRunArgs {
-	account: MigrationAccount;
-	sourceUserId: string;
-	targetAccountId: string;
-	resolvedOutDir: string;
-	resolvedSnapshotPath: string;
-	generatedAt: string;
-	allowBlockers: boolean;
+interface SeedResult {
+	convexUserId: string;
+	jazzUserId: string;
+	status: 'applied' | 'skipped' | 'failed';
+	selectedRows: number;
+	excludedRows: number;
+	missingUserIdRows: number;
+	outputDir?: string;
+	error?: string;
 }
 
-const usage = [
-	'Usage:',
-	'  node scripts/jazz-migration/run-migrate-convex-to-jazz.mjs plan \\',
-	'    --account dev|prod \\',
-	'    --snapshot ./convex-snapshot.json \\',
-	'    --source-user-id convex-user-id \\',
-	'    --target-account-id jazz-account-id \\',
-	'    --out-dir ./docs/jazz-migration/runs/dev-rehearsal \\',
-	'    [--generated-at ISO_DATE] [--allow-blockers]',
-	'',
-	'  node scripts/jazz-migration/run-migrate-convex-to-jazz.mjs apply \\',
-	'    --account dev|prod \\',
-	'    --snapshot ./convex-snapshot.json \\',
-	'    --source-user-id convex-user-id \\',
-	'    --target-account-id jazz-account-id \\',
-	'    --target-account-secret sealerSecret_... \\',
-	'    --out-dir ./docs/jazz-migration/runs/dev-rehearsal \\',
-	'    --confirm apply-dev|apply-prod \\',
-	'    [--generated-at ISO_DATE] [--allow-blockers] [--sync-server wss://cloud.jazz.tools] \\',
-	'    [--baseline ./docs/jazz-migration/baselines/dev-convex-baseline.json]'
-].join('\n');
+interface DecryptedJazzCredentials {
+	accountID: string;
+	accountSecret: string;
+}
 
-const parseArgs = (argv: string[]): CliArgs => {
-	const args: CliArgs = {};
+const WORKSPACE_ROOT = getWorkspaceRoot();
+const USER_MAP_PATH = resolve(WORKSPACE_ROOT, 'docs/jazz-migration/user-id-map.json');
+const RUNS_ROOT = resolve(WORKSPACE_ROOT, 'docs/jazz-migration/runs');
+const ONLY_CONVEX_USER_ID: string | null = null;
+const BETTER_AUTH_SECRET_ENV_KEY = 'BETTER_AUTH_SECRET';
+const SYNC_SERVER = process.env.PUBLIC_JAZZ_SYNC_URL ?? 'wss://cloud.jazz.tools';
 
-	for (let index = 0; index < argv.length; index += 1) {
-		const token = argv[index];
-		if (!token.startsWith('--')) {
-			continue;
-		}
-
-		const [flag, inlineValue] = token.slice(2).split('=', 2);
-		if (inlineValue !== undefined) {
-			args[flag] = inlineValue;
-			continue;
-		}
-
-		const nextToken = argv[index + 1];
-		if (!nextToken || nextToken.startsWith('--')) {
-			args[flag] = true;
-			continue;
-		}
-
-		args[flag] = nextToken;
-		index += 1;
-	}
-
-	return args;
+const isRecord = (value: unknown): value is Record<string, unknown> => {
+	return typeof value === 'object' && value !== null && !Array.isArray(value);
 };
 
-const asString = (value: string | boolean | undefined): string | null => {
+const asUnknownString = (value: unknown): string | null => {
 	if (typeof value !== 'string') {
 		return null;
 	}
 	return value.length > 0 ? value : null;
 };
 
-const isMigrationAccount = (value: string | null): value is MigrationAccount => {
-	return value === 'dev' || value === 'prod';
+const parseUserMapEntries = (value: unknown): UserIdMapEntry[] => {
+	if (!isRecord(value)) {
+		throw new Error('User map JSON must be an object.');
+	}
+
+	if (!Array.isArray(value.entries)) {
+		throw new Error('User map must include an `entries` array.');
+	}
+
+	const entries: UserIdMapEntry[] = [];
+	for (const entry of value.entries) {
+		if (!isRecord(entry)) {
+			continue;
+		}
+		const convexUserId = asUnknownString(entry.convexUserId);
+		const jazzUserId = asUnknownString(entry.jazzUserId);
+		if (convexUserId && jazzUserId) {
+			entries.push({ convexUserId, jazzUserId });
+		}
+	}
+
+	if (entries.length === 0) {
+		throw new Error(`No valid user mappings found in ${USER_MAP_PATH}.`);
+	}
+
+	const seen = new Set<string>();
+	for (const entry of entries) {
+		if (seen.has(entry.convexUserId)) {
+			throw new Error(`Duplicate convexUserId in user map: ${entry.convexUserId}`);
+		}
+		seen.add(entry.convexUserId);
+	}
+
+	return entries.sort((left, right) => left.convexUserId.localeCompare(right.convexUserId));
 };
 
-const asBooleanFlag = (value: string | boolean | undefined): boolean => {
-	if (value === true) {
-		return true;
-	}
-	if (typeof value !== 'string') {
-		return false;
-	}
-	return value === 'true' || value === '1' || value === 'yes';
-};
+const filterRowsByConvexUserId = (input: {
+	rowsByTable: Record<string, unknown>;
+	convexUserId: string;
+}): {
+	filteredRowsByTable: Record<string, unknown>;
+	selectedRows: number;
+	excludedRows: number;
+	missingUserIdRows: number;
+} => {
+	const filteredRowsByTable: Record<string, unknown> = {};
+	let selectedRows = 0;
+	let excludedRows = 0;
+	let missingUserIdRows = 0;
 
-const loadJsonFile = async <T>(filePath: string): Promise<T> => {
-	const text = await readFile(resolve(filePath), 'utf8');
-	return JSON.parse(text) as T;
-};
+	for (const [table, rows] of Object.entries(input.rowsByTable)) {
+		if (!Array.isArray(rows)) {
+			filteredRowsByTable[table] = rows;
+			continue;
+		}
 
-const writeJsonFile = async (filePath: string, payload: unknown) => {
-	const absolutePath = resolve(filePath);
-	await mkdir(dirname(absolutePath), { recursive: true });
-	await writeFile(absolutePath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
-};
+		const filteredRows = rows.filter((row) => {
+			if (!isRecord(row)) {
+				missingUserIdRows += 1;
+				excludedRows += 1;
+				return false;
+			}
 
-const parseCommonRunArgs = async (args: CliArgs): Promise<ParsedMigrationRunArgs> => {
-	const account = asString(args.account);
-	if (!isMigrationAccount(account)) {
-		throw new Error('`--account` is required and must be dev or prod.');
+			const rowUserId = asUnknownString(row.userId);
+			if (!rowUserId) {
+				missingUserIdRows += 1;
+				excludedRows += 1;
+				return false;
+			}
+
+			if (rowUserId !== input.convexUserId) {
+				excludedRows += 1;
+				return false;
+			}
+
+			selectedRows += 1;
+			return true;
+		});
+
+		filteredRowsByTable[table] = filteredRows;
 	}
-
-	const snapshotPath = asString(args.snapshot);
-	if (!snapshotPath) {
-		throw new Error('`--snapshot` is required.');
-	}
-	const resolvedSnapshotPath = resolve(snapshotPath);
-	try {
-		await access(resolvedSnapshotPath);
-	} catch {
-		throw new Error(`Snapshot file not found: ${resolvedSnapshotPath}`);
-	}
-
-	const sourceUserId = asString(args['source-user-id']);
-	if (!sourceUserId) {
-		throw new Error('`--source-user-id` is required.');
-	}
-
-	const targetAccountId = asString(args['target-account-id']);
-	if (!targetAccountId) {
-		throw new Error('`--target-account-id` is required.');
-	}
-
-	const outDir = asString(args['out-dir']);
-	if (!outDir) {
-		throw new Error('`--out-dir` is required.');
-	}
-
-	const resolvedOutDir = resolve(outDir);
-	await mkdir(resolvedOutDir, { recursive: true });
 
 	return {
-		account,
-		sourceUserId,
-		targetAccountId,
-		resolvedOutDir,
-		resolvedSnapshotPath,
-		generatedAt: asString(args['generated-at']) ?? new Date().toISOString(),
-		allowBlockers: asBooleanFlag(args['allow-blockers'])
+		filteredRowsByTable,
+		selectedRows,
+		excludedRows,
+		missingUserIdRows
 	};
 };
 
-const logBlockersAndSetExitCode = (blockers: string[]) => {
-	console.error(
+const toRunSlug = (date: Date): string => {
+	return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+};
+
+const safePathSegment = (value: string): string => {
+	return value.replace(/[^a-zA-Z0-9._-]/g, '_');
+};
+
+const loadEnvFromFile = async (path: string): Promise<Record<string, string>> => {
+	try {
+		const text = await readFile(path, 'utf8');
+		const values: Record<string, string> = {};
+		for (const line of text.split('\n')) {
+			const trimmed = line.trim();
+			if (!trimmed || trimmed.startsWith('#')) {
+				continue;
+			}
+			const eqIndex = trimmed.indexOf('=');
+			if (eqIndex <= 0) {
+				continue;
+			}
+			const key = trimmed.slice(0, eqIndex).trim();
+			const value = trimmed.slice(eqIndex + 1).trim();
+			values[key] = value.replace(/^['"]|['"]$/g, '');
+		}
+		return values;
+	} catch {
+		return {};
+	}
+};
+
+const loadBetterAuthSecret = async (): Promise<string> => {
+	const fromProcess = process.env[BETTER_AUTH_SECRET_ENV_KEY];
+	if (fromProcess) {
+		return fromProcess;
+	}
+
+	const fromLocalEnv = await loadEnvFromFile(resolve(WORKSPACE_ROOT, '.env.local'));
+	if (fromLocalEnv[BETTER_AUTH_SECRET_ENV_KEY]) {
+		return fromLocalEnv[BETTER_AUTH_SECRET_ENV_KEY];
+	}
+
+	const fromEnv = await loadEnvFromFile(resolve(WORKSPACE_ROOT, '.env'));
+	if (fromEnv[BETTER_AUTH_SECRET_ENV_KEY]) {
+		return fromEnv[BETTER_AUTH_SECRET_ENV_KEY];
+	}
+
+	throw new Error(
 		[
-			'Migration plan contains blockers. Re-run with `--allow-blockers` to proceed anyway.',
-			...blockers.map((blocker) => `- ${blocker}`)
+			`Missing ${BETTER_AUTH_SECRET_ENV_KEY}.`,
+			'Needed to decrypt Jazz credentials stored by Better Auth.',
+			`Set ${BETTER_AUTH_SECRET_ENV_KEY} in .env.local or your shell environment.`
 		].join('\n')
 	);
-	process.exitCode = 1;
 };
 
-const runPlanMode = async (args: CliArgs) => {
-	const runArgs = await parseCommonRunArgs(args);
-	const snapshotJson = await loadJsonFile<unknown>(runArgs.resolvedSnapshotPath);
-	const rowsByTable = extractSnapshotRowsByTable(snapshotJson);
-	const artifacts = createConvexToJazzMigrationPlanArtifacts({
-		account: runArgs.account,
-		sourceUserId: runArgs.sourceUserId,
-		targetAccountId: runArgs.targetAccountId,
-		rowsByTable,
-		generatedAt: runArgs.generatedAt
-	});
+const buildCredentialsByConvexUserId = async (input: {
+	betterAuthUsers: unknown[];
+	betterAuthSecret: string;
+}): Promise<{
+	credentialsByConvexUserId: Map<string, DecryptedJazzCredentials>;
+	decodeErrors: string[];
+}> => {
+	const credentialsByConvexUserId = new Map<string, DecryptedJazzCredentials>();
+	const decodeErrors: string[] = [];
 
-	const deterministicSnapshotPath = resolve(
-		runArgs.resolvedOutDir,
-		'convex-deterministic-export.json'
-	);
-	const idMappingPlanPath = resolve(runArgs.resolvedOutDir, 'id-map-plan.json');
-	const targetReportPath = resolve(runArgs.resolvedOutDir, 'target-report.json');
-	const migrationPlanPath = resolve(runArgs.resolvedOutDir, 'migration-plan.json');
-
-	await writeJsonFile(deterministicSnapshotPath, artifacts.deterministicSnapshot);
-	await writeJsonFile(idMappingPlanPath, artifacts.idMappingPlan);
-	await writeJsonFile(targetReportPath, artifacts.targetReport);
-	await writeJsonFile(migrationPlanPath, artifacts.migrationPlan);
-
-	process.stdout.write(
-		[
-			`Wrote deterministic snapshot: ${deterministicSnapshotPath}`,
-			`Wrote ID mapping plan: ${idMappingPlanPath}`,
-			`Wrote guardrail target report: ${targetReportPath}`,
-			`Wrote migration plan: ${migrationPlanPath}`
-		].join('\n') + '\n'
-	);
-
-	if (!artifacts.migrationPlan.readiness.ok && !runArgs.allowBlockers) {
-		logBlockersAndSetExitCode(artifacts.migrationPlan.readiness.blockers);
-	}
-};
-
-const assertApplyConfirmation = (account: MigrationAccount, args: CliArgs) => {
-	const confirmation = asString(args.confirm);
-	const expected = account === 'prod' ? 'apply-prod' : 'apply-dev';
-	if (confirmation !== expected) {
-		throw new Error(`Apply mode requires \`--confirm ${expected}\`.`);
-	}
-};
-
-const runApplyMode = async (args: CliArgs) => {
-	const runArgs = await parseCommonRunArgs(args);
-	assertApplyConfirmation(runArgs.account, args);
-
-	const targetAccountSecret = asString(args['target-account-secret']) ?? asString(process.env.JAZZ_WORKER_SECRET);
-	if (!targetAccountSecret) {
-		throw new Error('`--target-account-secret` is required for apply mode (or set JAZZ_WORKER_SECRET).');
-	}
-
-	const syncServer =
-		asString(args['sync-server']) ??
-		asString(process.env.PUBLIC_JAZZ_SYNC_URL) ??
-		'wss://cloud.jazz.tools';
-
-	const snapshotJson = await loadJsonFile<unknown>(runArgs.resolvedSnapshotPath);
-	const rowsByTable = extractSnapshotRowsByTable(snapshotJson);
-	const planArtifacts = createConvexToJazzMigrationPlanArtifacts({
-		account: runArgs.account,
-		sourceUserId: runArgs.sourceUserId,
-		targetAccountId: runArgs.targetAccountId,
-		rowsByTable,
-		generatedAt: runArgs.generatedAt
-	});
-
-	const deterministicSnapshotPath = resolve(
-		runArgs.resolvedOutDir,
-		'convex-deterministic-export.json'
-	);
-	const idMappingPlanPath = resolve(runArgs.resolvedOutDir, 'id-map-plan.json');
-	await writeJsonFile(deterministicSnapshotPath, planArtifacts.deterministicSnapshot);
-	await writeJsonFile(idMappingPlanPath, planArtifacts.idMappingPlan);
-
-	if (!planArtifacts.migrationPlan.readiness.ok && !runArgs.allowBlockers) {
-		logBlockersAndSetExitCode(planArtifacts.migrationPlan.readiness.blockers);
-		return;
-	}
-
-	const workerSession = await startWorker({
-		accountID: runArgs.targetAccountId,
-		accountSecret: targetAccountSecret,
-		syncServer,
-		AccountSchema: JazzAccount,
-		asActiveAccount: false
-	});
-
-	try {
-		await workerSession.waitForConnection();
-		const applyResult = await applyDeterministicSnapshotToJazzAccount({
-			worker: workerSession.worker as never,
-			deterministicSnapshot: planArtifacts.deterministicSnapshot
-		});
-
-		const targetReportPath = resolve(runArgs.resolvedOutDir, 'target-report.json');
-		const appliedIdMapPath = resolve(runArgs.resolvedOutDir, 'id-map-actual.json');
-		const migrationPlanPath = resolve(runArgs.resolvedOutDir, 'migration-plan.json');
-		const applyReportPath = resolve(runArgs.resolvedOutDir, 'migration-apply-report.json');
-
-		const applyReport = {
-			schemaVersion: 1,
-			mode: 'apply',
-			appliedAt: new Date().toISOString(),
-			account: runArgs.account,
-			sourceUserId: runArgs.sourceUserId,
-			targetAccountId: runArgs.targetAccountId,
-			syncServer,
-			atomicImportSemantics: 'full-replace-root-switch',
-			planReadiness: planArtifacts.migrationPlan.readiness,
-			rootSwitch: applyResult.rootSwitch
-		};
-
-		await writeJsonFile(targetReportPath, applyResult.targetReport);
-		await writeJsonFile(appliedIdMapPath, applyResult.appliedIdMappingByTable);
-		await writeJsonFile(migrationPlanPath, planArtifacts.migrationPlan);
-		await writeJsonFile(applyReportPath, applyReport);
-
-		process.stdout.write(
-			[
-				`Wrote deterministic snapshot: ${deterministicSnapshotPath}`,
-				`Wrote planned ID map: ${idMappingPlanPath}`,
-				`Wrote applied ID map: ${appliedIdMapPath}`,
-				`Wrote target report: ${targetReportPath}`,
-				`Wrote migration plan: ${migrationPlanPath}`,
-				`Wrote apply report: ${applyReportPath}`
-			].join('\n') + '\n'
-		);
-
-		const baselinePath = asString(args.baseline);
-		if (baselinePath) {
-			const guardrailOut =
-				asString(args['guardrail-out']) ??
-				resolve(runArgs.resolvedOutDir, 'guardrail-report.json');
-			const baseline = await loadJsonFile<ConvexBaselineSnapshot>(baselinePath);
-			const evaluation = evaluatePreflightRun({
-				baseline,
-				targetCounts: applyResult.targetReport.targetCounts,
-				referentialChecks: applyResult.targetReport.referentialChecks,
-				invariantChecks: applyResult.targetReport.invariantChecks,
-				smokeChecks: applyResult.targetReport.smokeChecks
-			});
-			await writeJsonFile(guardrailOut, evaluation);
-			process.stdout.write(`Wrote guardrail evaluation: ${resolve(guardrailOut)}\n`);
-
-			if (evaluation.abort.shouldAbort) {
-				process.exitCode = 1;
-			}
+	for (const row of input.betterAuthUsers) {
+		if (!isRecord(row)) {
+			continue;
 		}
-	} finally {
-		await workerSession.shutdownWorker();
+
+		const convexUserId = asUnknownString(row._id);
+		const encryptedCredentials = asUnknownString(row.encryptedCredentials);
+		const accountIdFromRow = asUnknownString(row.accountID);
+
+		if (!convexUserId || !encryptedCredentials) {
+			continue;
+		}
+
+		try {
+			const decrypted = await symmetricDecrypt({
+				key: input.betterAuthSecret,
+				data: encryptedCredentials
+			});
+
+			const parsed = JSON.parse(decrypted) as unknown;
+			if (!isRecord(parsed)) {
+				throw new Error('decrypted payload is not an object');
+			}
+
+			const accountID = asUnknownString(parsed.accountID) ?? accountIdFromRow;
+			const accountSecret = asUnknownString(parsed.accountSecret);
+
+			if (!accountID || !accountSecret) {
+				throw new Error('missing accountID/accountSecret in decrypted payload');
+			}
+
+			credentialsByConvexUserId.set(convexUserId, {
+				accountID,
+				accountSecret
+			});
+		} catch (error: unknown) {
+			const message = error instanceof Error ? error.message : String(error);
+			decodeErrors.push(`${convexUserId}: ${message}`);
+		}
 	}
+
+	return {
+		credentialsByConvexUserId,
+		decodeErrors
+	};
 };
 
 const main = async () => {
-	const [mode, ...rest] = process.argv.slice(2);
-	if (mode !== 'plan' && mode !== 'apply') {
-		throw new Error(usage);
+	const betterAuthSecret = await loadBetterAuthSecret();
+	const { rowsByTable, betterAuthUsers, zipPath } = await loadConvexExportData();
+	const mapJson = JSON.parse(await readFile(USER_MAP_PATH, 'utf8')) as unknown;
+	const allMappings = parseUserMapEntries(mapJson);
+	const mappings = ONLY_CONVEX_USER_ID
+		? allMappings.filter((entry) => entry.convexUserId === ONLY_CONVEX_USER_ID)
+		: allMappings;
+
+	if (mappings.length === 0) {
+		throw new Error(`No map entry found for ONLY_CONVEX_USER_ID=${ONLY_CONVEX_USER_ID}.`);
 	}
 
-	const args = parseArgs(rest);
-	if (mode === 'plan') {
-		await runPlanMode(args);
-		return;
+	const { credentialsByConvexUserId, decodeErrors } = await buildCredentialsByConvexUserId({
+		betterAuthUsers,
+		betterAuthSecret
+	});
+
+	if (credentialsByConvexUserId.size === 0) {
+		throw new Error(
+			[
+				'No decryptable Jazz credentials were found in Better Auth user records.',
+				'Make sure Jazz Better Auth server plugin is enabled and users have authenticated with Jazz credentials.',
+				decodeErrors.length > 0 ? `Decrypt errors: ${decodeErrors.slice(0, 3).join(' | ')}` : ''
+			]
+				.filter((part) => part.length > 0)
+				.join('\n')
+		);
 	}
 
-	await runApplyMode(args);
+	const runStartedAt = new Date();
+	const runOutDir = resolve(RUNS_ROOT, `seed-${toRunSlug(runStartedAt)}`);
+	await mkdir(runOutDir, { recursive: true });
+
+	const results: SeedResult[] = [];
+
+	for (const mapping of mappings) {
+		const filtered = filterRowsByConvexUserId({
+			rowsByTable,
+			convexUserId: mapping.convexUserId
+		});
+
+		const userOutDir = resolve(
+			runOutDir,
+			`${safePathSegment(mapping.convexUserId)}__to__${safePathSegment(mapping.jazzUserId)}`
+		);
+		await mkdir(userOutDir, { recursive: true });
+
+		if (filtered.selectedRows === 0) {
+			results.push({
+				convexUserId: mapping.convexUserId,
+				jazzUserId: mapping.jazzUserId,
+				status: 'skipped',
+				selectedRows: filtered.selectedRows,
+				excludedRows: filtered.excludedRows,
+				missingUserIdRows: filtered.missingUserIdRows,
+				outputDir: userOutDir,
+				error: 'No rows found for this Convex user in export.'
+			});
+			continue;
+		}
+
+		const creds = credentialsByConvexUserId.get(mapping.convexUserId);
+		if (!creds) {
+			results.push({
+				convexUserId: mapping.convexUserId,
+				jazzUserId: mapping.jazzUserId,
+				status: 'failed',
+				selectedRows: filtered.selectedRows,
+				excludedRows: filtered.excludedRows,
+				missingUserIdRows: filtered.missingUserIdRows,
+				outputDir: userOutDir,
+				error:
+					'No stored Jazz credentials found for this Convex user. User may need to sign in after Jazz server plugin is enabled.'
+			});
+			continue;
+		}
+
+		if (creds.accountID !== mapping.jazzUserId) {
+			results.push({
+				convexUserId: mapping.convexUserId,
+				jazzUserId: mapping.jazzUserId,
+				status: 'failed',
+				selectedRows: filtered.selectedRows,
+				excludedRows: filtered.excludedRows,
+				missingUserIdRows: filtered.missingUserIdRows,
+				outputDir: userOutDir,
+				error: `Mapped jazzUserId (${mapping.jazzUserId}) does not match stored accountID (${creds.accountID}).`
+			});
+			continue;
+		}
+
+		const deterministicSnapshot = createDeterministicConvexSnapshotExport({
+			rowsByTable: filtered.filteredRowsByTable,
+			exportedAt: new Date().toISOString()
+		});
+
+		await writeFile(
+			resolve(userOutDir, 'convex-deterministic-export.json'),
+			`${JSON.stringify(deterministicSnapshot, null, 2)}\n`,
+			'utf8'
+		);
+
+		const workerSession = await startWorker({
+			accountID: creds.accountID,
+			accountSecret: creds.accountSecret,
+			syncServer: SYNC_SERVER,
+			AccountSchema: JazzAccount,
+			asActiveAccount: false
+		});
+
+		try {
+			await workerSession.waitForConnection();
+			const applyResult = await applyDeterministicSnapshotToJazzAccount({
+				worker: workerSession.worker as never,
+				deterministicSnapshot
+			});
+
+			await writeFile(
+				resolve(userOutDir, 'id-map-actual.json'),
+				`${JSON.stringify(applyResult.appliedIdMappingByTable, null, 2)}\n`,
+				'utf8'
+			);
+			await writeFile(
+				resolve(userOutDir, 'target-report.json'),
+				`${JSON.stringify(applyResult.targetReport, null, 2)}\n`,
+				'utf8'
+			);
+			await writeFile(
+				resolve(userOutDir, 'apply-report.json'),
+				`${JSON.stringify(
+					{
+						schemaVersion: 1,
+						appliedAt: new Date().toISOString(),
+						convexUserId: mapping.convexUserId,
+						jazzUserId: mapping.jazzUserId,
+						syncServer: SYNC_SERVER,
+						filtering: {
+							selectedRows: filtered.selectedRows,
+							excludedRows: filtered.excludedRows,
+							missingUserIdRows: filtered.missingUserIdRows
+						},
+						rootSwitch: applyResult.rootSwitch
+					},
+					null,
+					2
+				)}\n`,
+				'utf8'
+			);
+
+			results.push({
+				convexUserId: mapping.convexUserId,
+				jazzUserId: mapping.jazzUserId,
+				status: 'applied',
+				selectedRows: filtered.selectedRows,
+				excludedRows: filtered.excludedRows,
+				missingUserIdRows: filtered.missingUserIdRows,
+				outputDir: userOutDir
+			});
+		} catch (error: unknown) {
+			const message = error instanceof Error ? error.message : String(error);
+			results.push({
+				convexUserId: mapping.convexUserId,
+				jazzUserId: mapping.jazzUserId,
+				status: 'failed',
+				selectedRows: filtered.selectedRows,
+				excludedRows: filtered.excludedRows,
+				missingUserIdRows: filtered.missingUserIdRows,
+				outputDir: userOutDir,
+				error: message
+			});
+		} finally {
+			await workerSession.shutdownWorker();
+		}
+	}
+
+	const summary = {
+		schemaVersion: 1,
+		startedAt: runStartedAt.toISOString(),
+		finishedAt: new Date().toISOString(),
+		sourceExportZip: zipPath,
+		userMapPath: USER_MAP_PATH,
+		syncServer: SYNC_SERVER,
+		credentials: {
+			loadedUsers: credentialsByConvexUserId.size,
+			decodeErrors: decodeErrors.slice(0, 20)
+		},
+		results
+	};
+	await writeFile(resolve(runOutDir, 'seed-report.json'), `${JSON.stringify(summary, null, 2)}\n`, 'utf8');
+
+	const applied = results.filter((result) => result.status === 'applied').length;
+	const skipped = results.filter((result) => result.status === 'skipped').length;
+	const failed = results.filter((result) => result.status === 'failed').length;
+
+	process.stdout.write(
+		[
+			'Seeding run complete.',
+			`Applied: ${applied}`,
+			`Skipped: ${skipped}`,
+			`Failed: ${failed}`,
+			`Summary: ${resolve(runOutDir, 'seed-report.json')}`
+		].join('\n') + '\n'
+	);
+
+	if (failed > 0) {
+		process.exitCode = 1;
+	}
 };
 
 main().catch((error: unknown) => {
 	const message = error instanceof Error ? error.message : String(error);
 	console.error(message);
-	console.error('\n' + usage);
 	process.exit(1);
 });

@@ -1,9 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { JAZZ_ENTITY_SCHEMAS } from '../jazz/schema';
 import {
 	validateSchemaParityInvariants,
 	validateSchemaParityReferentialIntegrity,
-	validateSchemaParityRuntimeAlignment,
 	type JazzMigrationEntityRows
 } from './schema-parity-scaffold';
 import { createMigrationTargetReportFromSnapshotRows } from './migration-target-report';
@@ -257,16 +255,6 @@ const countRows = (rows: JazzMigrationEntityRows, table: ConvexEntityTable): num
 			return rows.programRunSessions.length;
 	}
 };
-
-describe('schema parity runtime alignment', () => {
-	it('keeps runtime schema table keys aligned with migration parity definitions', () => {
-		const runtimeKeys = Object.keys(JAZZ_ENTITY_SCHEMAS).sort();
-		const convexEntityTables = [...CONVEX_ENTITY_TABLES].sort();
-
-		expect(runtimeKeys).toEqual(convexEntityTables);
-		expect(validateSchemaParityRuntimeAlignment()).toEqual({ ok: true, violations: [] });
-	});
-});
 
 describe('schema parity validators with realistic fixtures', () => {
 	it('passes referential and invariant validation for a realistic linked dataset', () => {

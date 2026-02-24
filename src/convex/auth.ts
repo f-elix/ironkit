@@ -1,5 +1,6 @@
 import { createClient, type GenericCtx } from '@convex-dev/better-auth';
 import { convex } from '@convex-dev/better-auth/plugins';
+import { jazzPlugin } from 'jazz-tools/better-auth/auth/server';
 import { components } from './_generated/api';
 import type { DataModel } from './_generated/dataModel';
 import { betterAuth, type BetterAuthOptions } from 'better-auth';
@@ -57,7 +58,9 @@ export const createAuthOptions = (ctx: AppCtx) => {
 			convex({
 				authConfig,
 				jwksRotateOnTokenGenerationError: true
-			})
+			}),
+			// Persist Jazz account credentials server-side in Better Auth user records.
+			jazzPlugin()
 		]
 	} satisfies BetterAuthOptions;
 };
