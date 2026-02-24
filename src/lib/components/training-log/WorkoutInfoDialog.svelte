@@ -13,7 +13,9 @@
 	import { resolve } from '$app/paths';
 	import { api } from '$convex/_generated/api';
 	import type { Doc } from '$convex/_generated/dataModel';
-	import { useConvexClient } from 'convex-svelte';
+	import { useConvexClient, useQuery } from 'convex-svelte';
+	import PreviousWorkoutSelection from '$lib/components/training-log/PreviousWorkoutSelection.svelte';
+
 	let {
 		trigger,
 		workout
@@ -23,6 +25,9 @@
 	} = $props();
 
 	const client = useConvexClient();
+	const previousWorkoutsQuery = useQuery(api.workouts.list, {});
+	let previousWorkouts = $derived(previousWorkoutsQuery.data ?? []);
+	let showPreviousWorkoutSelection = $derived(!workout && previousWorkouts.length);
 
 	const dialogTitle = workout ? 'Edit workout' : 'Create workout';
 	const buttonText = workout ? 'Save changes' : 'Create';
@@ -30,6 +35,7 @@
 
 	let open = $state(false);
 
+	let templateWorkout = $state<Maybe<Doc<'workouts'>>>(null);
 	let title = $state(workout?.title ?? '');
 	let notes = $state(workout?.notes);
 	let date = $state(
@@ -64,7 +70,8 @@
 			date: date.toDate(TIMEZONE).getTime(),
 			bodyweight:
 				typeof bodyweight === 'number' && Number.isFinite(bodyweight) ? bodyweight : undefined,
-			bodyweightUnit
+			bodyweightUnit,
+			templateWorkoutId: templateWorkout?._id
 		});
 		goto(resolve('/(app)/tools/training-log/workout-[id]', { id: newWorkoutId }));
 	};
@@ -79,6 +86,12 @@
 	<Dialog.Content class="p-5">
 		<Dialog.Title class="text-left">{dialogTitle}</Dialog.Title>
 		<form class="flex flex-col gap-4" onsubmit={onSave}>
+			{#if showPreviousWorkoutSelection}
+				<PreviousWorkoutSelection
+					workouts={previousWorkouts}
+					bind:selectedWorkout={templateWorkout}
+				/>
+			{/if}
 			<Label class="flex flex-col gap-2">
 				Workout name
 				<Input type="text" bind:value={title} />

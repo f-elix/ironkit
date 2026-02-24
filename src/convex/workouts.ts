@@ -46,7 +46,8 @@ export const create = mutation({
 		bodyweightUnit: v.optional(weightUnit),
 		programRunId: v.optional(v.id('programRuns')),
 		programRunSessionId: v.optional(v.id('programRunSessions')),
-		sourceProgramWorkoutId: v.optional(v.id('programWorkouts'))
+		sourceProgramWorkoutId: v.optional(v.id('programWorkouts')),
+		templateWorkoutId: v.optional(v.id('workouts'))
 	},
 	handler: async (ctx, args) => {
 		const { _id: userId } = await getAuthUser(ctx);
@@ -99,6 +100,54 @@ export const create = mutation({
 			sourceProgramWorkoutId: args.sourceProgramWorkoutId,
 			updatedAt: Date.now()
 		});
+
+		if (args.templateWorkoutId) {
+			const template = await ctx.db.get(args.templateWorkoutId);
+			if (!template || template.userId !== userId) {
+				throw new Error('Template workout not found');
+			}
+			const performanceGroups = await ctx.db
+				.query('performanceGroups')
+				.withIndex('by_workoutId', (q) => q.eq('workoutId', template._id))
+				.collect();
+			for (const group of performanceGroups) {
+				const newGroupId = await ctx.db.insert('performanceGroups', {
+					userId,
+					label: group.label,
+					workoutId: newWorkoutId,
+					workoutOrder: group.workoutOrder,
+					updatedAt: Date.now()
+				});
+				const performances = await ctx.db
+					.query('performances')
+					.withIndex('by_performanceGroupId', (q) => q.eq('performanceGroupId', group._id))
+					.collect();
+				for (const perf of performances) {
+					const newPerformanceId = await ctx.db.insert('performances', {
+						userId,
+						performanceGroupId: newGroupId,
+						exerciseId: perf.exerciseId,
+						groupOrder: perf.groupOrder,
+						workoutId: newWorkoutId,
+						updatedAt: Date.now(),
+						weightUnit: perf.weightUnit
+					});
+					const sets = await ctx.db
+						.query('performanceSets')
+						.withIndex('by_performanceId', (q) => q.eq('performanceId', perf._id))
+						.collect();
+					for (const set of sets) {
+						await ctx.db.insert('performanceSets', {
+							userId,
+							performanceId: newPerformanceId,
+							performanceOrder: set.performanceOrder,
+							updatedAt: Date.now()
+						});
+					}
+				}
+			}
+		}
+
 		return newWorkoutId;
 	}
 });
