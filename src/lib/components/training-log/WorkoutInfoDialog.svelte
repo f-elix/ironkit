@@ -36,7 +36,7 @@
 	let open = $state(false);
 
 	let templateWorkout = $state<Maybe<Doc<'workouts'>>>(null);
-	let title = $state(workout?.title ?? '');
+	let title = $derived(workout?.title ?? templateWorkout?.title);
 	let notes = $state(workout?.notes);
 	let date = $state(
 		workoutDate
