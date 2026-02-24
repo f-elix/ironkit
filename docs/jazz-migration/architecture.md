@@ -19,6 +19,7 @@
   - `dev` for repeated migration rehearsal
   - `prod` for real data
 - Final release is a single all-at-once cutover.
+- Temporary runtime breakage during migration implementation is expected; only final cutover must be stable.
 
 ## Current State (Convex)
 
@@ -107,9 +108,10 @@ Must preserve current Convex invariants:
 ## Auth Architecture (Better Auth + Jazz + Google)
 
 - Keep Better Auth as the auth system and reuse Google provider config.
-- Replace Convex adapter/plugin with Jazz plugin integration.
-- Use Jazz migration hooks for existing accounts so users keep access to prior data.
-- Keep SvelteKit auth route pattern (`/api/auth/[...all]`) and migrate handler internals.
+- Use a Jazz Better Auth client (`jazzPluginClient`) directly for Jazz auth provider wiring.
+- Do not mix Convex auth client plugins with Jazz auth client plugins in the same Better Auth client setup.
+- Keep Convex Better Auth server configuration unchanged for now; defer any server-side account backfill hooks to later migration steps if needed.
+- Keep SvelteKit auth route pattern (`/api/auth/[...all]`) and use Jazz Svelte provider + Jazz Better Auth `AuthProvider` for Jazz auth context.
 
 Reference used: [Jazz LLM docs](https://jazz.tools/llms-full.txt) (Better Auth plugin + migration APIs).
 

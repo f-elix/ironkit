@@ -237,3 +237,9 @@ export const JazzUserSpace = co
 	.withPermissions({
 		onInlineCreate: 'extendsContainer'
 	});
+
+export const JazzAccount = co
+	.account({
+		profile: co.profile(),
+		root: JazzUserSpace
+	});

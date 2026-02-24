@@ -14,6 +14,8 @@ This is a personal app with one operator and two accounts:
 - `dev` account for rehearsal/testing
 - `prod` account for real data
 
+Temporary app breakage is expected during active migration work; full runtime stability is only required at final verification/cutover (item 10).
+
 ## Status Legend
 
 - `todo`: not started
@@ -50,11 +52,16 @@ This is a personal app with one operator and two accounts:
     - Deterministic realistic dataset tests for schema validators and target-report generation in `src/lib/jazz-migration/schema-parity-scaffold.spec.ts`.
     - Guardrail target-report bridge module for migration item 4 consumption in `src/lib/jazz-migration/migration-target-report.ts`.
 
-- [ ] 3. Auth migration to Better Auth + Jazz (`todo`)
+- [x] 3. Auth migration to Better Auth + Jazz (`done`)
   - Keep Google provider config.
   - Add Jazz Better Auth plugin and migration hooks.
   - Migrate accounts to Jazz-compatible IDs/session linkage.
   - Validate sign-in, sign-out, and session refresh paths in SvelteKit.
+  - Implemented:
+    - Added Jazz Better Auth client plugin (`jazzPluginClient`) on a dedicated Better Auth client in `src/lib/auth-client.ts`.
+    - Added Jazz account schema (`JazzAccount`) with training-log data at account `root` (no `userSpace` wrapper) in `src/lib/jazz/schema.ts`.
+    - Wrapped app rendering with `JazzSvelteProvider` + Jazz Better Auth `AuthProvider` in `src/routes/+layout.svelte`.
+    - Kept Convex Better Auth server configuration unchanged (no Convex auth migration hooks added at this stage, and no Convex/Jazz auth mixing in `src/lib/auth-client.ts`).
 
 - [ ] 4. Data migration script: Convex export -> Jazz import (`todo`)
   - Implement deterministic export format with stable ordering.

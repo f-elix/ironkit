@@ -230,3 +230,33 @@ This file is a running log. Add a dated entry for every meaningful migration cha
   - Ran `pnpm lc` (fail due pre-existing eslint warnings in unrelated files: `src/lib/constants.ts`, `src/lib/weight-units.ts`; no new schema-migration errors).
 - Follow-ups:
   - Item 4 migration script should call `createMigrationTargetReportFromSnapshotRows(...)` or `createMigrationTargetReportFromEntityRows(...)` on each rehearsal/final run and persist the produced report artifact.
+
+## 2026-02-23 - Backlog item 3 completion: Better Auth + Jazz bridge integration
+
+- Scope:
+  - Completed backlog item 3 by wiring Jazz Better Auth client/provider setup in the Svelte app shell.
+  - Left Convex Better Auth server configuration unchanged (no Convex auth migration hooks).
+- Files touched:
+  - `src/lib/auth-client.ts`
+  - `src/lib/jazz/schema.ts`
+  - `src/routes/+layout.svelte`
+  - `.env.example`
+  - `docs/jazz-migration/backlog.md`
+  - `docs/jazz-migration/architecture.md`
+  - `docs/jazz-migration/implementation-notes.md`
+- Decisions:
+  - Temporary app breakage during migration is expected and acceptable until final verification/cutover.
+  - Avoided mixing Convex and Jazz auth plugins in `src/lib/auth-client.ts`; auth client setup now uses Jazz plugin only.
+  - Added a Better Auth client configured with `jazzPluginClient()` for Jazz `AuthProvider` wiring.
+  - Added `JazzAccount` schema with training-log data stored directly in account `root` (no `userSpace` wrapper, no migration hook because no existing Jazz data).
+  - Wrapped root layout children with `JazzSvelteProvider` + Jazz Better Auth `AuthProvider`, using `PUBLIC_JAZZ_SYNC_URL` fallback to `wss://cloud.jazz.tools`.
+- Risks:
+  - Frontend still contains Convex runtime consumers outside auth migration scope; item 9 remains responsible for full Convex wrapper/client removal.
+- Validation:
+  - Ran `npx @sveltejs/mcp svelte-autofixer ./src/routes/+layout.svelte --svelte-version 5` (no issues).
+  - Ran `pnpm exec eslint --no-ignore src/lib/auth-client.ts src/lib/jazz/schema.ts src/routes/+layout.svelte` (pass).
+  - Ran `pnpm exec tsc --noEmit src/lib/auth-client.ts src/lib/jazz/schema.ts --moduleResolution bundler --module esnext --target ESNext --strict --skipLibCheck` (pass).
+  - Ran `pnpm check` (pass; existing unrelated Svelte warnings remain, no new errors).
+- Follow-ups:
+  - Item 4 migration script should consume Better Auth user/account linkage (`accountID`) as authoritative mapping input when importing Convex data into Jazz user-space.
+  - Item 9 should remove `@mmailaender/convex-better-auth-svelte` usage after Convex client removal, then simplify root auth wiring to Jazz-native auth state only.
