@@ -4,9 +4,7 @@
 	"version": "0.0.1",
 	"type": "module",
 	"scripts": {
-		"dev": "npm-run-all --parallel dev:server dev:client",
-		"dev:client": "vite dev --open",
-		"dev:server": "convex dev",
+		"dev": "vite dev --open",
 		"build": "vite build",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",

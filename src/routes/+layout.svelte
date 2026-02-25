@@ -8,10 +8,8 @@
 	import { JazzSvelteProvider } from 'jazz-tools/svelte';
 	import AuthProvider from 'jazz-tools/better-auth/auth/svelte';
 	import { betterAuthClient } from '$lib/auth-client';
-	import { useAuth } from '@mmailaender/convex-better-auth-svelte/svelte';
-	import Spinner from '$lib/shadcn/spinner/spinner.svelte';
-	import { env } from '$env/dynamic/public';
-	import { JazzAccount } from '$lib/jazz/schema';
+	import { Account } from '$lib/jazz/schema';
+	import { PUBLIC_JAZZ_API_KEY } from '$env/static/public';
 
 	let { children } = $props();
 
@@ -19,20 +17,14 @@
 	watchOffline();
 	watchSWUpdate();
 
-	const auth = useAuth();
-	const jazzSyncPeer = env.PUBLIC_JAZZ_SYNC_URL || 'wss://cloud.jazz.tools';
+	const apiKey = PUBLIC_JAZZ_API_KEY;
+	const jazzSyncPeer = `wss://cloud.jazz.tools/?key=${apiKey}`;
 </script>
 
 <Toaster closeButton richColors theme="dark" />
-{#if auth.isLoading}
-	<div class="flex h-dvh flex-col items-center justify-center">
-		<Spinner class="size-10" />
-	</div>
-{:else}
-	<JazzSvelteProvider sync={{ peer: jazzSyncPeer, when: 'signedUp' }} AccountSchema={JazzAccount}>
-		<AuthProvider {betterAuthClient}>
-			<Head />
-			{@render children()}
-		</AuthProvider>
-	</JazzSvelteProvider>
-{/if}
+<JazzSvelteProvider sync={{ peer: jazzSyncPeer, when: 'signedUp' }} AccountSchema={Account}>
+	<AuthProvider {betterAuthClient}>
+		<Head />
+		{@render children()}
+	</AuthProvider>
+</JazzSvelteProvider>

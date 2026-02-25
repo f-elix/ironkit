@@ -4,12 +4,10 @@
 	import LogOutIcon from '@lucide/svelte/icons/log-out';
 	import LogInIcon from '@lucide/svelte/icons/log-in';
 	import { resolve } from '$app/paths';
-	import { useAuth } from '@mmailaender/convex-better-auth-svelte/svelte';
-	import { authClient } from '$lib/auth-client';
+	import { betterAuthClient } from '$lib/auth-client';
+	import { useIsAuthenticated } from 'jazz-tools/svelte';
 
-	const auth = useAuth();
-
-	let isAuthenticated = $derived(auth.isAuthenticated);
+	const isAuthenticated = useIsAuthenticated();
 </script>
 
 <header
@@ -19,8 +17,8 @@
 	<a href={resolve('/')} aria-label="Home">
 		<LogoSymbol class="size-6 sm:size-8" />
 	</a>
-	{#if isAuthenticated}
-		<Button variant="ghost" size="sm" onclick={async () => await authClient.signOut()}>
+	{#if isAuthenticated.current}
+		<Button variant="ghost" size="sm" onclick={async () => await betterAuthClient.signOut()}>
 			<LogOutIcon />
 			Logout
 		</Button>

@@ -1,18 +1,16 @@
 <script lang="ts">
 	import Button from '$lib/shadcn/button/button.svelte';
-	import { authClient } from '$lib/auth-client';
-	import { goto } from '$app/navigation';
-	import { resolve } from '$app/paths';
+	import { betterAuthClient } from '$lib/auth-client';
+
+	const { onSuccess }: { onSuccess: () => void } = $props();
 
 	const handleGoogleSignIn = async () => {
-		await authClient.signIn.social(
+		await betterAuthClient.signIn.social(
 			{
 				provider: 'google'
 			},
 			{
-				onSuccess: () => {
-					goto(resolve('/'));
-				}
+				onSuccess
 			}
 		);
 	};
