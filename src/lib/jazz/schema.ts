@@ -1,3 +1,4 @@
+import { DEFAULT_BAR_WEIGHT, DEFAULT_GENDER_CLASS, DEFAULT_WEIGHT_UNIT } from '$lib/constants';
 import { co, z } from 'jazz-tools';
 
 export const WEIGHT_UNITS = ['kg', 'lbs'] as const;
@@ -167,7 +168,7 @@ export const ProgramTemplate = co
 		name: z.string(),
 		notes: z.optional(z.string()),
 		totalWeeks: z.number(),
-		status: z.enum(PROGRAM_TEMPLATE_STATUSES),
+		status: PROGRAM_TEMPLATE_STATUS_ENUM,
 		get programWorkouts() {
 			return co.list(ProgramWorkout);
 		},
@@ -232,12 +233,12 @@ export const JAZZ_ENTITY_SCHEMAS = {
 	programRunSessions: ProgramRunSession
 } as const;
 
-export const JazzUserSpace = co
+export const AccountRoot = co
 	.map({
-		weightConverter: co.list(WeightConverter),
-		coefficientCalculator: co.list(CoefficientCalculator),
-		loadPercentageCalculator: co.list(LoadPercentageCalculator),
-		plateCalculator: co.list(PlateCalculator),
+		weightConverter: WeightConverter,
+		coefficientCalculator: CoefficientCalculator,
+		loadPercentageCalculator: LoadPercentageCalculator,
+		plateCalculator: PlateCalculator,
 		exercises: co.list(Exercise),
 		workouts: co.list(Workout),
 		programTemplates: co.list(ProgramTemplate),
@@ -250,5 +251,36 @@ export const JazzUserSpace = co
 export const Account = co
 	.account({
 		profile: co.profile(),
-		root: JazzUserSpace
+		root: AccountRoot
+	}).withMigration((account) => {
+		if (!account.$jazz.has("root")) {
+			account.$jazz.set("root", {
+				weightConverter: WeightConverter.create({
+					unit: DEFAULT_WEIGHT_UNIT,
+					round: false,
+					updatedAt: Date.now()
+				}),
+				coefficientCalculator: CoefficientCalculator.create({
+					genderClass: DEFAULT_GENDER_CLASS,
+					totalUnit: DEFAULT_WEIGHT_UNIT,
+					bodyweightUnit: DEFAULT_WEIGHT_UNIT,
+					updatedAt: Date.now()
+				}),
+				loadPercentageCalculator: LoadPercentageCalculator.create({
+					unit: DEFAULT_WEIGHT_UNIT,
+					round: false,
+					updatedAt: Date.now()
+				}),
+				plateCalculator: PlateCalculator.create({
+					barWeight: DEFAULT_BAR_WEIGHT,
+					heavyCollars: false,
+					allowNonStandardConfig: false,
+					updatedAt: Date.now()
+				}),
+				exercises: [],
+				workouts: [],
+				programTemplates: [],
+				programRuns: [],
+			});
+		}
 	});
