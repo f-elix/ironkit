@@ -23,7 +23,3 @@ Use `clsx` style syntax for the `class` attribute over string interpolation.
 <!-- Good -->
 <div class={['class', condition ? 'true': 'false']}>
 ```
-
-## Migration Docs
-
-Keep `docs/jazz-migration/backlog.md`, `docs/jazz-migration/architecture.md`, and `docs/jazz-migration/implementation-notes.md` updated as Convex to Jazz migration work progresses.
