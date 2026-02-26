@@ -20,4 +20,5 @@ This preserves per-user persisted settings behavior while moving reads/writes fu
 ## Scope Boundary
 
 - Included: all non-training-log tools.
-- Explicitly excluded: training-log routes/components and their Convex data paths.
+- Included: training-log root page (`/tools/training-log`) using `AccountCoState` with Account-root lists for workouts/program runs.
+- Explicitly excluded: remaining training-log routes/components and their Convex data paths.

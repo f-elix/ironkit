@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { api } from '$convex/_generated/api';
-	import type { Doc } from '$convex/_generated/dataModel';
+	import { ProgramRunSession } from '$lib/jazz/schema';
+	import type { ResolvedProgramRun } from '$lib/jazz/types';
+	import { createWorkoutFromProgramWorkout } from '$lib/jazz/workout';
 	import { Button, buttonVariants } from '$lib/shadcn/button';
 	import * as DropdownMenu from '$lib/shadcn/dropdown-menu';
 	import { cn } from '$lib/shadcn/utils';
@@ -12,40 +13,43 @@
 	import FastForwardIcon from '@lucide/svelte/icons/fast-forward';
 	import PauseIcon from '@lucide/svelte/icons/pause';
 	import PlayIcon from '@lucide/svelte/icons/play';
-	import { useConvexClient } from 'convex-svelte';
 	import { toast } from 'svelte-sonner';
 
-	interface NextSession {
-		weekNumber: number;
-		label?: string;
-		trackKey: string;
-	}
+	let { run }: { run: ResolvedProgramRun } = $props();
 
-	let {
-		run,
-		template,
-		nextSession,
-		totalSessions,
-		completedSessions
-	}: {
-		run: Doc<'programRuns'>;
-		template: Doc<'programTemplates'>;
-		nextSession: NextSession | null;
-		totalSessions: number;
-		completedSessions: number;
-	} = $props();
-
-	const client = useConvexClient();
-
-	let isStarting = $state(false);
 	let isSkipping = $state(false);
 	let isPausing = $state(false);
 
-	const isCompleted = $derived(!nextSession);
+	const template = $derived(run.programTemplate);
+
+	const totalSessions = $derived(template.programWorkouts.length);
+
+	const completedSessions = $derived(
+		run.programRunSessions.filter((s) => s.workoutId || s.skippedAt).length
+	);
+
+	const nextSessionData = $derived.by(() => {
+		const completedWorkoutIds = new Set(
+			run.programRunSessions
+				.filter((s) => s.workoutId || s.skippedAt)
+				.map((s) => s.programWorkoutId)
+		);
+
+		const sortedWorkouts = template.programWorkouts.toSorted((a, b) => {
+			if (a.weekNumber !== b.weekNumber) {
+				return a.weekNumber - b.weekNumber;
+			}
+			return a.slotOrder - b.slotOrder;
+		});
+
+		return sortedWorkouts.find((w) => !completedWorkoutIds.has(w.$jazz.id)) ?? null;
+	});
+
+	const isCompleted = $derived(!nextSessionData);
 
 	const sessionLabel = $derived(
-		nextSession
-			? `Week ${nextSession.weekNumber} · ${nextSession.label ?? nextSession.trackKey}`
+		nextSessionData
+			? `Week ${nextSessionData.weekNumber} · ${nextSessionData.label ?? nextSessionData.trackKey}`
 			: null
 	);
 
@@ -55,59 +59,57 @@
 			: `Session ${completedSessions + 1} of ${totalSessions}`
 	);
 
-	const handleStartWorkout = async () => {
-		if (isStarting || !nextSession) {
+	const handleStartWorkout = () => {
+		if (!nextSessionData) {
 			return;
 		}
-		isStarting = true;
-		try {
-			const result = await client.mutation(api.programRunSessions.startNextAsWorkout, {
-				programRunId: run._id
-			});
-			if (result) {
-				goto(resolve('/(app)/tools/training-log/workout-[id]', { id: result.workoutId }));
-			}
-		} catch (error) {
-			toast.error(error instanceof Error ? error.message : 'Could not start workout.');
-		} finally {
-			isStarting = false;
-		}
+
+		const workout = createWorkoutFromProgramWorkout(nextSessionData);
+		workout.$jazz.set('programRun', run);
+
+		const session = ProgramRunSession.create({
+			programRunId: run.$jazz.id,
+			programWorkoutId: nextSessionData.$jazz.id,
+			workoutId: workout.$jazz.id,
+			updatedAt: new Date()
+		});
+
+		run.programRunSessions.$jazz.push(session);
+
+		goto(resolve('/(app)/tools/training-log/workout-[id]', { id: workout.$jazz.id }));
 	};
 
-	const handleSkipSession = async () => {
-		if (isSkipping || !nextSession) {
+	const handleSkipSession = () => {
+		if (!nextSessionData) {
 			return;
 		}
-		isSkipping = true;
-		try {
-			await client.mutation(api.programRunSessions.skipNext, {
-				programRunId: run._id
-			});
-			toast.success('Session skipped');
-		} catch (error) {
-			toast.error(error instanceof Error ? error.message : 'Could not skip session.');
-		} finally {
-			isSkipping = false;
-		}
+		const session = ProgramRunSession.create({
+			programRunId: run.$jazz.id,
+			programWorkoutId: nextSessionData.$jazz.id,
+			skippedAt: new Date(),
+			updatedAt: new Date()
+		});
+
+		run.programRunSessions.$jazz.push(session);
+
+		toast.success('Session skipped');
 	};
 
 	const handleViewProgram = () => {
-		goto(resolve('/(app)/tools/training-log/program-template-[id]', { id: template._id }));
+		goto(resolve('/(app)/tools/training-log/program-template-[id]', { id: template.$jazz.id }));
 	};
 
 	const handleViewRun = () => {
-		goto(resolve('/(app)/tools/training-log/program-run-[id]', { id: run._id }));
+		goto(resolve('/(app)/tools/training-log/program-run-[id]', { id: run.$jazz.id }));
 	};
 
-	const handlePauseProgram = async () => {
+	const handlePauseProgram = () => {
 		if (isPausing) {
 			return;
 		}
 		isPausing = true;
 		try {
-			await client.mutation(api.programRuns.pauseRun, {
-				id: run._id
-			});
+			run.$jazz.set('status', 'paused');
 			toast.success('Program paused');
 		} catch (error) {
 			toast.error(error instanceof Error ? error.message : 'Could not pause program.');
@@ -163,9 +165,9 @@
 	</div>
 
 	{#if !isCompleted}
-		<Button size="lg" class="mt-4 w-full" onclick={handleStartWorkout} disabled={isStarting}>
+		<Button size="lg" class="mt-4 w-full" onclick={handleStartWorkout}>
 			<PlayIcon />
-			{isStarting ? 'Starting...' : 'Start Workout'}
+			Start Workout
 		</Button>
 	{/if}
 </article>

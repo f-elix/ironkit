@@ -10,9 +10,10 @@
   - [x] `load-percentage-calculator`
   - [x] `plate-calculator`
 - [x] Verified `1rm-calculator` has no persisted query/mutation path to migrate.
+- [x] Migrated training-log root page (`/tools/training-log`) reads and primary actions to Jazz.
 
 ## Remaining
 
-- [ ] Migrate training-log queries and mutations from Convex to Jazz.
+- [ ] Migrate remaining training-log routes/components from Convex to Jazz (beyond `/tools/training-log` root page).
 - [ ] Remove Convex client/server runtime usage once all training-log flows are migrated.
 - [ ] Decommission Convex schema/functions after migration parity is confirmed.

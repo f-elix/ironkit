@@ -42,7 +42,7 @@ export const WeightConverter = co
 	.map({
 		unit: WEIGHT_UNIT_ENUM,
 		round: z.boolean(),
-		updatedAt: z.number()
+		updatedAt: z.date()
 	})
 	.withPermissions(USER_OWNED_ENTITY_PERMISSIONS);
 
@@ -51,7 +51,7 @@ export const CoefficientCalculator = co
 		genderClass: GENDER_CLASS_ENUM,
 		totalUnit: WEIGHT_UNIT_ENUM,
 		bodyweightUnit: WEIGHT_UNIT_ENUM,
-		updatedAt: z.number()
+		updatedAt: z.date()
 	})
 	.withPermissions(USER_OWNED_ENTITY_PERMISSIONS);
 
@@ -59,7 +59,7 @@ export const LoadPercentageCalculator = co
 	.map({
 		unit: WEIGHT_UNIT_ENUM,
 		round: z.boolean(),
-		updatedAt: z.number()
+		updatedAt: z.date()
 	})
 	.withPermissions(USER_OWNED_ENTITY_PERMISSIONS);
 
@@ -68,7 +68,7 @@ export const PlateCalculator = co
 		barWeight: z.number(),
 		heavyCollars: z.boolean(),
 		allowNonStandardConfig: z.boolean(),
-		updatedAt: z.number()
+		updatedAt: z.date()
 	})
 	.withPermissions(USER_OWNED_ENTITY_PERMISSIONS);
 
@@ -78,14 +78,14 @@ export const Exercise = co
 		executionType: EXERCISE_EXECUTION_TYPE_ENUM,
 		loadType: EXERCISE_LOAD_TYPE_ENUM,
 		muscleGroups: z.array(z.string()),
-		updatedAt: z.number()
+		updatedAt: z.date()
 	})
 	.withPermissions(USER_OWNED_ENTITY_PERMISSIONS);
 
 export const Workout = co
 	.map({
 		title: z.string(),
-		date: z.number(),
+		date: z.date(),
 		notes: z.optional(z.string()),
 		bodyweight: z.optional(z.number()),
 		bodyweightUnit: z.optional(WEIGHT_UNIT_ENUM),
@@ -101,54 +101,49 @@ export const Workout = co
 		get performanceGroups() {
 			return co.list(PerformanceGroup);
 		},
-		updatedAt: z.number()
+		updatedAt: z.date()
 	})
 	.withPermissions(USER_OWNED_ENTITY_PERMISSIONS);
 
 export const PerformanceGroup = co
 	.map({
-		get workout() {
-			return co.optional(Workout);
-		},
-		get programWorkout() {
-			return co.optional(ProgramWorkout);
-		},
+		workoutId: z.string().optional(),
+		programWorkoutId: z.string().optional(),
+		label: z.optional(z.string()),
+		workoutOrder: z.number(),
+		updatedAt: z.date(),
 		get performances() {
 			return co.list(Performance);
 		},
-		label: z.optional(z.string()),
-		workoutOrder: z.number(),
-		updatedAt: z.number()
 	})
 	.withPermissions(USER_OWNED_ENTITY_PERMISSIONS);
 
 export const Performance = co
 	.map({
-		performanceGroup: PerformanceGroup,
+		performanceGroupId: z.string(),
 		exercise: Exercise,
 		get performanceSets() {
 			return co.list(PerformanceSet);
 		},
 		get programWorkoutExerciseTargets() {
-			return co.list(ProgramWorkoutExerciseTarget);
+			return co.optional(co.list(ProgramWorkoutExerciseTarget));
 		},
 		groupOrder: z.number(),
 		note: z.optional(z.string()),
 		programTargets: z.optional(z.array(PROGRAM_TARGET_SNAPSHOT_SCHEMA)),
 		weightUnit: WEIGHT_UNIT_ENUM,
-		updatedAt: z.number()
+		updatedAt: z.date()
 	})
 	.withPermissions(USER_OWNED_ENTITY_PERMISSIONS);
 
 export const PerformanceSet = co
 	.map({
-		performance: Performance,
 		weight: z.optional(z.number()),
 		reps: z.optional(z.number()),
 		durationSeconds: z.optional(z.number()),
 		note: z.optional(z.string()),
 		performanceOrder: z.number(),
-		updatedAt: z.number()
+		updatedAt: z.date()
 	})
 	.withPermissions(USER_OWNED_ENTITY_PERMISSIONS);
 
@@ -159,7 +154,7 @@ export const ProgramWorkoutExerciseTarget = co
 		targetRepsRange: z.optional(z.string()),
 		targetDuration: z.optional(z.string()),
 		targetOrder: z.number(),
-		updatedAt: z.number()
+		updatedAt: z.date()
 	})
 	.withPermissions(USER_OWNED_ENTITY_PERMISSIONS);
 
@@ -172,13 +167,13 @@ export const ProgramTemplate = co
 		get programWorkouts() {
 			return co.list(ProgramWorkout);
 		},
-		updatedAt: z.number()
+		updatedAt: z.date()
 	})
 	.withPermissions(USER_OWNED_ENTITY_PERMISSIONS);
 
 export const ProgramWorkout = co
 	.map({
-		programTemplate: ProgramTemplate,
+		programTemplateId: z.string(),
 		get performanceGroups() {
 			return co.list(PerformanceGroup);
 		},
@@ -187,7 +182,7 @@ export const ProgramWorkout = co
 		trackKey: z.string(),
 		label: z.optional(z.string()),
 		notes: z.optional(z.string()),
-		updatedAt: z.number()
+		updatedAt: z.date()
 	})
 	.withPermissions(USER_OWNED_ENTITY_PERMISSIONS);
 
@@ -195,24 +190,22 @@ export const ProgramRun = co
 	.map({
 		programTemplate: ProgramTemplate,
 		status: PROGRAM_RUN_STATUS_ENUM,
-		startedAt: z.number(),
-		endedAt: z.optional(z.number()),
+		startedAt: z.date(),
+		endedAt: z.optional(z.date()),
 		get programRunSessions() {
 			return co.list(ProgramRunSession);
 		},
-		updatedAt: z.number()
+		updatedAt: z.date()
 	})
 	.withPermissions(USER_OWNED_ENTITY_PERMISSIONS);
 
 export const ProgramRunSession = co
 	.map({
-		programRun: ProgramRun,
-		programWorkout: ProgramWorkout,
-		get workout() {
-			return co.optional(Workout);
-		},
-		skippedAt: z.optional(z.number()),
-		updatedAt: z.number()
+		programRunId: z.string(),
+		programWorkoutId: z.string(),
+		workoutId: z.optional(z.string()),
+		skippedAt: z.optional(z.date()),
+		updatedAt: z.date()
 	})
 	.withPermissions(USER_OWNED_ENTITY_PERMISSIONS);
 
@@ -258,24 +251,24 @@ export const Account = co
 				weightConverter: WeightConverter.create({
 					unit: DEFAULT_WEIGHT_UNIT,
 					round: false,
-					updatedAt: Date.now()
+					updatedAt: new Date()
 				}),
 				coefficientCalculator: CoefficientCalculator.create({
 					genderClass: DEFAULT_GENDER_CLASS,
 					totalUnit: DEFAULT_WEIGHT_UNIT,
 					bodyweightUnit: DEFAULT_WEIGHT_UNIT,
-					updatedAt: Date.now()
+					updatedAt: new Date()
 				}),
 				loadPercentageCalculator: LoadPercentageCalculator.create({
 					unit: DEFAULT_WEIGHT_UNIT,
 					round: false,
-					updatedAt: Date.now()
+					updatedAt: new Date()
 				}),
 				plateCalculator: PlateCalculator.create({
 					barWeight: DEFAULT_BAR_WEIGHT,
 					heavyCollars: false,
 					allowNonStandardConfig: false,
-					updatedAt: Date.now()
+					updatedAt: new Date()
 				}),
 				exercises: [],
 				workouts: [],
