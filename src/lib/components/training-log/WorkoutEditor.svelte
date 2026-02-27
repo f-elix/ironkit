@@ -10,7 +10,6 @@
 	import { cn } from '$lib/shadcn/utils';
 	import WorkoutStats from '$lib/components/training-log/WorkoutStats.svelte';
 	import type { WorkoutData } from '$lib/jazz/workout';
-	import { toast } from 'svelte-sonner';
 	import type { ComponentProps } from 'svelte';
 	import { PerformanceGroup, Performance, PerformanceSet } from '$lib/jazz/schema';
 	import { DEFAULT_WEIGHT_UNIT } from '$lib/constants';
@@ -18,7 +17,9 @@
 
 	let { workout }: { workout: WorkoutData } = $props();
 
-	const performanceGroups = $derived(workout.performanceGroups);
+	const performanceGroups = $derived(
+		workout.performanceGroups.toSorted((a, b) => a.workoutOrder - b.workoutOrder)
+	);
 	const lastOrder = $derived(performanceGroups?.at(-1)?.workoutOrder ?? 0);
 
 	let expandedGroupIds = $state<string[]>([]);
@@ -91,8 +92,7 @@
 		expandedGroupIds = [...expandedGroupIds, newGroup.$jazz.id];
 	};
 
-	const onDragEnd: ComponentProps<typeof DragDropProvider>['onDragEnd'] = async (event) => {
-		const { resume, abort } = event.suspend();
+	const onDragEnd: ComponentProps<typeof DragDropProvider>['onDragEnd'] = (event) => {
 		const reorderedGroups = move(
 			performanceGroups.map((item) => ({
 				...item,
@@ -100,20 +100,18 @@
 			})),
 			event
 		);
-		try {
-			// Update the order of each group
-			reorderedGroups.forEach((group, index) => {
-				group.$jazz.set('workoutOrder', index);
-			});
-			resume();
-		} catch (error) {
-			abort();
-			toast.error(error instanceof Error ? error.message : 'Could not reorder exercises.');
-		}
+		// Update the order of each group
+		reorderedGroups.forEach((item, index) => {
+			const group = performanceGroups.find((g) => g.$jazz.id === item.id);
+			if (!group) {
+				return;
+			}
+			group.$jazz.set('workoutOrder', index);
+		});
 	};
 
 	const onRemoveGroup = (groupId: string) => {
-		performanceGroups.$jazz.remove((g) => g.$jazz.id === groupId);
+		workout.performanceGroups.$jazz.remove((g) => g.$jazz.id === groupId);
 	};
 </script>
 

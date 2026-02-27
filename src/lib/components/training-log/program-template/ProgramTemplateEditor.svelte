@@ -30,25 +30,10 @@
 		}
 	});
 
-	let template = $derived(templateState.current.$isLoaded ? templateState.current : undefined);
+	const template = $derived(templateState.current.$isLoaded ? templateState.current : undefined);
 </script>
 
-{#if !template}
-	<div class="flex flex-col gap-5 p-4 md:p-0">
-		<div class="bg-card/50 h-12 animate-pulse rounded-xl"></div>
-		<div class="space-y-3">
-			{#each { length: 3 } as _, i (i)}
-				<div class="space-y-2">
-					<div class="bg-muted/30 h-4 w-16 animate-pulse rounded"></div>
-					<div class="flex gap-2">
-						<div class="bg-card/30 h-[4.5rem] w-32 animate-pulse rounded-lg"></div>
-						<div class="bg-card/30 h-[4.5rem] w-32 animate-pulse rounded-lg"></div>
-					</div>
-				</div>
-			{/each}
-		</div>
-	</div>
-{:else if !template.$isLoaded}
+{#if !template?.$isLoaded}
 	<div class="flex min-h-[60vh] items-center justify-center">
 		<div class="text-center">
 			<h1 class="text-lg font-semibold">Template not found</h1>

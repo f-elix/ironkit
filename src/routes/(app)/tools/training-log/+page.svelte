@@ -82,24 +82,8 @@
 	};
 </script>
 
-{#snippet heroCardSkeleton()}
-	<div class="bg-card animate-pulse rounded-xl border p-5">
-		<div class="flex items-start justify-between gap-3">
-			<div class="min-w-0 flex-1">
-				<div class="bg-muted h-6 w-32 rounded"></div>
-				<div class="bg-muted mt-2 h-4 w-48 rounded"></div>
-				<div class="bg-muted mt-1.5 h-3 w-24 rounded"></div>
-			</div>
-			<div class="bg-muted size-8 shrink-0 rounded"></div>
-		</div>
-		<div class="bg-muted mt-4 h-10 w-full rounded"></div>
-	</div>
-{/snippet}
-
 {#snippet activeProgramCard()}
-	{#if !root}
-		{@render heroCardSkeleton()}
-	{:else if activeRun}
+	{#if activeRun}
 		{#if activeRun.status === 'paused'}
 			<PausedProgramCard run={activeRun} />
 		{:else}
@@ -120,7 +104,7 @@
 	</ul>
 {/snippet}
 
-<div class="hidden grow md:flex">
+<div class="hidden grow lg:flex">
 	{#if activeRun && workouts.length}
 		<div
 			class="sticky top-20 flex h-[calc(100dvh-6.5rem)] basis-2/3 flex-col items-center justify-center self-start px-8"
@@ -174,7 +158,7 @@
 	{/if}
 </div>
 
-<div class="flex grow flex-col p-4 md:hidden">
+<div class="flex grow flex-col p-4 lg:hidden">
 	{#if activeRun}
 		<div class="mb-4">
 			{@render activeProgramCard()}

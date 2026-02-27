@@ -2,9 +2,11 @@
 	import { page } from '$app/state';
 	import ProgramTemplateEditor from '$lib/components/training-log/program-template/ProgramTemplateEditor.svelte';
 
-	const templateId = $derived(page.params.id!);
+	const templateId = $derived(page.params.id);
 </script>
 
 {#key templateId}
-	<ProgramTemplateEditor {templateId} />
+	{#if templateId}
+		<ProgramTemplateEditor {templateId} />
+	{/if}
 {/key}

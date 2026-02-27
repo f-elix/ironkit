@@ -69,7 +69,7 @@
 			workout.$jazz.set('title', title ?? DEFAULT_WORKOUT_TITLE);
 			workout.$jazz.set('notes', notes?.trim() ?? '');
 			workout.$jazz.set('date', date.toDate(TIMEZONE));
-			workout.$jazz.set('bodyweight', bodyweight || 0);
+			workout.$jazz.set('bodyweight', bodyweight || undefined);
 			workout.$jazz.set('bodyweightUnit', bodyweightUnit);
 			open = false;
 			return;
@@ -80,13 +80,13 @@
 					title: title ?? DEFAULT_WORKOUT_TITLE,
 					notes: notes?.trim() ?? '',
 					date: date.toDate(TIMEZONE),
-					bodyweight: bodyweight || 0,
+					bodyweight: bodyweight || undefined,
 					bodyweightUnit,
 					performanceGroups: [],
 					updatedAt: new Date()
 				});
 		root.workouts.$jazz.push(newWorkout);
-		goto(resolve('/(app)/tools/training-log/workout-[id]', { id: newWorkout.$jazz.id }));
+		await goto(resolve('/(app)/tools/training-log/workout-[id]', { id: newWorkout.$jazz.id }));
 	};
 </script>
 

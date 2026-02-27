@@ -1,4 +1,4 @@
-import { getContext, setContext } from 'svelte';
+import { Context } from 'runed';
 
 class ProgramTemplateEditorState {
 	templateId: string;
@@ -27,12 +27,14 @@ class ProgramTemplateEditorState {
 	};
 }
 
-const programTemplateEditorContextKey = Symbol('program-template-editor');
+const programTemplateEditorContext = new Context<ProgramTemplateEditorState>(
+	'program-template-editor'
+);
 
 export const setProgramTemplateEditorContext = (templateId: string) => {
-	return setContext(programTemplateEditorContextKey, new ProgramTemplateEditorState(templateId));
+	return programTemplateEditorContext.set(new ProgramTemplateEditorState(templateId));
 };
 
 export const getProgramTemplateEditorContext = () => {
-	return getContext<ProgramTemplateEditorState>(programTemplateEditorContextKey);
+	return programTemplateEditorContext.get();
 };
