@@ -1,30 +1,35 @@
-import type { PerformanceGroup } from '$lib/db/types';
+import type { PerformanceGroup, Exercise } from '$lib/jazz/types';
 import { DEFAULT_WEIGHT_UNIT } from '$lib/constants';
-import { api } from '$convex/_generated/api';
-import type { Id } from '$convex/_generated/dataModel';
-import type { ConvexClient } from 'convex/browser';
+import { Performance, PerformanceSet } from '$lib/jazz/schema';
 
-export const addExerciseToPerformanceGroup = async (
-	client: ConvexClient,
-	performanceGroup: Pick<PerformanceGroup, '_id' | 'workoutId'>,
-	exerciseId: Id<'exercises'>,
-	groupOrder: number
+export const addExerciseToPerformanceGroup = (
+	performanceGroup: PerformanceGroup,
+	exercise: Exercise
 ) => {
-	if (!performanceGroup.workoutId) {
-		throw new Error('Cannot add workout exercise to a program workout group');
+	if (!performanceGroup.performances.$isLoaded) {
+		return;
 	}
+	const lastPerformance = performanceGroup.performances.at(-1);
+	const lastOrder = lastPerformance?.$isLoaded ? lastPerformance.groupOrder : 0;
+	const groupOrder = lastOrder + 1;
 
-	// Use atomic mutation to create both performance and initial set in one transaction
-	const { performanceId, performanceSetId } = await client.mutation(
-		api.performances.createWithInitialSet,
-		{
-			performanceGroupId: performanceGroup._id,
-			exerciseId,
-			groupOrder,
-			workoutId: performanceGroup.workoutId,
-			weightUnit: DEFAULT_WEIGHT_UNIT
-		}
-	);
+	const initialSet = PerformanceSet.create({
+		weight: undefined,
+		reps: undefined,
+		durationSeconds: undefined,
+		note: undefined,
+		performanceOrder: 1,
+		updatedAt: new Date()
+	});
 
-	return { performanceId, performanceSetId };
+	const performance = Performance.create({
+		performanceGroupId: performanceGroup.$jazz.id,
+		exercise,
+		performanceSets: [initialSet],
+		groupOrder,
+		weightUnit: DEFAULT_WEIGHT_UNIT,
+		updatedAt: new Date()
+	});
+
+	performanceGroup.performances.$jazz.push(performance);
 };

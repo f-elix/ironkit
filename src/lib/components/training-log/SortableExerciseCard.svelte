@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { createSortable } from '@dnd-kit/svelte/sortable';
-	import { useConvexClient, useQuery } from 'convex-svelte';
-	import { api } from '$convex/_generated/api';
-	import type { Id } from '$convex/_generated/dataModel';
+	import { CoState } from 'jazz-tools/svelte';
+	import { PerformanceGroup as PerformanceGroupSchema } from '$lib/jazz/schema';
 	import ExerciseCardContent from '$lib/components/training-log/ExerciseCardContent.svelte';
 	import { getPerformanceGroupLabel } from '$lib/training-log/performance-group.utils';
 	import ChevronDown from '@lucide/svelte/icons/chevron-down';
@@ -12,53 +11,68 @@
 	import { cubicOut } from 'svelte/easing';
 
 	let {
-		performanceGroup,
+		performanceGroupId,
 		index,
 		isExpanded,
 		onToggle,
-		onNext
+		onNext,
+		onRemoveGroup
 	}: {
-		performanceGroup: { _id: Id<'performanceGroups'> };
+		performanceGroupId: string;
 		index: number;
 		isExpanded: boolean;
 		onToggle: () => void;
 		onNext?: () => void;
+		onRemoveGroup?: () => void;
 	} = $props();
 
-	const client = useConvexClient();
+	const performanceGroupState = new CoState(PerformanceGroupSchema, () => performanceGroupId, {
+		resolve: {
+			performances: {
+				$each: {
+					exercise: true,
+					performanceSets: { $each: true }
+				}
+			}
+		}
+	});
+
+	const performanceGroup = $derived(performanceGroupState.current);
+	const performances = $derived(
+		performanceGroup.$isLoaded ? performanceGroup.performances.filter((p) => p.$isLoaded) : []
+	);
+
 	const {
 		attach: attachRef,
 		attachHandle: attachHandleRef,
 		isDragging
 	} = $derived(
 		createSortable({
-			id: performanceGroup._id,
+			id: performanceGroupId,
 			index
 		})
 	);
 
-	const query = useQuery(api.performanceGroups.getById, { id: performanceGroup._id });
-	const group = $derived(query.data);
-	const performances = $derived(group?.performances ?? []);
+	let label = $derived(
+		getPerformanceGroupLabel(
+			performances.length,
+			performanceGroup?.$isLoaded ? performanceGroup.label : undefined
+		)
+	);
 
-	let label = $derived(getPerformanceGroupLabel(performances.length, group?.label));
-
-	let completedSets = $derived(
+	const completedSets = $derived(
 		performances.flatMap((p) => {
-			const executionType = p.exercise?.executionType ?? 'reps';
-			return (p.sets ?? []).filter(
+			const executionType = p.exercise.executionType;
+			const sets = p.performanceSets;
+			return sets.filter(
 				(s) =>
 					(executionType === 'reps' && s.reps != null && s.reps > 0) ||
 					(executionType === 'time' && s.durationSeconds != null && s.durationSeconds > 0)
 			);
 		}).length
 	);
-	let totalSets = $derived(performances.flatMap((p) => p.sets ?? []).length);
-	let progress = $derived(totalSets > 0 ? (completedSets / totalSets) * 100 : 0);
-
-	const handleDelete = () => {
-		client.mutation(api.performanceGroups.remove, { id: performanceGroup._id });
-	};
+	const totalSets = $derived(performances.flatMap((p) => p.performanceSets).length);
+	const progress = $derived(totalSets > 0 ? (completedSets / totalSets) * 100 : 0);
 </script>
 
 <li
@@ -98,7 +112,7 @@
 
 					{#if performances.length === 1}
 						<div class="text-base font-semibold whitespace-normal">
-							{performances[0]?.exercise?.name ?? 'Select exercise'}
+							{performances[0].exercise.name || 'Select exercise'}
 						</div>
 					{:else}
 						<div class="flex flex-col gap-0.5">
@@ -109,7 +123,9 @@
 									>
 										{i + 1}
 									</span>
-									<span class="whitespace-normal">{perf.exercise?.name ?? 'Select exercise'}</span>
+									<span class="whitespace-normal">
+										{perf.exercise.name || 'Select exercise'}
+									</span>
 								</div>
 							{/each}
 						</div>
@@ -146,15 +162,10 @@
 		</Collapsible.Trigger>
 
 		<!-- Expanded content -->
-		{#if isExpanded && group}
+		{#if isExpanded && performanceGroup?.$isLoaded}
 			<div transition:slide={{ duration: 200, easing: cubicOut }}>
 				<div class="border-border border-t">
-					<ExerciseCardContent
-						performanceGroup={group}
-						{performances}
-						onRemoveGroup={handleDelete}
-						{onNext}
-					/>
+					<ExerciseCardContent {performanceGroup} {performances} {onRemoveGroup} {onNext} />
 				</div>
 			</div>
 		{/if}

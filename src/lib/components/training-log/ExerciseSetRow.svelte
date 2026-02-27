@@ -1,8 +1,5 @@
 <script lang="ts">
-	import { useConvexClient } from 'convex-svelte';
-	import { api } from '$convex/_generated/api';
-	import type { Exercise, PerformanceSet } from '$lib/db/types';
-	import { exerciseLoadType } from '$lib/db/exerciseLoadType';
+	import type { Exercise, PerformanceSet } from '$lib/jazz/types';
 	import type { WeightUnit } from '$lib/types';
 	import { cn } from '$lib/shadcn/utils';
 	import Input from '$lib/shadcn/input/input.svelte';
@@ -18,20 +15,21 @@
 		setIndex,
 		unit,
 		exercise,
-		previousSet
+		previousSet,
+		onDelete
 	}: {
 		set: PerformanceSet;
 		setIndex: number;
 		unit: WeightUnit;
 		exercise: Exercise | null;
 		previousSet: PerformanceSet | null;
+		onDelete?: () => void;
 	} = $props();
 
-	const client = useConvexClient();
 	let copied = $state(false);
 
 	const executionType = $derived(exercise?.executionType ?? 'reps');
-	const loadType = $derived(exerciseLoadType(exercise) ?? 'weighted');
+	const loadType = $derived(exercise?.loadType ?? 'weighted');
 
 	const isCompleted = $derived(
 		executionType === 'reps'
@@ -39,45 +37,15 @@
 			: set.durationSeconds != null && set.durationSeconds > 0
 	);
 
-	const onWeightChange = (event: Event) => {
-		const value = (event.target as HTMLInputElement).value;
-		const valueAsNumber = parseFloat(value) || 0;
-		client.mutation(api.performanceSets.update, { id: set._id, weight: valueAsNumber });
-	};
-
-	const onRepsChange = (event: Event) => {
-		const value = (event.target as HTMLInputElement).value;
-		const valueAsNumber = parseInt(value) || 0;
-		client.mutation(api.performanceSets.update, { id: set._id, reps: valueAsNumber });
-	};
-
-	const onDurationChange = (event: Event) => {
-		const value = (event.target as HTMLInputElement).value;
-		const valueAsNumber = parseInt(value) || 0;
-		client.mutation(api.performanceSets.update, { id: set._id, durationSeconds: valueAsNumber });
-	};
-
-	const onNoteChange = (event: Event) => {
-		const value = (event.target as HTMLTextAreaElement).value;
-		client.mutation(api.performanceSets.update, { id: set._id, note: value });
-	};
-
 	const copyFromPrevious = () => {
 		if (!previousSet) {
 			return;
 		}
-		client.mutation(api.performanceSets.update, {
-			id: set._id,
-			weight: previousSet.weight,
-			reps: previousSet.reps,
-			durationSeconds: previousSet.durationSeconds
-		});
+		set.$jazz.set('weight', previousSet.weight);
+		set.$jazz.set('reps', previousSet.reps);
+		set.$jazz.set('durationSeconds', previousSet.durationSeconds);
 		copied = true;
 		setTimeout(() => (copied = false), 1500);
-	};
-
-	const deleteSet = () => {
-		client.mutation(api.performanceSets.remove, { id: set._id });
 	};
 
 	const focusIfEmpty = (element: HTMLInputElement) => {
@@ -120,8 +88,16 @@
 			</span>
 			<Input
 				type="number"
-				value={executionType === 'reps' ? (set.reps ?? '') : (set.durationSeconds ?? '')}
-				onblur={executionType === 'reps' ? onRepsChange : onDurationChange}
+				bind:value={
+					() => (executionType === 'reps' ? (set.reps ?? '') : (set.durationSeconds ?? '')),
+					(v) => {
+						if (executionType === 'reps') {
+							set.$jazz.set('reps', v || 0);
+						} else {
+							set.$jazz.set('durationSeconds', v || 0);
+						}
+					}
+				}
 				placeholder="0"
 				class="h-10 w-full text-center text-base font-semibold tabular-nums"
 				inputmode="numeric"
@@ -145,8 +121,12 @@
 				{/if}
 				<Input
 					type="text"
-					value={set.weight ?? ''}
-					onblur={onWeightChange}
+					bind:value={
+						() => set.weight ?? '',
+						(v) => {
+							set.$jazz.set('weight', v || 0);
+						}
+					}
 					placeholder="0"
 					class={cn(
 						'h-10 w-full text-center text-base font-semibold tabular-nums',
@@ -172,13 +152,15 @@
 					{/if}
 				</button>
 			{/if}
-			<button
-				class="text-muted-foreground hover:bg-destructive/20 hover:text-destructive flex h-8 w-8 items-center justify-center rounded-lg transition-all"
-				onclick={deleteSet}
-				title="Delete set"
-			>
-				<Minus class="size-4" />
-			</button>
+			{#if onDelete}
+				<button
+					class="text-muted-foreground hover:bg-destructive/20 hover:text-destructive flex h-8 w-8 items-center justify-center rounded-lg transition-all"
+					onclick={onDelete}
+					title="Delete set"
+				>
+					<Minus class="size-4" />
+				</button>
+			{/if}
 		</div>
 	</div>
 
@@ -189,8 +171,12 @@
 			rows={1}
 			class="min-h-[2rem] text-sm font-normal"
 			placeholder="Note (RIR, RPE, etc.)"
-			value={set.note ?? ''}
-			onblur={onNoteChange}
+			bind:value={
+				() => set.note?.trim() ?? '',
+				(v) => {
+					set.$jazz.set('note', v);
+				}
+			}
 		/>
 	</Label>
 </div>

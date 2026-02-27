@@ -1,25 +1,27 @@
 <script lang="ts">
 	import { DEFAULT_EXERCISE_EXECUTION_TYPE, DEFAULT_EXERCISE_LOAD_TYPE } from '$lib/constants';
-	import type { PerformanceSet, WorkoutWithRelations } from '$lib/db/types';
-
-	type Performance = WorkoutWithRelations['performanceGroups'][number]['performances'][number];
+	import type { PerformanceSet, Performance } from '$lib/jazz/types';
 
 	let {
 		set,
 		performance,
-		order
-	}: { set: PerformanceSet; performance: Performance; order: number } = $props();
+		order,
+		bodyweight = 0,
+		bodyweightUnit = 'lbs'
+	}: {
+		set: PerformanceSet;
+		performance: Performance;
+		order: number;
+		bodyweight?: number;
+		bodyweightUnit?: 'kg' | 'lbs';
+	} = $props();
 
 	let weight = $derived(set.weight ?? 0);
 	let reps = $derived(set.reps ?? 0);
 	let duration = $derived(set.durationSeconds ?? 0);
 	let note = $derived(set.note);
-
 	let weightUnit = $derived(performance.weightUnit);
-	let workout = $derived(performance.workout);
-	let bodyweight = $derived(workout?.bodyweight ?? 0);
-	let bodyweightUnit = $derived(workout?.bodyweightUnit ?? 'lbs');
-	let exercise = $derived(performance.exercise);
+	let exercise = $derived(performance.exercise.$isLoaded ? performance.exercise : null);
 	let executionType = $derived(exercise?.executionType ?? DEFAULT_EXERCISE_EXECUTION_TYPE);
 	let loadType = $derived(exercise?.loadType ?? DEFAULT_EXERCISE_LOAD_TYPE);
 </script>

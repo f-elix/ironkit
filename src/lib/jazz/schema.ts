@@ -3,10 +3,16 @@ import { co, z } from 'jazz-tools';
 
 export const WEIGHT_UNITS = ['kg', 'lbs'] as const;
 export const GENDER_CLASSES = ['male', 'female'] as const;
-export const EXERCISE_LOAD_TYPES = ['weighted', 'bodyweight', 'assisted'] as const;
+export const EXERCISE_LOAD_TYPES = ['weighted', 'bodyweight'] as const;
 export const EXERCISE_EXECUTION_TYPES = ['reps', 'time'] as const;
 export const PROGRAM_TEMPLATE_STATUSES = ['draft', 'published', 'archived'] as const;
-export const PROGRAM_RUN_STATUSES = ['active', 'paused', 'completed', 'canceled', 'archived'] as const;
+export const PROGRAM_RUN_STATUSES = [
+	'active',
+	'paused',
+	'completed',
+	'canceled',
+	'archived'
+] as const;
 
 export type WeightUnit = (typeof WEIGHT_UNITS)[number];
 export type GenderClass = (typeof GENDER_CLASSES)[number];
@@ -15,11 +21,11 @@ export type ExerciseExecutionType = (typeof EXERCISE_EXECUTION_TYPES)[number];
 export type ProgramTemplateStatus = (typeof PROGRAM_TEMPLATE_STATUSES)[number];
 export type ProgramRunStatus = (typeof PROGRAM_RUN_STATUSES)[number];
 
-export interface ProgramTargetSnapshot {
+export type ProgramTargetSnapshot = {
 	targetSetRange: string;
 	targetRepsRange?: string;
 	targetDuration?: string;
-}
+};
 
 const WEIGHT_UNIT_ENUM = z.enum(WEIGHT_UNITS);
 const GENDER_CLASS_ENUM = z.enum(GENDER_CLASSES);
@@ -114,7 +120,7 @@ export const PerformanceGroup = co
 		updatedAt: z.date(),
 		get performances() {
 			return co.list(Performance);
-		},
+		}
 	})
 	.withPermissions(USER_OWNED_ENTITY_PERMISSIONS);
 
@@ -235,7 +241,7 @@ export const AccountRoot = co
 		exercises: co.list(Exercise),
 		workouts: co.list(Workout),
 		programTemplates: co.list(ProgramTemplate),
-		programRuns: co.list(ProgramRun),
+		programRuns: co.list(ProgramRun)
 	})
 	.withPermissions({
 		onInlineCreate: 'extendsContainer'
@@ -245,9 +251,10 @@ export const Account = co
 	.account({
 		profile: co.profile(),
 		root: AccountRoot
-	}).withMigration((account) => {
-		if (!account.$jazz.has("root")) {
-			account.$jazz.set("root", {
+	})
+	.withMigration((account) => {
+		if (!account.$jazz.has('root')) {
+			account.$jazz.set('root', {
 				weightConverter: WeightConverter.create({
 					unit: DEFAULT_WEIGHT_UNIT,
 					round: false,
@@ -273,7 +280,7 @@ export const Account = co
 				exercises: [],
 				workouts: [],
 				programTemplates: [],
-				programRuns: [],
+				programRuns: []
 			});
 		}
 	});

@@ -2,8 +2,6 @@
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
-	import { api } from '$convex/_generated/api';
-	import type { Id } from '$convex/_generated/dataModel';
 	import { Button } from '$lib/shadcn/button';
 	import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
 	import CheckIcon from '@lucide/svelte/icons/check';
@@ -12,49 +10,54 @@
 	import PauseIcon from '@lucide/svelte/icons/pause';
 	import PlayIcon from '@lucide/svelte/icons/play';
 	import XIcon from '@lucide/svelte/icons/x';
-	import { useConvexClient, useQuery } from 'convex-svelte';
+	import { CoState } from 'jazz-tools/svelte';
+	import { ProgramRun } from '$lib/jazz/schema';
 	import { toast } from 'svelte-sonner';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import AlertCircleIcon from '@lucide/svelte/icons/alert-circle';
 	import CancelProgramDialog from '$lib/components/training-log/programs/CancelProgramDialog.svelte';
 	import { SvelteMap } from 'svelte/reactivity';
 
-	const runId = $derived(page.params.id as Id<'programRuns'>);
-	const runQuery = useQuery(api.programRuns.getById, () => ({ id: runId }));
-	const templateQuery = useQuery(api.programTemplates.getById, () => {
-		const run = runQuery.data;
-		return run ? { id: run.programTemplateId } : 'skip';
+	type SessionWithDetails = (typeof sessions)[number];
+	type SessionState = 'completed' | 'skipped' | 'next' | 'pending';
+
+	const runId = $derived(page.params.id);
+
+	const runState = new CoState(ProgramRun, () => runId, {
+		resolve: {
+			programTemplate: {
+				programWorkouts: {
+					$each: true
+				}
+			},
+			programRunSessions: {
+				$each: true
+			}
+		}
 	});
 
-	const client = useConvexClient();
+	const run = $derived(runState.current.$isLoaded ? runState.current : undefined);
 
-	let isPausing = $state(false);
-	let isResuming = $state(false);
-	let isCanceling = $state(false);
 	let cancelDialogOpen = $state(false);
 
-	const run = $derived(runQuery.data);
-	const template = $derived(templateQuery.data);
+	const template = $derived(run?.$isLoaded ? run.programTemplate : undefined);
 
-	interface SessionWithDetails {
-		_id: Id<'programRunSessions'>;
-		programWorkoutId: Id<'programWorkouts'>;
-		workoutId?: Id<'workouts'>;
-		skippedAt?: number;
-		programWorkout?: {
-			weekNumber: number;
-			slotOrder: number;
-			trackKey: string;
-			label?: string;
-		};
-		workout?: {
-			_id: Id<'workouts'>;
-			title?: string;
-			date?: number;
-		} | null;
-	}
+	const sessions = $derived.by(() => {
+		if (!run?.$isLoaded) {
+			return [];
+		}
 
-	const sessions = $derived((run?.sessions ?? []) as SessionWithDetails[]);
+		return run.programRunSessions.map((session) => {
+			const programWorkout = run.programTemplate.programWorkouts.find(
+				(pw) => pw.$jazz.id === session.programWorkoutId
+			);
+
+			return {
+				...session,
+				programWorkout
+			};
+		});
+	});
 	const completedCount = $derived(
 		sessions.filter((s) => s.workoutId !== undefined || s.skippedAt !== undefined).length
 	);
@@ -80,9 +83,8 @@
 	const sortedWeeks = $derived([...sessionsByWeek.keys()].toSorted((a, b) => a - b));
 
 	const dateFormatter = new Intl.DateTimeFormat('en-CA', { dateStyle: 'medium' });
-	const formatDate = (timestamp: number) => dateFormatter.format(new Date(timestamp));
+	const formatDate = (date: Date) => dateFormatter.format(date);
 
-	type SessionState = 'completed' | 'skipped' | 'next' | 'pending';
 	const getSessionState = (session: SessionWithDetails, index: number): SessionState => {
 		if (session.workoutId !== undefined) {
 			return 'completed';
@@ -97,59 +99,39 @@
 	};
 
 	const handlePause = async () => {
-		if (isPausing || !run) {
+		if (!run) {
 			return;
 		}
-		isPausing = true;
-		try {
-			await client.mutation(api.programRuns.pauseRun, { id: run._id });
-			toast.success('Program paused');
-		} catch (error) {
-			toast.error(error instanceof Error ? error.message : 'Could not pause program.');
-		} finally {
-			isPausing = false;
-		}
+		run.$jazz.set('status', 'paused');
+		toast.success('Program paused');
 	};
 
 	const handleResume = async () => {
-		if (isResuming || !run) {
+		if (!run) {
 			return;
 		}
-		isResuming = true;
-		try {
-			await client.mutation(api.programRuns.resumeRun, { id: run._id });
-			toast.success('Program resumed');
-		} catch (error) {
-			toast.error(error instanceof Error ? error.message : 'Could not resume program.');
-		} finally {
-			isResuming = false;
-		}
+		run.$jazz.set('status', 'active');
+		toast.success('Program resumed');
 	};
 
 	const handleCancelConfirm = async () => {
-		if (isCanceling || !run) {
+		if (!run) {
 			return;
 		}
-		isCanceling = true;
-		try {
-			await client.mutation(api.programRuns.cancelRun, { id: run._id });
-			cancelDialogOpen = false;
-			toast.success('Program canceled');
-			goto(resolve('/(app)/tools/training-log/programs'));
-		} catch (error) {
-			toast.error(error instanceof Error ? error.message : 'Could not cancel program.');
-		} finally {
-			isCanceling = false;
-		}
+		run.$jazz.set('status', 'canceled');
+		run.$jazz.set('endedAt', new Date());
+		cancelDialogOpen = false;
+		toast.success('Program canceled');
+		goto(resolve('/(app)/tools/training-log/programs'));
 	};
 
-	const isActive = $derived(run?.status === 'active');
-	const isPaused = $derived(run?.status === 'paused');
+	const isActive = $derived(run?.$isLoaded ? run.status === 'active' : false);
+	const isPaused = $derived(run?.$isLoaded ? run.status === 'paused' : false);
 	const canPauseResume = $derived(isActive || isPaused);
 	const canCancel = $derived(isActive || isPaused);
 </script>
 
-{#if run && template}
+{#if run?.$isLoaded && template}
 	<div class="flex min-h-full flex-col p-4 md:p-0">
 		<div class="mx-auto w-full max-w-2xl space-y-6 py-2">
 			<header class="flex items-start gap-4">
@@ -188,7 +170,7 @@
 					<div class="space-y-2">
 						<h2 class="text-muted-foreground text-sm font-medium">Week {weekNumber}</h2>
 						<ul class="bg-card divide-border divide-y rounded-xl border">
-							{#each weekSessions as session (session._id)}
+							{#each weekSessions as session (session.$jazz.id)}
 								{@const globalIndex = sessions.indexOf(session)}
 								{@const state = getSessionState(session, globalIndex)}
 								{@const label =
@@ -207,11 +189,6 @@
 												<CheckIcon class="size-3.5" />
 											</span>
 											<span class="min-w-0 flex-1 truncate font-medium">{label}</span>
-											{#if session.workout?.date}
-												<span class="text-muted-foreground shrink-0 text-xs tabular-nums">
-													{formatDate(session.workout.date)}
-												</span>
-											{/if}
 										</a>
 									{:else if state === 'next'}
 										<div class="flex items-center gap-3 px-4 py-3">
@@ -258,14 +235,14 @@
 				<footer class="sticky bottom-4 flex gap-3 pt-4 md:static md:bottom-auto">
 					{#if canPauseResume}
 						{#if isActive}
-							<Button variant="outline" class="flex-1" onclick={handlePause} disabled={isPausing}>
+							<Button variant="outline" class="flex-1" onclick={handlePause}>
 								<PauseIcon />
-								{isPausing ? 'Pausing...' : 'Pause'}
+								Pause
 							</Button>
 						{:else if isPaused}
-							<Button variant="outline" class="flex-1" onclick={handleResume} disabled={isResuming}>
+							<Button variant="outline" class="flex-1" onclick={handleResume}>
 								<PlayIcon />
-								{isResuming ? 'Resuming...' : 'Resume'}
+								Resume
 							</Button>
 						{/if}
 					{/if}
@@ -279,7 +256,7 @@
 			{/if}
 		</div>
 	</div>
-{:else if runQuery.isLoading || templateQuery.isLoading}
+{:else if !run}
 	<div class="flex min-h-full flex-col p-4 md:p-0">
 		<div class="mx-auto w-full max-w-2xl space-y-6 py-2">
 			<header class="flex items-start gap-4">
@@ -325,8 +302,4 @@
 	</EmptyState>
 {/if}
 
-<CancelProgramDialog
-	bind:open={cancelDialogOpen}
-	onConfirm={handleCancelConfirm}
-	isLoading={isCanceling}
-/>
+<CancelProgramDialog bind:open={cancelDialogOpen} onConfirm={handleCancelConfirm} />

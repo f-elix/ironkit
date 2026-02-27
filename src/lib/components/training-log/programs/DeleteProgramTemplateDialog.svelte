@@ -1,19 +1,15 @@
 <script lang="ts">
-	import type { Doc } from '$convex/_generated/dataModel';
+	import type { ProgramTemplate } from '$lib/jazz/types';
 	import { Button, buttonVariants } from '$lib/shadcn/button';
 	import * as Dialog from '$lib/shadcn/dialog';
 
 	let {
 		open = $bindable(),
 		template,
-		isDeleting,
-		deleteError,
 		onConfirmDelete
 	}: {
 		open: boolean;
-		template: Doc<'programTemplates'> | null;
-		isDeleting: boolean;
-		deleteError: string;
+		template: ProgramTemplate | null;
 		onConfirmDelete: () => void;
 	} = $props();
 </script>
@@ -28,14 +24,9 @@
 				workouts.
 			{/if}
 		</Dialog.Description>
-		{#if deleteError}
-			<p class="text-destructive text-sm">{deleteError}</p>
-		{/if}
 		<Dialog.Footer class="flex flex-row justify-end gap-2">
 			<Dialog.Close class={buttonVariants({ variant: 'secondary' })}>Cancel</Dialog.Close>
-			<Button variant="destructive" disabled={isDeleting} onclick={onConfirmDelete}>
-				{isDeleting ? 'Deleting...' : 'Delete template'}
-			</Button>
+			<Button variant="destructive" onclick={onConfirmDelete}>Delete template</Button>
 		</Dialog.Footer>
 	</Dialog.Content>
 </Dialog.Root>

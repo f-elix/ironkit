@@ -2,30 +2,29 @@
 	import * as Dialog from '$lib/shadcn/dialog';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
 	import { Button, buttonVariants } from '$lib/shadcn/button';
-	import type { Doc } from '$convex/_generated/dataModel';
-	import { useConvexClient } from 'convex-svelte';
-	import { api } from '$convex/_generated/api';
+	import type { Exercise } from '$lib/jazz/types';
+	import { Account } from '$lib/jazz/schema';
+	import { AccountCoState } from 'jazz-tools/svelte';
 
-	let { exercise }: { exercise: Doc<'exercises'> } = $props();
+	let { exercise }: { exercise: Exercise } = $props();
 
-	const client = useConvexClient();
+	const account = new AccountCoState(Account, {
+		resolve: {
+			root: {
+				exercises: { $each: true }
+			}
+		}
+	});
+
+	const root = $derived(account.current.$isLoaded ? account.current.root : null);
 
 	let open = $state(false);
 
 	const onDelete = () => {
-		client.mutation(
-			api.exercises.remove,
-			{ id: exercise._id },
-			{
-				optimisticUpdate: (localStore) => {
-					localStore.setQuery(
-						api.exercises.list,
-						{},
-						localStore.getQuery(api.exercises.list, {})?.filter((e) => e._id !== exercise._id) ?? []
-					);
-				}
-			}
-		);
+		if (!root) {
+			return;
+		}
+		root.exercises.$jazz.remove((e) => e.$jazz.id === exercise.$jazz.id);
 		open = false;
 	};
 </script>

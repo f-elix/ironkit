@@ -13,35 +13,47 @@
 	import { muscleGroups as muscleGroupsList } from '$lib/data/muscleGroups';
 	import Badge from '$lib/shadcn/badge/badge.svelte';
 	import ExerciseHistoryDialog from '$lib/components/training-log/ExerciseHistoryDialog.svelte';
-	import { api } from '$convex/_generated/api';
-	import { useQuery } from 'convex-svelte';
+	import { Account } from '$lib/jazz/schema';
+	import { AccountCoState } from 'jazz-tools/svelte';
 
-	const allExercisesQuery = useQuery(api.exercises.list, {});
+	const account = new AccountCoState(Account, {
+		resolve: {
+			root: {
+				exercises: { $each: true }
+			}
+		}
+	});
 
-	let allExercises = $derived(allExercisesQuery.data);
+	const root = $derived(account.current.$isLoaded ? account.current.root : null);
+
+	let allExercises = $derived(root?.exercises ?? []);
 
 	let search = $state('');
 
-	let filteredExercises = $derived(
-		allExercises
-			?.map((exercise) => {
+	let exercises = $derived.by(() => {
+		if (!allExercises) {
+			return [];
+		}
+		if (!search) {
+			return allExercises.map((exercise) => ({ exercise, score: 0 }));
+		}
+		return allExercises
+			.map((exercise) => {
 				const muscleGroups = Array.from(exercise.muscleGroups);
 				const score = computeCommandScore(exercise.name, search, [
 					...muscleGroups,
 					exercise.loadType,
 					exercise.executionType
 				]);
-				return { ...exercise, score };
+				return { exercise, score };
 			})
-			.filter((exercise) => exercise.score > 0)
-			.toSorted((a, b) => b.score - a.score)
-	);
-
-	let exercises = $derived(search ? (filteredExercises ?? []) : (allExercises ?? []));
+			.filter((item) => item.score > 0)
+			.toSorted((a, b) => b.score - a.score);
+	});
 </script>
 
 <div class="flex grow flex-col p-4 md:p-0">
-	{#if allExercisesQuery.isLoading}
+	{#if !root}
 		<div class="flex grow flex-col items-center pt-10">Loading...</div>
 	{:else if allExercises?.length}
 		<div class="flex flex-col gap-4">
@@ -51,7 +63,8 @@
 			</Label>
 			{#if exercises?.length}
 				<ul class="grid gap-4 pb-20 md:grid-cols-2 md:pb-4 lg:grid-cols-3">
-					{#each exercises as exercise (exercise._id)}
+					{#each exercises as item (item.exercise.$jazz.id)}
+						{@const exercise = item.exercise}
 						{@const name = exercise.name}
 						{@const targetMuscleGroups = Array.from(exercise.muscleGroups)}
 						{@const loadType = exercise.loadType}
@@ -97,7 +110,7 @@
 												</Dialog.Trigger>
 											{/snippet}
 										</ExerciseInfoDialog>
-										<ExerciseHistoryDialog exerciseId={exercise._id} />
+										<ExerciseHistoryDialog exerciseId={exercise.$jazz.id} />
 									</div>
 								</div>
 							</article>
