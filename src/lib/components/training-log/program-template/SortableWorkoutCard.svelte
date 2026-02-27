@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { createSortable } from '@dnd-kit/svelte/sortable';
-	import type { Id } from '$convex/_generated/dataModel';
-	import type { WorkoutSummaryGroup } from '$lib/components/training-log/program-template/program-template-editor.types';
+	import type { ResolvedPerformanceGroup } from '$lib/jazz/types';
 	import ProgramTemplateWorkoutCardSummary from '$lib/components/training-log/program-template/ProgramTemplateWorkoutCardSummary.svelte';
 	import GripVerticalIcon from '@lucide/svelte/icons/grip-vertical';
 
@@ -9,20 +8,20 @@
 		workoutId,
 		trackKey,
 		label,
-		groups = [],
+		performanceGroups = [],
 		index,
 		isSelected,
 		trackColorClass,
 		onSelect
 	}: {
-		workoutId: Id<'programWorkouts'>;
+		workoutId: string;
 		trackKey: string;
 		label: string | undefined;
-		groups?: WorkoutSummaryGroup[];
+		performanceGroups?: ResolvedPerformanceGroup[];
 		index: number;
 		isSelected: boolean;
 		trackColorClass: string;
-		onSelect: (id: Id<'programWorkouts'>) => void;
+		onSelect: (id: string) => void;
 	} = $props();
 
 	const { attach: attachRef, isDragging } = $derived(
@@ -72,6 +71,6 @@
 				{label || 'Untitled'}
 			</span>
 		</div>
-		<ProgramTemplateWorkoutCardSummary {groups} />
+		<ProgramTemplateWorkoutCardSummary {performanceGroups} />
 	</div>
 </li>

@@ -1,5 +1,17 @@
 # Agent Instructions
 
+This codebase will outlive you. Every shortcut you take becomes
+someone else's burden. Every hack compounds into technical debt
+that slows the whole team down.
+
+You are not just writing code. You are shaping the future of this
+project. The patterns you establish will be copied. The corners
+you cut will be cut again.
+
+Fight entropy. Leave the codebase better than you found it.
+
+## Project
+
 Collection of tools for lifters, with an extensive training log.
 
 ## Package Manager
@@ -23,7 +35,3 @@ Use `clsx` style syntax for the `class` attribute over string interpolation.
 <!-- Good -->
 <div class={['class', condition ? 'true': 'false']}>
 ```
-
-## Migration Docs
-
-Keep `docs/jazz-migration/backlog.md`, `docs/jazz-migration/architecture.md`, and `docs/jazz-migration/implementation-notes.md` updated as Convex to Jazz migration work progresses.

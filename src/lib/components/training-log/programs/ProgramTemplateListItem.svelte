@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { api } from '$convex/_generated/api';
-	import type { Doc, Id } from '$convex/_generated/dataModel';
+	import type { ProgramTemplate } from '$lib/jazz/types';
 	import DeleteProgramTemplateDialog from '$lib/components/training-log/programs/DeleteProgramTemplateDialog.svelte';
 	import Badge from '$lib/shadcn/badge/badge.svelte';
 	import Button from '$lib/shadcn/button/button.svelte';
@@ -19,7 +18,8 @@
 	import EyeIcon from '@lucide/svelte/icons/eye';
 	import PlayIcon from '@lucide/svelte/icons/play';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
-	import { useConvexClient } from 'convex-svelte';
+	import { Account, ProgramRun } from '$lib/jazz/schema';
+	import { AccountCoState } from 'jazz-tools/svelte';
 	import { toast } from 'svelte-sonner';
 
 	let {
@@ -30,23 +30,29 @@
 		hasOtherActiveRun,
 		animationDelay = 0
 	}: {
-		template: Doc<'programTemplates'>;
+		template: ProgramTemplate;
 		updatedAtLabel: string;
 		workoutCount: number;
-		activeRunId?: Id<'programRuns'>;
+		activeRunId?: string;
 		hasOtherActiveRun: boolean;
 		animationDelay?: number;
 	} = $props();
 
-	const client = useConvexClient();
+	const account = new AccountCoState(Account, {
+		resolve: {
+			root: {
+				programRuns: { $each: true },
+				programTemplates: { $each: true }
+			}
+		}
+	});
 
-	let isActivating = $state(false);
+	const root = $derived(account.current.$isLoaded ? account.current.root : null);
+
 	let isDeleteDialogOpen = $state(false);
-	let isDeleting = $state(false);
-	let deleteError = $state('');
 
 	const href = $derived(
-		resolve('/(app)/tools/training-log/program-template-[id]', { id: template._id })
+		resolve('/(app)/tools/training-log/program-template-[id]', { id: template.$jazz.id })
 	);
 
 	const viewActiveRunHref = $derived(
@@ -69,7 +75,7 @@
 	const statusBadgeVariant = $derived(getProgramTemplateStatusBadgeVariant(template.status));
 
 	async function handleStart() {
-		if (!canStart || isActivating) {
+		if (!canStart || !root) {
 			return;
 		}
 
@@ -82,54 +88,39 @@
 			}
 		}
 
-		isActivating = true;
-		try {
-			await client.mutation(api.programRuns.activateTemplate, {
-				programTemplateId: template._id
-			});
-			toast.success('Program started');
-			goto(resolve('/(app)/tools/training-log'));
-		} catch (error) {
-			toast.error(error instanceof Error ? error.message : 'Could not start program.');
-		} finally {
-			isActivating = false;
+		// End any existing active runs
+		const existingActiveRuns = root.programRuns.filter(
+			(run) => run.status === 'active' || run.status === 'paused'
+		);
+		for (const run of existingActiveRuns) {
+			run.$jazz.set('status', 'completed');
+			run.$jazz.set('endedAt', new Date());
 		}
+
+		// Create new active run
+		const newRun = ProgramRun.create({
+			programTemplate: template,
+			status: 'active',
+			startedAt: new Date(),
+			programRunSessions: [],
+			updatedAt: new Date()
+		});
+
+		root.programRuns.$jazz.push(newRun);
+		toast.success('Program started');
+		goto(resolve('/(app)/tools/training-log'));
 	}
 
 	const openDeleteDialog = () => {
-		deleteError = '';
 		isDeleteDialogOpen = true;
 	};
 
 	const deleteTemplate = async () => {
-		if (isDeleting) {
+		if (!root) {
 			return;
 		}
-		isDeleting = true;
-		deleteError = '';
-
-		try {
-			await client.mutation(
-				api.programTemplates.remove,
-				{ id: template._id },
-				{
-					optimisticUpdate: (localStore) => {
-						localStore.setQuery(
-							api.programTemplates.list,
-							{},
-							(localStore.getQuery(api.programTemplates.list, {}) ?? []).filter(
-								(item) => item._id !== template._id
-							)
-						);
-					}
-				}
-			);
-			isDeleteDialogOpen = false;
-		} catch (error) {
-			deleteError = error instanceof Error ? error.message : 'Could not delete template.';
-		} finally {
-			isDeleting = false;
-		}
+		root.programTemplates.$jazz.remove((t) => t.$jazz.id === template.$jazz.id);
+		isDeleteDialogOpen = false;
 	};
 </script>
 
@@ -167,15 +158,9 @@
 				View Run
 			</Button>
 		{:else if canStart}
-			<Button
-				variant="secondary"
-				size="sm"
-				class="h-7 gap-1 px-2 text-xs"
-				disabled={isActivating}
-				onclick={handleStart}
-			>
+			<Button variant="secondary" size="sm" class="h-7 gap-1 px-2 text-xs" onclick={handleStart}>
 				<PlayIcon class="size-3.5" />
-				{isActivating ? 'Starting...' : 'Start'}
+				Start
 			</Button>
 		{:else}
 			<Tooltip.Provider>
@@ -220,7 +205,5 @@
 <DeleteProgramTemplateDialog
 	bind:open={isDeleteDialogOpen}
 	{template}
-	{isDeleting}
-	{deleteError}
 	onConfirmDelete={deleteTemplate}
 />

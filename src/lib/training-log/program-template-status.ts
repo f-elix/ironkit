@@ -1,7 +1,7 @@
-import type { Doc } from '$convex/_generated/dataModel';
+import type { ProgramTemplate } from '$lib/jazz/types';
 import type { BadgeVariant } from '$lib/shadcn/badge';
 
-export type ProgramTemplateStatus = Doc<'programTemplates'>['status'];
+export type ProgramTemplateStatus = ProgramTemplate['status'];
 export type ProgramTemplateFilter = 'all' | ProgramTemplateStatus;
 
 export const PROGRAM_TEMPLATE_FILTER_OPTIONS: { key: ProgramTemplateFilter; label: string }[] = [

@@ -1,12 +1,13 @@
-import { DEFAULT_WEIGHT_UNIT } from "$lib/constants";
+import { DEFAULT_WEIGHT_UNIT } from '$lib/constants';
 import {
 	Performance,
 	PerformanceGroup,
 	PerformanceSet,
 	ProgramWorkout,
 	Workout
-} from "$lib/jazz/schema";
-import type { co } from "jazz-tools";
+} from '$lib/jazz/schema';
+import type { ResolvedWorkout } from '$lib/jazz/types';
+import type { co } from 'jazz-tools';
 
 export const PERFORMANCE_GROUPS_RESOLUTION = {
 	$each: {
@@ -21,16 +22,17 @@ export const PERFORMANCE_GROUPS_RESOLUTION = {
 	}
 } as const;
 
-export type TemplateWorkoutData = co.loaded<typeof Workout, {
-	performanceGroups: typeof PERFORMANCE_GROUPS_RESOLUTION;
-}>;
+export type WorkoutData = ResolvedWorkout;
 
-export type ResolvedProgramWorkout = co.loaded<typeof ProgramWorkout, {
-	performanceGroups: typeof PERFORMANCE_GROUPS_RESOLUTION;
-}>;
+export type ResolvedProgramWorkout = co.loaded<
+	typeof ProgramWorkout,
+	{
+		performanceGroups: typeof PERFORMANCE_GROUPS_RESOLUTION;
+	}
+>;
 
-type TemplatePerformanceGroupData = TemplateWorkoutData['performanceGroups'][number]
-type TemplatePerformanceData = TemplatePerformanceGroupData['performances'][number]
+type TemplatePerformanceGroupData = WorkoutData['performanceGroups'][number];
+type TemplatePerformanceData = TemplatePerformanceGroupData['performances'][number];
 
 const createPerformanceFromTemplate = (performance: TemplatePerformanceData) => {
 	const newPerformance = Performance.create({
@@ -46,12 +48,12 @@ const createPerformanceFromTemplate = (performance: TemplatePerformanceData) => 
 				durationSeconds: undefined,
 				note: undefined,
 				performanceOrder: set.performanceOrder,
-				updatedAt: new Date(),
+				updatedAt: new Date()
 			});
 		})
-	})
+	});
 	return newPerformance;
-}
+};
 
 const createPerformanceGroupFromTemplate = (group: TemplatePerformanceGroupData) => {
 	const performances = group.performances.map(createPerformanceFromTemplate);
@@ -59,10 +61,10 @@ const createPerformanceGroupFromTemplate = (group: TemplatePerformanceGroupData)
 		workoutOrder: group.workoutOrder,
 		label: group.label,
 		updatedAt: new Date(),
-		performances,
+		performances
 	});
 	return newGroup;
-}
+};
 
 const linkPerformanceGroupsToWorkout = (
 	performanceGroups: ReturnType<typeof createPerformanceGroupFromTemplate>[],
@@ -74,7 +76,7 @@ const linkPerformanceGroupsToWorkout = (
 			performance.$jazz.set('performanceGroupId', group.$jazz.id);
 		});
 	});
-}
+};
 
 export const createWorkoutFromTemplate = async (workoutId: string) => {
 	const workout = await Workout.load(workoutId, {
@@ -93,14 +95,16 @@ export const createWorkoutFromTemplate = async (workoutId: string) => {
 		bodyweight: workout?.bodyweight ?? undefined,
 		bodyweightUnit: workout?.bodyweightUnit ?? DEFAULT_WEIGHT_UNIT,
 		performanceGroups,
-		updatedAt: new Date(),
+		updatedAt: new Date()
 	});
 	linkPerformanceGroupsToWorkout(performanceGroups, newWorkout.$jazz.id);
 	return newWorkout;
 };
 
 export const createWorkoutFromProgramWorkout = (programWorkout: ResolvedProgramWorkout) => {
-	const performanceGroups = programWorkout.performanceGroups.map(createPerformanceGroupFromTemplate);
+	const performanceGroups = programWorkout.performanceGroups.map(
+		createPerformanceGroupFromTemplate
+	);
 	const workout = Workout.create({
 		title: programWorkout.label ?? programWorkout.trackKey,
 		date: new Date(),

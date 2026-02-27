@@ -1,24 +1,72 @@
 <script lang="ts">
-	import { api } from '$convex/_generated/api';
-	import ProgramTemplateHeaderMetadataEditor from '$lib/components/training-log/program-template/ProgramTemplateHeaderMetadataEditor.svelte';
+	import ProgramTemplateHeaderNotesPopover from '$lib/components/training-log/program-template/ProgramTemplateHeaderNotesPopover.svelte';
+	import ProgramTemplateHeaderRunAction from '$lib/components/training-log/program-template/ProgramTemplateHeaderRunAction.svelte';
+	import ProgramTemplateHeaderStatusMenu from '$lib/components/training-log/program-template/ProgramTemplateHeaderStatusMenu.svelte';
 	import { getProgramTemplateEditorContext } from '$lib/components/training-log/program-template/program-template-editor.context.svelte.js';
-	import { setProgramTemplateHeaderSaveContext } from '$lib/components/training-log/program-template/program-template-header-save.context.svelte';
-	import { useQuery } from 'convex-svelte';
+	import Input from '$lib/shadcn/input/input.svelte';
+	import { ProgramTemplate } from '$lib/jazz/schema';
+	import { CoState } from 'jazz-tools/svelte';
 
 	const editorState = getProgramTemplateEditorContext();
-	setProgramTemplateHeaderSaveContext();
-	const templateQuery = useQuery(api.programTemplates.getById, () => ({
-		id: editorState.templateId
-	}));
-	let template = $derived(templateQuery.data ?? null);
+
+	const templateState = new CoState(ProgramTemplate, () => editorState.templateId);
+	let template = $derived(templateState.current.$isLoaded ? templateState.current : undefined);
+
+	const normalizePositiveInt = (value: number, fallback = 1) => {
+		if (!Number.isFinite(value)) {
+			return fallback;
+		}
+		return Math.max(1, Math.floor(value));
+	};
+
+	const handleNameChange = (value: string) => {
+		if (!template) {
+			return;
+		}
+		const name = value.trim() || 'Untitled program';
+		template.$jazz.set('name', name);
+		template.$jazz.set('updatedAt', new Date());
+	};
+
+	const handleTotalWeeksChange = (value: number) => {
+		if (!template) {
+			return;
+		}
+		const totalWeeks = normalizePositiveInt(value, 1);
+		template.$jazz.set('totalWeeks', totalWeeks);
+		template.$jazz.set('updatedAt', new Date());
+	};
 </script>
 
 {#if template}
-	<ProgramTemplateHeaderMetadataEditor {template} />
-{:else}
 	<header
-		class="border-border/40 bg-card/30 flex h-14 items-center rounded-xl border px-4 py-2.5 backdrop-blur-sm"
+		class="border-border/40 bg-card/30 flex flex-wrap items-center gap-x-4 gap-y-2 rounded-xl border px-4 py-2.5 backdrop-blur-sm"
 	>
-		<div class="bg-muted/40 h-4 w-40 animate-pulse rounded"></div>
+		<input
+			type="text"
+			value={template.name ?? ''}
+			class="placeholder:text-muted-foreground min-w-0 flex-1 basis-40 bg-transparent text-base font-semibold outline-none"
+			placeholder="Program name"
+			oninput={(e) => handleNameChange(e.currentTarget.value)}
+		/>
+
+		<div class="flex items-center gap-3">
+			<div class="flex items-center gap-1.5">
+				<Input
+					type="number"
+					min="1"
+					value={template.totalWeeks ?? 1}
+					class="h-7 w-12 text-center text-xs tabular-nums"
+					oninput={(e) => handleTotalWeeksChange(e.currentTarget.valueAsNumber)}
+				/>
+				<span class="text-muted-foreground text-xs">wk</span>
+			</div>
+
+			<ProgramTemplateHeaderStatusMenu templateId={template.$jazz.id} />
+
+			<ProgramTemplateHeaderRunAction status={template.status} />
+
+			<ProgramTemplateHeaderNotesPopover templateId={template.$jazz.id} />
+		</div>
 	</header>
 {/if}

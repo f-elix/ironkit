@@ -5,7 +5,6 @@ import type { RequestEvent } from '@sveltejs/kit';
 const baseHandler = toSvelteKitHandler(auth);
 
 const handler = async (event: RequestEvent) => {
-	console.log(`[Auth] ${event.request.method} ${event.url.pathname}`);
 	return baseHandler(event);
 };
 

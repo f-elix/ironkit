@@ -1,7 +1,4 @@
 <script lang="ts">
-	import type { Id } from '$convex/_generated/dataModel';
-	import { api } from '$convex/_generated/api';
-	import { getProgramTemplateHeaderSaveContext } from '$lib/components/training-log/program-template/program-template-header-save.context.svelte';
 	import Badge from '$lib/shadcn/badge/badge.svelte';
 	import * as DropdownMenu from '$lib/shadcn/dropdown-menu';
 	import {
@@ -10,56 +7,40 @@
 		type ProgramTemplateStatus
 	} from '$lib/training-log/program-template-status';
 	import CheckIcon from '@lucide/svelte/icons/check';
-	import { useConvexClient } from 'convex-svelte';
-	import { toast } from 'svelte-sonner';
+	import { CoState } from 'jazz-tools/svelte';
+	import { ProgramTemplate } from '$lib/jazz/schema';
 
 	let {
-		templateId,
-		status
+		templateId
 	}: {
-		templateId: Id<'programTemplates'>;
-		status: ProgramTemplateStatus;
+		templateId: string;
 	} = $props();
 
-	const client = useConvexClient();
-	const saveController = getProgramTemplateHeaderSaveContext();
-	let selectedStatus = $derived(status);
-	let isUpdating = $state(false);
-	let statusBadgeVariant = $derived(getProgramTemplateStatusBadgeVariant(selectedStatus));
+	const templateState = new CoState(ProgramTemplate, () => templateId);
+	const template = $derived(templateState.current.$isLoaded ? templateState.current : undefined);
+	const status = $derived(template?.status ?? 'draft');
 
-	const setStatus = async (next: ProgramTemplateStatus) => {
-		if (isUpdating || selectedStatus === next) {
+	let statusBadgeVariant = $derived(getProgramTemplateStatusBadgeVariant(status));
+
+	const setStatus = (next: ProgramTemplateStatus) => {
+		if (status === next || !template) {
 			return;
 		}
-		const previous = selectedStatus;
-		selectedStatus = next;
-		isUpdating = true;
-		try {
-			await saveController.run(async () => {
-				await client.mutation(api.programTemplates.update, {
-					id: templateId,
-					status: next
-				});
-			});
-		} catch (error) {
-			selectedStatus = previous;
-			toast.error(error instanceof Error ? error.message : 'Could not save template status.');
-		} finally {
-			isUpdating = false;
-		}
+		template.$jazz.set('status', next);
+		template.$jazz.set('updatedAt', new Date());
 	};
 </script>
 
 <DropdownMenu.Root>
 	<DropdownMenu.Trigger class="shrink-0">
 		<Badge variant={statusBadgeVariant} class="cursor-pointer capitalize select-none">
-			{selectedStatus}
+			{status}
 		</Badge>
 	</DropdownMenu.Trigger>
 	<DropdownMenu.Content align="end">
 		{#each PROGRAM_TEMPLATE_STATUS_OPTIONS as option (option.value)}
 			<DropdownMenu.Item onSelect={() => setStatus(option.value)}>
-				{#if selectedStatus === option.value}
+				{#if status === option.value}
 					<CheckIcon class="size-4" />
 				{:else}
 					<span class="size-4"></span>

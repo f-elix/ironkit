@@ -1,14 +1,8 @@
 <script lang="ts">
-	import { api } from '$convex/_generated/api';
-	import type { Id } from '$convex/_generated/dataModel';
 	import ProgramTemplateAddWorkoutPopover from '$lib/components/training-log/program-template/ProgramTemplateAddWorkoutPopover.svelte';
 	import ProgramTemplateWorkoutCardSummary from '$lib/components/training-log/program-template/ProgramTemplateWorkoutCardSummary.svelte';
 	import { getProgramTemplateEditorContext } from '$lib/components/training-log/program-template/program-template-editor.context.svelte.js';
-	import type {
-		CreateWorkoutMode,
-		WorkoutSummaryWithGroups,
-		WorkoutWeek
-	} from '$lib/components/training-log/program-template/program-template-editor.types';
+	import type { CreateWorkoutMode } from '$lib/components/training-log/program-template/program-template-editor.types';
 	import {
 		getFirstAvailableTrackKey,
 		getTrackColor,
@@ -18,41 +12,57 @@
 	import { RestrictToHorizontalAxis } from '@dnd-kit/abstract/modifiers';
 	import { DragDropProvider } from '@dnd-kit/svelte';
 	import { move } from '@dnd-kit/helpers';
-	import { useConvexClient, useQuery } from 'convex-svelte';
-	import { toast } from 'svelte-sonner';
 	import type { ComponentProps } from 'svelte';
+	import { CoState } from 'jazz-tools/svelte';
+	import {
+		ProgramTemplate,
+		ProgramWorkout,
+		PerformanceGroup,
+		Performance,
+		PerformanceSet
+	} from '$lib/jazz/schema';
 
 	const editorState = getProgramTemplateEditorContext();
-	const client = useConvexClient();
-	const templateQuery = useQuery(api.programTemplates.getById, () => ({
-		id: editorState.templateId
-	}));
 
-	const workoutsQuery = useQuery(api.programWorkouts.listByTemplateWithSummaries, () => ({
-		programTemplateId: editorState.templateId
-	}));
+	const templateState = new CoState(ProgramTemplate, () => editorState.templateId, {
+		resolve: {
+			programWorkouts: {
+				$each: {
+					performanceGroups: {
+						$each: {
+							performances: {
+								$each: {
+									exercise: true,
+									performanceSets: { $each: true }
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	});
 
-	let templateTotalWeeks = $derived(templateQuery.data?.totalWeeks ?? 1);
-	let workouts = $derived((workoutsQuery.data ?? []) as WorkoutSummaryWithGroups[]);
-	let selectedWorkoutId = $derived(editorState.selectedWorkoutId);
+	const template = $derived(templateState.current.$isLoaded ? templateState.current : undefined);
+	const workouts = $derived(template?.programWorkouts ?? []);
 
-	let maxWeekNumber = $derived(
+	const templateTotalWeeks = $derived(template?.totalWeeks ?? 1);
+	const maxWeekNumber = $derived(
 		Math.max(templateTotalWeeks, ...workouts.map((w) => w.weekNumber), 1)
 	);
 
-	let workoutsByWeek = $derived.by(() => {
-		const weeks: WorkoutWeek[] = [];
-		for (let week = 1; week <= maxWeekNumber; week++) {
-			weeks.push({
-				weekNumber: week,
+	const workoutsByWeek = $derived.by(() => {
+		return Array.from({ length: maxWeekNumber }, (_, weekNumber) => {
+			return {
+				weekNumber,
 				items: workouts
-					.filter((w) => w.weekNumber === week)
-					.slice()
+					.filter((w) => w.weekNumber === weekNumber)
 					.toSorted((a, b) => a.slotOrder - b.slotOrder)
-			});
-		}
-		return weeks;
+			};
+		});
 	});
+
+	let selectedWorkoutId = $derived(editorState.selectedWorkoutId);
 
 	const getNextTrack = (weekNumber: number): string => {
 		const weekWorkouts = workouts.filter((w) => w.weekNumber === weekNumber);
@@ -67,51 +77,28 @@
 				normalizeTrackKey(workout.trackKey) === normalized && workout.weekNumber < weekNumber
 		);
 	};
-	let isCreating = $state(false);
-
-	let dragSnapshot = $state<WorkoutSummaryWithGroups[] | null>(null);
-
-	const makeDragStart =
-		(weekNumber: number): ComponentProps<typeof DragDropProvider>['onDragStart'] =>
-		() => {
-			const weekItems = workouts
-				.filter((w) => w.weekNumber === weekNumber)
-				.slice()
-				.toSorted((a, b) => a.slotOrder - b.slotOrder);
-			dragSnapshot = $state.snapshot(weekItems);
-		};
 
 	const makeDragEnd =
 		(weekNumber: number): ComponentProps<typeof DragDropProvider>['onDragEnd'] =>
-		async (event) => {
-			if (!dragSnapshot) {
+		(event) => {
+			if (!template) {
 				return;
 			}
 
-			const { resume, abort } = event.suspend();
+			const programWorkouts = template.programWorkouts.filter((w) => w.weekNumber === weekNumber);
+
 			const reordered = move(
-				dragSnapshot.map((item) => ({ ...item, id: item._id })),
-				event as unknown as Parameters<typeof move>[1]
+				programWorkouts.map((item) => ({ ...item, id: item.$jazz.id })),
+				event
 			);
 
-			dragSnapshot = null;
-
-			try {
-				await client.mutation(api.programWorkouts.reorderWithinWeek, {
-					programTemplateId: editorState.templateId,
-					weekNumber,
-					updates: reordered
-						.filter((item, index) => item.slotOrder !== index)
-						.map((w, i) => ({ id: w._id, slotOrder: i }))
-				});
-				resume();
-			} catch (error) {
-				abort();
-				toast.error(error instanceof Error ? error.message : 'Could not reorder workouts.');
-			}
+			// Update slotOrder for each workout in the reordered list
+			reordered.forEach((workout, index) => {
+				workout.$jazz.set('slotOrder', index);
+			});
 		};
 
-	const createWorkout = async ({
+	const createWorkout = ({
 		mode,
 		weekNumber,
 		trackKey,
@@ -122,41 +109,99 @@
 		trackKey: string;
 		label: string;
 	}) => {
-		if (isCreating) {
+		if (!template) {
 			return false;
 		}
-		isCreating = true;
 
-		try {
-			const args = {
-				programTemplateId: editorState.templateId,
-				trackKey: normalizeTrackKey(trackKey),
-				label: label.trim() || undefined,
-				notes: undefined
-			};
+		const normalizedTrackKey = normalizeTrackKey(trackKey);
+		const workoutLabel = label.trim() || undefined;
 
-			const workoutId =
-				mode === 'copy'
-					? await client.mutation(api.programWorkouts.copyPreviousTrackOccurrenceToWeek, {
-							...args,
-							targetWeekNumber: weekNumber
+		let newWorkout;
+
+		if (mode === 'copy') {
+			// Find the most recent workout with the same track key in earlier weeks
+			const previousWorkout = template.programWorkouts
+				.filter(
+					(w) => w.weekNumber < weekNumber && normalizeTrackKey(w.trackKey) === normalizedTrackKey
+				)
+				.toSorted((a, b) => b.weekNumber - a.weekNumber)[0];
+
+			if (!previousWorkout) {
+				return false;
+			}
+
+			// Create a copy with the same performance groups
+			const newGroups = previousWorkout.performanceGroups.map((group) => {
+				const performances = group.performances.map((performance) => {
+					const sets = performance.performanceSets.map((set) =>
+						PerformanceSet.create({
+							weight: set.weight,
+							reps: set.reps,
+							durationSeconds: set.durationSeconds,
+							note: set.note,
+							performanceOrder: set.performanceOrder,
+							updatedAt: new Date()
 						})
-					: await client.mutation(api.programWorkouts.createWeekWorkoutFromScratch, {
-							...args,
-							weekNumber
-						});
-
-			editorState.selectWorkout(workoutId);
-			return true;
-		} catch (error) {
-			toast.error(error instanceof Error ? error.message : 'Could not add workout.');
-			return false;
-		} finally {
-			isCreating = false;
+					);
+					return Performance.create({
+						performanceGroupId: '',
+						exercise: performance.exercise,
+						performanceSets: sets,
+						groupOrder: performance.groupOrder,
+						note: performance.note,
+						programTargets: performance.programTargets,
+						weightUnit: performance.weightUnit,
+						updatedAt: new Date()
+					});
+				});
+				return PerformanceGroup.create({
+					workoutId: undefined,
+					programWorkoutId: '',
+					label: group.label,
+					workoutOrder: group.workoutOrder,
+					updatedAt: new Date(),
+					performances
+				});
+			});
+			newWorkout = ProgramWorkout.create({
+				programTemplateId: editorState.templateId,
+				weekNumber,
+				slotOrder: 0, // Will be set properly later
+				trackKey: normalizedTrackKey,
+				label: workoutLabel,
+				notes: undefined,
+				performanceGroups: newGroups,
+				updatedAt: new Date()
+			});
+		} else {
+			// Create from scratch
+			newWorkout = ProgramWorkout.create({
+				programTemplateId: editorState.templateId,
+				weekNumber,
+				slotOrder: 0, // Will be set properly later
+				trackKey: normalizedTrackKey,
+				label: workoutLabel,
+				notes: undefined,
+				performanceGroups: [],
+				updatedAt: new Date()
+			});
 		}
+
+		// Set proper IDs and add to template
+		newWorkout.performanceGroups.forEach((group, _groupIndex) => {
+			group.$jazz.set('programWorkoutId', newWorkout.$jazz.id);
+			group.performances.forEach((performance) => {
+				performance.$jazz.set('performanceGroupId', group.$jazz.id);
+			});
+		});
+
+		template.programWorkouts.$jazz.push(newWorkout);
+		template.$jazz.set('updatedAt', new Date());
+		editorState.selectWorkout(newWorkout.$jazz.id);
+		return true;
 	};
 
-	const selectWorkout = (id: Id<'programWorkouts'>) => {
+	const selectWorkout = (id: string) => {
 		editorState.selectWorkout(id);
 	};
 </script>
@@ -182,19 +227,18 @@
 				<div class="flex grow gap-2 px-4 sm:gap-3">
 					{#if week.items.length > 1}
 						<DragDropProvider
-							onDragStart={makeDragStart(week.weekNumber)}
 							onDragEnd={makeDragEnd(week.weekNumber)}
 							modifiers={[RestrictToHorizontalAxis]}
 						>
 							<ol class="flex min-w-0 shrink-0 gap-2 sm:gap-3">
-								{#each week.items as workout, index (workout._id)}
+								{#each week.items as workout, index (workout.$jazz.id)}
 									<SortableWorkoutCard
-										workoutId={workout._id}
+										workoutId={workout.$jazz.id}
 										trackKey={workout.trackKey}
 										label={workout.label}
-										groups={workout.groups ?? []}
+										performanceGroups={workout.performanceGroups.filter((g) => g.$isLoaded)}
 										{index}
-										isSelected={selectedWorkoutId === workout._id}
+										isSelected={selectedWorkoutId === workout.$jazz.id}
 										trackColorClass={getTrackColor(workout.trackKey)}
 										onSelect={selectWorkout}
 									/>
@@ -202,16 +246,17 @@
 							</ol>
 						</DragDropProvider>
 					{:else}
-						{#each week.items as workout (workout._id)}
+						{#each week.items as workout (workout.$jazz.id)}
+							{@const performanceGroups = workout.performanceGroups}
 							<button
 								type="button"
 								class={[
 									'flex max-w-80 min-w-64 shrink-0 flex-col gap-2 rounded-lg border p-2.5 text-left transition-all duration-150 sm:max-w-96 sm:min-w-72 sm:gap-2.5 sm:p-3',
-									selectedWorkoutId === workout._id
+									selectedWorkoutId === workout.$jazz.id
 										? 'border-primary/50 bg-primary/5 shadow-primary/5 shadow-sm'
 										: 'border-border/40 bg-card/25 hover:border-border/70 hover:bg-card/50'
 								]}
-								onclick={() => selectWorkout(workout._id)}
+								onclick={() => selectWorkout(workout.$jazz.id)}
 							>
 								<div class="flex flex-col gap-1.5 sm:gap-2">
 									<span
@@ -226,7 +271,9 @@
 										{workout.label || 'Untitled'}
 									</span>
 								</div>
-								<ProgramTemplateWorkoutCardSummary groups={workout.groups ?? []} />
+								<ProgramTemplateWorkoutCardSummary
+									performanceGroups={performanceGroups.filter((g) => g.$isLoaded)}
+								/>
 							</button>
 						{/each}
 					{/if}
@@ -235,7 +282,6 @@
 						<ProgramTemplateAddWorkoutPopover
 							weekNumber={week.weekNumber}
 							defaultTrackKey={getNextTrack(week.weekNumber)}
-							{isCreating}
 							canCopyPrior={(trackKey) => canCopyPrior(week.weekNumber, trackKey)}
 							onCreate={createWorkout}
 						/>

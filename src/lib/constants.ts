@@ -2,7 +2,6 @@ export const APP_TITLE = 'Ironkit';
 
 export const TIMEZONE = 'America/New_York';
 
-
 export const DEFAULT_WORKOUT_TITLE = 'Untitled workout';
 
 export const WEIGHT_UNITS = ['kg', 'lbs'] as const;

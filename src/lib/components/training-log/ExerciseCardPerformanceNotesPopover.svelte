@@ -1,40 +1,19 @@
 <script lang="ts">
-	import { api } from '$convex/_generated/api';
-	import type { Id } from '$convex/_generated/dataModel';
 	import { buttonVariants } from '$lib/shadcn/button';
 	import * as Popover from '$lib/shadcn/popover';
 	import { Textarea } from '$lib/shadcn/textarea';
 	import StickyNoteIcon from '@lucide/svelte/icons/sticky-note';
-	import { useConvexClient } from 'convex-svelte';
-	import { toast } from 'svelte-sonner';
+	import type { Performance } from '$lib/jazz/types';
 
 	let {
-		performanceId,
-		note
+		note,
+		performance
 	}: {
-		performanceId: Id<'performances'>;
 		note?: string;
+		performance: Performance;
 	} = $props();
 
-	const client = useConvexClient();
-
-	let displayNote = $derived(note?.trim() ?? '');
-
-	const save = async (value: string) => {
-		const nextNote = value.trim();
-		if (nextNote === note?.trim()) {
-			return;
-		}
-
-		try {
-			await client.mutation(api.performances.update, {
-				id: performanceId,
-				note: nextNote
-			});
-		} catch (error) {
-			toast.error(error instanceof Error ? error.message : 'Could not save note.');
-		}
-	};
+	const displayNote = $derived(note?.trim() ?? '');
 </script>
 
 <div class="flex items-center gap-2">
@@ -52,10 +31,12 @@
 				<Textarea
 					rows={3}
 					placeholder="Add note..."
-					value={note}
-					onblur={(e) => {
-						void save(e.currentTarget.value);
-					}}
+					bind:value={
+						() => note?.trim() ?? '',
+						(v) => {
+							performance.$jazz.set('note', v);
+						}
+					}
 					class="text-sm"
 				/>
 				<Popover.Close class={buttonVariants({ variant: 'secondary', size: 'sm' })}>

@@ -57,13 +57,13 @@ export const normalizeSetRangeTargetsForExecution = (
 export const defaultSetTargetForExecution = (executionType: ExecutionType) => {
 	return executionType === 'reps'
 		? {
-			targetSetRange: '1',
-			targetRepsRange: undefined,
-			targetDuration: undefined
-		}
+				targetSetRange: '1',
+				targetRepsRange: undefined,
+				targetDuration: undefined
+			}
 		: {
-			targetSetRange: '1',
-			targetRepsRange: undefined,
-			targetDuration: undefined
-		};
+				targetSetRange: '1',
+				targetRepsRange: undefined,
+				targetDuration: undefined
+			};
 };

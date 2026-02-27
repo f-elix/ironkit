@@ -36,7 +36,7 @@
 	});
 
 	const root = $derived(account.current.$isLoaded ? account.current.root : null);
-	const previousWorkouts = $derived(root?.workouts ?? []);
+	const previousWorkouts = $derived(root?.workouts?.filter((w) => w.$isLoaded) ?? []);
 	const showPreviousWorkoutSelection = $derived(!workout && previousWorkouts.length);
 
 	const dialogTitle = $derived(workout ? 'Edit workout' : 'Create workout');

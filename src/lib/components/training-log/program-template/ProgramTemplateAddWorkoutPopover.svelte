@@ -16,15 +16,13 @@
 	let {
 		weekNumber,
 		defaultTrackKey,
-		isCreating = false,
 		canCopyPrior,
 		onCreate
 	}: {
 		weekNumber: number;
 		defaultTrackKey: string;
-		isCreating?: boolean;
 		canCopyPrior: (trackKey: string) => boolean;
-		onCreate: (payload: CreateWorkoutPayload) => Promise<boolean> | boolean;
+		onCreate: (payload: CreateWorkoutPayload) => boolean;
 	} = $props();
 
 	let isOpen = $state(false);
@@ -43,8 +41,8 @@
 		}
 	};
 
-	const createWorkout = async (mode: CreateWorkoutMode) => {
-		const wasCreated = await onCreate({
+	const createWorkout = (mode: CreateWorkoutMode) => {
+		const wasCreated = onCreate({
 			mode,
 			weekNumber,
 			trackKey,
@@ -92,21 +90,14 @@
 				/>
 			</label>
 			<div class="flex gap-2">
-				<Button
-					size="sm"
-					class="flex-1"
-					onclick={() => createWorkout('scratch')}
-					disabled={isCreating}
-				>
-					Create
-				</Button>
+				<Button size="sm" class="flex-1">Create</Button>
 				{#if canCopyPrior(trackKey)}
 					<Button
+						type="button"
 						size="sm"
 						variant="outline"
 						class="flex-1"
 						onclick={() => createWorkout('copy')}
-						disabled={isCreating}
 					>
 						Copy prior
 					</Button>

@@ -1,0 +1,29 @@
+@prd.json @progress.txt
+
+# Find the highest-priority item and implement it. 
+
+ONLY WORK ON A SINGLE ITEM. 
+
+Keep changes small and focused:
+- One logical change
+- If a task feels too large, break it into subtasks
+- Run feedback loops after each change, not at the end
+Quality over speed. Small steps compound into big progress.
+
+# Check your work
+
+When you think you're done, run ALL feedback loops:
+1. Lint: pnpm lint (must pass)
+2. TypeScript: pnpm check (must pass with no errors)
+Fix all issues related to your changes. If there are other issues, leave them.
+
+# Update the PRD with what was done. 
+
+# Append your progress to progress.txt.
+
+After completing each task, append to progress.txt:
+- Task completed and PRD item reference
+- Key decisions made and reasoning
+- Files changed
+- Any blockers or notes for next iteration
+Keep entries concise. Sacrifice grammar for the sake of concision. This file helps future iterations skip exploration.
