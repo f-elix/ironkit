@@ -70,8 +70,9 @@
 					/>
 				</div>
 				<fieldset>
+					<legend class="sr-only">Unit</legend>
 					<div class="flex items-center justify-between gap-2">
-						<legend class="text-sm font-medium">Unit</legend>
+						<div class="text-sm font-medium" aria-hidden="true">Unit</div>
 						<UnitSelector bind:value={() => unit, (v) => weightConverter.$jazz.set('unit', v)} />
 					</div>
 				</fieldset>

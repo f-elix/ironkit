@@ -13,9 +13,6 @@
 
 	let { run }: { run: ResolvedProgramRun } = $props();
 
-	let isResuming = $state(false);
-	let isCanceling = $state(false);
-
 	const template = $derived(run.programTemplate);
 
 	const totalSessions = $derived(template.programWorkouts.length);
@@ -64,7 +61,7 @@
 					<EyeIcon />
 					View program
 				</DropdownMenu.Item>
-				<DropdownMenu.Item onSelect={handleCancelProgram} disabled={isCanceling}>
+				<DropdownMenu.Item onSelect={handleCancelProgram}>
 					<XIcon />
 					Cancel program
 				</DropdownMenu.Item>
@@ -72,14 +69,8 @@
 		</DropdownMenu.Root>
 	</div>
 
-	<Button
-		variant="secondary"
-		size="lg"
-		class="mt-4 w-full"
-		onclick={handleResumeProgram}
-		disabled={isResuming}
-	>
+	<Button variant="secondary" size="lg" class="mt-4 w-full" onclick={handleResumeProgram}>
 		<PlayIcon />
-		{isResuming ? 'Resuming...' : 'Resume'}
+		Resume
 	</Button>
 </article>

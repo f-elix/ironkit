@@ -3,7 +3,7 @@
 	import { ScrollArea } from '$lib/shadcn/scroll-area';
 	import type { Workout } from '$lib/jazz/types';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
-	import { today } from '@internationalized/date';
+	import { now } from '@internationalized/date';
 	import { TIMEZONE } from '$lib/constants';
 	import PerformanceSetSummary from '$lib/components/training-log/PerformanceSetSummary.svelte';
 	import { Account } from '$lib/jazz/schema';
@@ -40,7 +40,7 @@
 			return [];
 		}
 
-		const maxDate = today(TIMEZONE).toDate(TIMEZONE);
+		const maxDate = now(TIMEZONE).toDate();
 
 		return root.workouts
 			.flatMap((workout) =>

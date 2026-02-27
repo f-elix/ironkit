@@ -9,7 +9,7 @@
 	import Label from '$lib/shadcn/label/label.svelte';
 	import Input from '$lib/shadcn/input/input.svelte';
 	import Button from '$lib/shadcn/button/button.svelte';
-	import type { Performance, PerformanceGroup } from '$lib/jazz/types';
+	import type { ResolvedPerformanceGroup } from '$lib/jazz/types';
 	import ExerciseCardTargetSummary from '$lib/components/training-log/ExerciseCardTargetSummary.svelte';
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
@@ -18,15 +18,17 @@
 
 	let {
 		performanceGroup,
-		performances,
 		onNext,
 		onRemoveGroup
 	}: {
-		performanceGroup: PerformanceGroup;
-		performances: Performance[];
+		performanceGroup: ResolvedPerformanceGroup;
 		onNext?: () => void;
 		onRemoveGroup?: () => void;
 	} = $props();
+
+	const performances = $derived(
+		performanceGroup.$isLoaded ? performanceGroup.performances.filter((p) => p.$isLoaded) : []
+	);
 
 	const onExerciseAdded = async (exercise: Exercise) => {
 		addExerciseToPerformanceGroup(performanceGroup, exercise);

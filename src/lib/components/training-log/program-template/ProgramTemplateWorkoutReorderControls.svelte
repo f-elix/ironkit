@@ -17,10 +17,9 @@
 
 	const selectedWorkoutId = $derived(editorState.selectedWorkoutId);
 
+	const sortedWorkouts = $derived(weekWorkouts.toSorted((a, b) => a.slotOrder - b.slotOrder));
 	const positionInWeek = $derived(
-		selectedWorkoutId
-			? weekWorkouts.findIndex((workout) => workout.$jazz.id === selectedWorkoutId)
-			: -1
+		selectedWorkoutId ? sortedWorkouts.findIndex((w) => w.$jazz.id === selectedWorkoutId) : -1
 	);
 	const total = $derived(weekWorkouts.length);
 
@@ -28,22 +27,16 @@
 		if (!selectedWorkoutId || !template) {
 			return;
 		}
-		const currentIndex = positionInWeek;
+		const ordered = weekWorkouts.toSorted((a, b) => a.slotOrder - b.slotOrder);
+		const currentIndex = ordered.findIndex((workout) => workout.$jazz.id === selectedWorkoutId);
 		const nextIndex = currentIndex + direction;
-		if (currentIndex < 0 || nextIndex < 0 || nextIndex >= weekWorkouts.length) {
+		if (currentIndex < 0 || nextIndex < 0 || nextIndex >= ordered.length) {
 			return;
 		}
-		const movedId = weekWorkouts[currentIndex].$jazz.id;
-		weekWorkouts
-			.toSorted((a, b) => a.slotOrder - b.slotOrder)
-			.forEach((workout) => {
-				if (workout.slotOrder === nextIndex) {
-					workout.$jazz.set('slotOrder', currentIndex);
-				}
-				if (workout.$jazz.id === movedId) {
-					workout.$jazz.set('slotOrder', nextIndex);
-				}
-			});
+		const current = ordered[currentIndex];
+		const next = ordered[nextIndex];
+		current.$jazz.set('slotOrder', nextIndex);
+		next.$jazz.set('slotOrder', currentIndex);
 	};
 </script>
 

@@ -14,8 +14,20 @@
 	import PauseIcon from '@lucide/svelte/icons/pause';
 	import PlayIcon from '@lucide/svelte/icons/play';
 	import { toast } from 'svelte-sonner';
+	import { AccountCoState } from 'jazz-tools/svelte';
+	import { Account } from '$lib/jazz/schema';
 
 	let { run }: { run: ResolvedProgramRun } = $props();
+
+	const account = new AccountCoState(Account, {
+		resolve: {
+			root: {
+				workouts: true
+			}
+		}
+	});
+
+	const root = $derived(account.current.$isLoaded ? account.current.root : null);
 
 	let isSkipping = $state(false);
 	let isPausing = $state(false);
@@ -60,7 +72,7 @@
 	);
 
 	const handleStartWorkout = () => {
-		if (!nextSessionData) {
+		if (!nextSessionData || !root) {
 			return;
 		}
 
@@ -75,6 +87,7 @@
 		});
 
 		run.programRunSessions.$jazz.push(session);
+		root.workouts.$jazz.push(workout);
 
 		goto(resolve('/(app)/tools/training-log/workout-[id]', { id: workout.$jazz.id }));
 	};

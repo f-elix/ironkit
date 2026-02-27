@@ -9,7 +9,7 @@
 
 	let { templateId }: { templateId: string } = $props();
 
-	const editorState = setProgramTemplateEditorContext(templateId);
+	const editorState = $derived(setProgramTemplateEditorContext(templateId));
 
 	const templateState = new CoState(ProgramTemplate, () => templateId, {
 		resolve: {

@@ -31,7 +31,8 @@
 			performances: {
 				$each: {
 					exercise: true,
-					performanceSets: { $each: true }
+					performanceSets: { $each: true },
+					programWorkoutExerciseTargets: { $each: true }
 				}
 			}
 		}
@@ -165,7 +166,7 @@
 		{#if isExpanded && performanceGroup?.$isLoaded}
 			<div transition:slide={{ duration: 200, easing: cubicOut }}>
 				<div class="border-border border-t">
-					<ExerciseCardContent {performanceGroup} {performances} {onRemoveGroup} {onNext} />
+					<ExerciseCardContent {performanceGroup} {onRemoveGroup} {onNext} />
 				</div>
 			</div>
 		{/if}

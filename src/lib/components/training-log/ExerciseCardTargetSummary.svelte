@@ -1,8 +1,8 @@
 <script lang="ts">
-	import type { Performance } from '$lib/jazz/types';
-	import type { ProgramTargetSnapshot } from '$lib/jazz/schema';
+	import type { ResolvedPerformance } from '$lib/jazz/types';
+	import type { ProgramTarget } from '$lib/jazz/schema';
 
-	let { performance }: { performance: Performance } = $props();
+	let { performance }: { performance: ResolvedPerformance } = $props();
 
 	const exercise = $derived(performance.exercise.$isLoaded ? performance.exercise : null);
 	const programTargets = $derived(performance.programTargets ?? []);
@@ -20,7 +20,7 @@
 		return executionType === 'reps' ? `${value} reps` : `${value} sec`;
 	};
 
-	const formatSetRange = (target: ProgramTargetSnapshot) => {
+	const formatSetRange = (target: ProgramTarget) => {
 		const targetRange =
 			executionType === 'reps' ? target.targetRepsRange?.trim() : target.targetDuration?.trim();
 		if (!targetRange) {
