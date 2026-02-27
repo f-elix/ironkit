@@ -21,7 +21,7 @@ export type ExerciseExecutionType = (typeof EXERCISE_EXECUTION_TYPES)[number];
 export type ProgramTemplateStatus = (typeof PROGRAM_TEMPLATE_STATUSES)[number];
 export type ProgramRunStatus = (typeof PROGRAM_RUN_STATUSES)[number];
 
-export type ProgramTargetSnapshot = {
+export type ProgramTarget = {
 	targetSetRange: string;
 	targetRepsRange?: string;
 	targetDuration?: string;

@@ -1,61 +1,66 @@
 <script lang="ts">
-	import { api } from '$convex/_generated/api';
-	import type { Id } from '$convex/_generated/dataModel';
 	import ProgramTemplateExerciseGroupCard from '$lib/components/training-log/program-template/ProgramTemplateExerciseGroupCard.svelte';
-	import type { ProgramWorkoutGroup } from '$lib/components/training-log/program-template/program-template-editor.types';
 	import Button from '$lib/shadcn/button/button.svelte';
 	import * as Dialog from '$lib/shadcn/dialog';
 	import PlusIcon from '@lucide/svelte/icons/plus';
-	import { useConvexClient } from 'convex-svelte';
-	import { toast } from 'svelte-sonner';
+	import { CoState } from 'jazz-tools/svelte';
+	import { ProgramWorkout, PerformanceGroup } from '$lib/jazz/schema';
+	import { getProgramTemplateEditorContext } from '$lib/components/training-log/program-template/program-template-editor.context.svelte.js';
 
-	let {
-		programWorkoutId,
-		groups
-	}: {
-		programWorkoutId: Id<'programWorkouts'>;
-		groups: ProgramWorkoutGroup[];
-	} = $props();
+	const editorState = getProgramTemplateEditorContext();
+	const selectedWorkoutId = $derived(editorState.selectedWorkoutId);
 
-	const client = useConvexClient();
-
-	const toErrorMessage = (error: unknown, fallback: string) => {
-		if (error instanceof Error && error.message) {
-			return error.message;
+	const workoutState = new CoState(ProgramWorkout, () => selectedWorkoutId, {
+		resolve: {
+			performanceGroups: {
+				$each: {
+					performances: {
+						$each: {
+							exercise: true,
+							performanceSets: { $each: true },
+							programWorkoutExerciseTargets: { $each: true }
+						}
+					}
+				}
+			}
 		}
-		return fallback;
+	});
+	const workout = $derived(workoutState.current.$isLoaded ? workoutState.current : undefined);
+	const groups = $derived(workout?.performanceGroups.filter((g) => g.$isLoaded) ?? []);
+
+	const addGroup = () => {
+		const w = workout;
+		if (!w || !w.$isLoaded) {
+			return;
+		}
+		const newGroup = PerformanceGroup.create({
+			workoutId: undefined,
+			programWorkoutId: selectedWorkoutId,
+			label: undefined,
+			workoutOrder: groups.length,
+			updatedAt: new Date(),
+			performances: []
+		});
+		w.performanceGroups.$jazz.push(newGroup);
+		w.$jazz.set('updatedAt', new Date());
 	};
 
-	const addGroup = async () => {
-		try {
-			await client.mutation(api.programWorkoutGroups.create, {
-				programWorkoutId,
-				workoutOrder: groups.length
-			});
-		} catch (error) {
-			toast.error(toErrorMessage(error, 'Could not add group.'));
-		}
-	};
-
-	let groupPendingDelete = $state<Id<'performanceGroups'> | undefined>(undefined);
+	let groupPendingDelete = $state<string | undefined>(undefined);
 	let groupDeleteDialogOpen = $state(false);
 
-	const promptDeleteGroup = (groupId: Id<'performanceGroups'>) => {
+	const promptDeleteGroup = (groupId: string) => {
 		groupPendingDelete = groupId;
 		groupDeleteDialogOpen = true;
 	};
 
-	const confirmRemoveGroup = async () => {
-		if (!groupPendingDelete) {
+	const confirmRemoveGroup = () => {
+		if (!groupPendingDelete || !workout) {
 			return;
 		}
-		try {
-			await client.mutation(api.programWorkoutGroups.remove, { id: groupPendingDelete });
-			groupDeleteDialogOpen = false;
-			groupPendingDelete = undefined;
-		} catch (error) {
-			toast.error(toErrorMessage(error, 'Could not delete group.'));
-		}
+		workout.performanceGroups.$jazz.remove((group) => group.$jazz.id === groupPendingDelete);
+		workout.$jazz.set('updatedAt', new Date());
+		groupDeleteDialogOpen = false;
+		groupPendingDelete = undefined;
 	};
 </script>
 
@@ -70,8 +75,8 @@
 
 	{#if groups.length}
 		<div class="space-y-3">
-			{#each groups as group (group._id)}
-				<ProgramTemplateExerciseGroupCard {group} {programWorkoutId} onDeleteGroup={promptDeleteGroup} />
+			{#each groups as group (group.$jazz.id)}
+				<ProgramTemplateExerciseGroupCard {group} onDeleteGroup={promptDeleteGroup} />
 			{/each}
 		</div>
 	{:else}

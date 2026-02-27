@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Doc, Id } from '$convex/_generated/dataModel';
+	import type { ProgramWorkoutExerciseTarget } from '$lib/jazz/types';
 	import Input from '$lib/shadcn/input/input.svelte';
 	import XIcon from '@lucide/svelte/icons/x';
 
@@ -11,29 +11,29 @@
 		onRemove,
 		canRemove
 	}: {
-		setTarget: Doc<'programWorkoutExerciseTargets'>;
+		setTarget: ProgramWorkoutExerciseTarget;
 		executionType: 'reps' | 'time';
 		order: number;
 		onUpdate: (
-			id: Id<'programWorkoutExerciseTargets'>,
+			target: ProgramWorkoutExerciseTarget,
 			executionType: 'reps' | 'time',
 			targetSetRange: string,
 			targetValue: string
-		) => Promise<void> | void;
-		onRemove: (id: Id<'programWorkoutExerciseTargets'>) => Promise<void> | void;
+		) => void;
+		onRemove: (target: ProgramWorkoutExerciseTarget) => void;
 		canRemove: boolean;
 	} = $props();
 
-	let targetSetRangeValue = $derived(setTarget.targetSetRange ?? '1');
-	let targetRangeValue = $derived(
+	const targetSetRangeValue = $derived(setTarget.targetSetRange ?? '1');
+	const targetRangeValue = $derived(
 		executionType === 'reps'
 			? (setTarget.targetRepsRange ?? '8')
 			: (setTarget.targetDuration ?? '60 sec')
 	);
-	let targetRangePlaceholder = $derived(
+	const targetRangePlaceholder = $derived(
 		executionType === 'reps' ? 'e.g. 8 or 10-15' : 'e.g. 45 sec or 30-45 sec'
 	);
-	let targetRangeLabel = $derived(
+	const targetRangeLabel = $derived(
 		executionType === 'reps' ? 'Rep target or range' : 'Time target or range'
 	);
 </script>
@@ -51,8 +51,8 @@
 			value={targetSetRangeValue}
 			placeholder="e.g. 1 or 3-4"
 			class="h-8 w-24 text-center text-sm"
-			onchange={(event) =>
-				onUpdate(setTarget._id, executionType, event.currentTarget.value, targetRangeValue)}
+			oninput={(event) =>
+				onUpdate(setTarget, executionType, event.currentTarget.value, targetRangeValue)}
 		/>
 	</label>
 	<span class="text-muted-foreground/70 -translate-y-1.5 text-base">&times;</span>
@@ -63,15 +63,15 @@
 			value={targetRangeValue}
 			placeholder={targetRangePlaceholder}
 			class="h-8 w-40 text-center text-xs"
-			onchange={(event) =>
-				onUpdate(setTarget._id, executionType, targetSetRangeValue, event.currentTarget.value)}
+			oninput={(event) =>
+				onUpdate(setTarget, executionType, targetSetRangeValue, event.currentTarget.value)}
 		/>
 	</label>
 	{#if canRemove}
 		<button
 			type="button"
 			class="text-muted-foreground/30 hover:text-destructive mb-1 ml-auto transition-colors"
-			onclick={() => onRemove(setTarget._id)}
+			onclick={() => onRemove(setTarget)}
 		>
 			<XIcon class="size-3.5" />
 		</button>

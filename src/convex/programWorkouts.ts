@@ -202,9 +202,7 @@ export const listByTemplateWithSummaries = query({
 			sorted.map(async (workout) => {
 				const groups = await ctx.db
 					.query('performanceGroups')
-					.withIndex('by_programWorkoutId_order', (q) =>
-						q.eq('programWorkoutId', workout._id)
-					)
+					.withIndex('by_programWorkoutId_order', (q) => q.eq('programWorkoutId', workout._id))
 					.collect();
 
 				const groupsWithExercises = await Promise.all(
@@ -213,9 +211,7 @@ export const listByTemplateWithSummaries = query({
 						.map(async (group) => {
 							const performances = await ctx.db
 								.query('performances')
-								.withIndex('by_performanceGroupId', (q) =>
-									q.eq('performanceGroupId', group._id)
-								)
+								.withIndex('by_performanceGroupId', (q) => q.eq('performanceGroupId', group._id))
 								.collect();
 
 							const exercises = await Promise.all(

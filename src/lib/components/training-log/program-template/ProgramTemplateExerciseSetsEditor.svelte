@@ -1,77 +1,61 @@
 <script lang="ts">
-	import { api } from '$convex/_generated/api';
-	import type { Doc, Id } from '$convex/_generated/dataModel';
+	import type { ResolvedPerformance, ProgramWorkoutExerciseTarget } from '$lib/jazz/types';
 	import ProgramTemplateExerciseSetRow from '$lib/components/training-log/program-template/ProgramTemplateExerciseSetRow.svelte';
 	import Button from '$lib/shadcn/button/button.svelte';
 	import PlusIcon from '@lucide/svelte/icons/plus';
-	import { useConvexClient } from 'convex-svelte';
-	import { toast } from 'svelte-sonner';
+	import { ProgramWorkoutExerciseTarget as ProgramWorkoutExerciseTargetSchema } from '$lib/jazz/schema';
 
 	let {
-		exerciseTargetId,
-		executionType,
-		exactSets
+		performance,
+		executionType
 	}: {
-		exerciseTargetId: Id<'performances'>;
+		performance: ResolvedPerformance;
 		executionType: 'reps' | 'time';
-		exactSets: Doc<'programWorkoutExerciseTargets'>[];
 	} = $props();
 
-	const client = useConvexClient();
-	const toErrorMessage = (error: unknown, fallback: string) => {
-		if (error instanceof Error && error.message) {
-			return error.message;
-		}
-		return fallback;
-	};
-	let sortedSets = $derived(
-		(exactSets ?? []).slice().toSorted((a, b) => a.targetOrder - b.targetOrder)
-	);
-	let targetExamples = $derived(
+	const exactSets = $derived(performance.programWorkoutExerciseTargets ?? []);
+	const targetExamples = $derived(
 		executionType === 'reps'
 			? 'Examples: 1 set + 8 reps, 3-4 sets + 10-15 reps'
 			: 'Examples: 1 set + 60 sec, 3-4 sets + 30-45 sec'
 	);
 
-	const addSet = async () => {
-		const last = sortedSets.at(-1);
-		try {
-			await client.mutation(api.programWorkoutExerciseSets.create, {
-				programWorkoutExerciseId: exerciseTargetId,
-				setOrder: (last?.targetOrder ?? -1) + 1,
-				targetSetRange: '1',
-				targetRepsRange: executionType === 'reps' ? '8' : undefined,
-				targetDuration: executionType === 'time' ? '60 sec' : undefined
-			});
-		} catch (error) {
-			toast.error(toErrorMessage(error, 'Could not add set target.'));
+	const addSet = () => {
+		if (!performance.programWorkoutExerciseTargets) {
+			return;
 		}
+		const last = exactSets.at(-1);
+		const newTarget = ProgramWorkoutExerciseTargetSchema.create({
+			performance,
+			targetOrder: (last?.targetOrder ?? -1) + 1,
+			targetSetRange: '1',
+			targetRepsRange: executionType === 'reps' ? '8' : undefined,
+			targetDuration: executionType === 'time' ? '60 sec' : undefined,
+			updatedAt: new Date()
+		});
+
+		performance.programWorkoutExerciseTargets.$jazz.push(newTarget);
+		performance.$jazz.set('updatedAt', new Date());
 	};
 
-	const updateSetValue = async (
-		id: Id<'programWorkoutExerciseTargets'>,
+	const updateSetValue = (
+		target: ProgramWorkoutExerciseTarget,
 		nextExecutionType: 'reps' | 'time',
 		targetSetRange: string,
 		targetValue: string
 	) => {
-		try {
-			await client.mutation(api.programWorkoutExerciseSets.update, {
-				id,
-				targetSetRange,
-				targetRepsRange: nextExecutionType === 'reps' ? targetValue : undefined,
-				targetDuration: nextExecutionType === 'time' ? targetValue : undefined
-			});
-		} catch (error) {
-			toast.error(toErrorMessage(error, 'Could not update set target.'));
-		}
+		target.$jazz.set('targetSetRange', targetSetRange);
+		target.$jazz.set('targetRepsRange', nextExecutionType === 'reps' ? targetValue : undefined);
+		target.$jazz.set('targetDuration', nextExecutionType === 'time' ? targetValue : undefined);
+		target.$jazz.set('updatedAt', new Date());
 	};
 
-	const removeSet = async (id: Id<'programWorkoutExerciseTargets'>) => {
-		try {
-			await client.mutation(api.programWorkoutExerciseSets.remove, { id });
-		} catch (error) {
-			toast.error(toErrorMessage(error, 'Could not remove set target.'));
+	const removeSet = (target: ProgramWorkoutExerciseTarget) => {
+		if (!performance.programWorkoutExerciseTargets) {
+			return;
 		}
+		performance.programWorkoutExerciseTargets.$jazz.remove((t) => t.$jazz.id === target.$jazz.id);
+		performance.$jazz.set('updatedAt', new Date());
 	};
 </script>
 
@@ -79,14 +63,14 @@
 	<p class="text-muted-foreground/60 mb-2 text-[11px]">
 		Enter a set count/range and a matching target range. {targetExamples}
 	</p>
-	{#each sortedSets as setTarget, index (setTarget._id)}
+	{#each exactSets as setTarget (setTarget.$jazz.id)}
 		<ProgramTemplateExerciseSetRow
 			{setTarget}
 			{executionType}
-			order={index + 1}
+			order={setTarget.targetOrder ?? 0}
 			onUpdate={updateSetValue}
 			onRemove={removeSet}
-			canRemove={sortedSets.length > 1}
+			canRemove={exactSets.length > 1}
 		/>
 	{/each}
 	<Button

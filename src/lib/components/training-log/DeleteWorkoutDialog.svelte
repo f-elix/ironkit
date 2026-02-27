@@ -1,56 +1,44 @@
 <script lang="ts">
-	import type { Workout } from '$lib/db/types';
 	import { Button, buttonVariants } from '$lib/shadcn/button';
 	import * as Dialog from '$lib/shadcn/dialog';
-	import { goto } from '$app/navigation';
-	import { resolve } from '$app/paths';
-	import { useConvexClient } from 'convex-svelte';
-	import { api } from '$convex/_generated/api';
+	import TrashIcon from '@lucide/svelte/icons/trash-2';
 
 	let {
-		workout,
-		open = $bindable(),
-		title = 'Delete workout',
-		description = 'Are you sure you want to delete this workout? This action cannot be undone.',
-		confirmLabel = 'Confirm',
-		isDeleting = false,
 		onConfirmDelete
 	}: {
-		workout?: Workout;
-		open: boolean;
-		title?: string;
-		description?: string;
-		confirmLabel?: string;
-		isDeleting?: boolean;
 		onConfirmDelete?: () => Promise<void> | void;
 	} = $props();
 
-	const client = useConvexClient();
+	let open = $state(false);
 
 	const onDelete = async () => {
 		if (onConfirmDelete) {
-			await onConfirmDelete();
+			onConfirmDelete();
 			open = false;
 			return;
 		}
-		if (!workout) {
-			return;
-		}
-		await client.mutation(api.workouts.remove, { id: workout._id });
-		open = false;
-		goto(resolve('/(app)/tools/training-log'));
 	};
 </script>
 
 <Dialog.Root bind:open>
+	<Dialog.Trigger
+		class={buttonVariants({
+			variant: 'ghost',
+			size: 'sm',
+			class: 'text-destructive hover:text-destructive h-7 text-xs'
+		})}
+	>
+		<TrashIcon class="size-3.5" />
+		Delete workout
+	</Dialog.Trigger>
 	<Dialog.Content>
-		<Dialog.Title>{title}</Dialog.Title>
-		<Dialog.Description>{description}</Dialog.Description>
+		<Dialog.Title>Delete workout</Dialog.Title>
+		<Dialog.Description>
+			Are you sure you want to delete this workout? This action cannot be undone.
+		</Dialog.Description>
 		<Dialog.Footer class="flex flex-row justify-end gap-2">
 			<Dialog.Close class={buttonVariants({ variant: 'secondary' })}>Cancel</Dialog.Close>
-			<Button variant="destructive" onclick={onDelete} disabled={isDeleting}>
-				{isDeleting ? 'Deleting...' : confirmLabel}
-			</Button>
+			<Button variant="destructive" onclick={onDelete}>Delete workout</Button>
 		</Dialog.Footer>
 	</Dialog.Content>
 </Dialog.Root>

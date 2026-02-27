@@ -47,10 +47,7 @@ const createJazzBetterAuthOptions = () => {
 		database: JazzBetterAuthDatabaseAdapter({
 			syncServer: createSyncServerUrl(),
 			accountID: requiredEnv('JAZZ_AUTH_WORKER_ACCOUNT_ID', env.JAZZ_WORKER_ACCOUNT),
-			accountSecret: requiredEnv(
-				'JAZZ_AUTH_WORKER_ACCOUNT_SECRET',
-				env.JAZZ_WORKER_SECRET
-			)
+			accountSecret: requiredEnv('JAZZ_AUTH_WORKER_ACCOUNT_SECRET', env.JAZZ_WORKER_SECRET)
 		}),
 		socialProviders: createSocialProviders(),
 		emailAndPassword: {

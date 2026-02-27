@@ -1,72 +1,26 @@
 <script lang="ts">
-	import type { Id } from '$convex/_generated/dataModel';
-	import { api } from '$convex/_generated/api';
-	import { getProgramTemplateHeaderSaveContext } from '$lib/components/training-log/program-template/program-template-header-save.context.svelte';
 	import * as Popover from '$lib/shadcn/popover';
 	import { Textarea } from '$lib/shadcn/textarea';
 	import StickyNoteIcon from '@lucide/svelte/icons/sticky-note';
-	import { useConvexClient } from 'convex-svelte';
-	import { toast } from 'svelte-sonner';
+	import { CoState } from 'jazz-tools/svelte';
+	import { ProgramTemplate } from '$lib/jazz/schema';
 
 	let {
-		templateId,
-		notes
+		templateId
 	}: {
-		templateId: Id<'programTemplates'>;
-		notes?: string;
+		templateId: string;
 	} = $props();
 
-	const client = useConvexClient();
-	const saveController = getProgramTemplateHeaderSaveContext();
-	let draftNotes = $state(notes ?? '');
-	let lastSavedNotes = $state((notes ?? '').trim());
-	let isDirty = $state(false);
-
-	$effect(() => {
-		const incoming = notes ?? '';
-		if (!isDirty) {
-			draftNotes = incoming;
-			lastSavedNotes = incoming.trim();
-		}
-	});
-
-	const hasChanges = () => draftNotes.trim() !== lastSavedNotes;
-
-	const save = async () => {
-		if (!hasChanges()) {
-			isDirty = false;
-			return;
-		}
-		const nextNotes = draftNotes.trim();
-		try {
-			await saveController.run(async () => {
-				await client.mutation(api.programTemplates.update, {
-					id: templateId,
-					notes: nextNotes
-				});
-			});
-			draftNotes = nextNotes;
-			lastSavedNotes = nextNotes;
-			isDirty = false;
-		} catch (error) {
-			toast.error(error instanceof Error ? error.message : 'Could not save template notes.');
-		}
-	};
+	const templateState = new CoState(ProgramTemplate, () => templateId);
+	const template = $derived(templateState.current.$isLoaded ? templateState.current : undefined);
+	const notes = $derived(template?.notes ?? '');
 
 	const handleInput = (value: string) => {
-		draftNotes = value;
-		isDirty = true;
-		saveController.queueDebounced('template-notes', {
-			shouldSave: hasChanges,
-			save
-		});
-	};
-
-	const flushSave = () => {
-		saveController.flushDebounced('template-notes', {
-			shouldSave: hasChanges,
-			save
-		});
+		if (!template) {
+			return;
+		}
+		template.$jazz.set('notes', value.trim());
+		template.$jazz.set('updatedAt', new Date());
 	};
 </script>
 
@@ -80,9 +34,7 @@
 			<Textarea
 				rows={4}
 				placeholder="Training block goals, periodization notes..."
-				value={draftNotes}
-				oninput={(e) => handleInput(e.currentTarget.value)}
-				onblur={flushSave}
+				bind:value={() => notes, (v) => handleInput(v)}
 			/>
 		</div>
 	</Popover.Content>

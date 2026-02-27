@@ -5,10 +5,8 @@
 	import * as Tabs from '$lib/shadcn/tabs';
 	import History from '@lucide/svelte/icons/history';
 	import PastPerformancesList from '$lib/components/training-log/PastPerformancesList.svelte';
-	let {
-		exerciseId,
-		currentWorkout
-	}: { exerciseId: string; currentWorkout?: Maybe<Workout> } = $props();
+	let { exerciseId, currentWorkout }: { exerciseId: string; currentWorkout?: Maybe<Workout> } =
+		$props();
 
 	const allTimeId = 'allTime';
 	const upToWorkoutId = 'upToWorkout';

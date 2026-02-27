@@ -57,7 +57,7 @@ export const createAuthOptions = (ctx: AppCtx) => {
 			convex({
 				authConfig,
 				jwksRotateOnTokenGenerationError: true
-			}),
+			})
 		]
 	} satisfies BetterAuthOptions;
 };

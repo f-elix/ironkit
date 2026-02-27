@@ -137,7 +137,10 @@ const filterRowsByConvexUserId = (input: {
 };
 
 const toRunSlug = (date: Date): string => {
-	return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}Z$/, 'Z');
+	return date
+		.toISOString()
+		.replace(/[-:]/g, '')
+		.replace(/\.\d{3}Z$/, 'Z');
 };
 
 const safePathSegment = (value: string): string => {
@@ -438,7 +441,11 @@ const main = async () => {
 		},
 		results
 	};
-	await writeFile(resolve(runOutDir, 'seed-report.json'), `${JSON.stringify(summary, null, 2)}\n`, 'utf8');
+	await writeFile(
+		resolve(runOutDir, 'seed-report.json'),
+		`${JSON.stringify(summary, null, 2)}\n`,
+		'utf8'
+	);
 
 	const applied = results.filter((result) => result.status === 'applied').length;
 	const skipped = results.filter((result) => result.status === 'skipped').length;
