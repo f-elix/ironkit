@@ -6,13 +6,13 @@
 	import { now } from '@internationalized/date';
 	import { TIMEZONE } from '$lib/constants';
 	import PerformanceSetSummary from '$lib/components/training-log/PerformanceSetSummary.svelte';
-import { IronkitAccount } from '$lib/jazz/schema';
-import { AccountCoState } from 'jazz-tools/svelte';
+	import { IronkitAccount } from '$lib/jazz/schema';
+	import { AccountCoState } from 'jazz-tools/svelte';
 
-let { exerciseId, currentWorkout }: { exerciseId: string; currentWorkout?: Maybe<Workout> } =
-	$props();
+	let { exerciseId, currentWorkout }: { exerciseId: string; currentWorkout?: Maybe<Workout> } =
+		$props();
 
-const account = new AccountCoState(IronkitAccount, {
+	const account = new AccountCoState(IronkitAccount, {
 		resolve: {
 			root: {
 				workouts: {
@@ -56,7 +56,8 @@ const account = new AccountCoState(IronkitAccount, {
 						.map((performance) => ({ performance, workout }))
 				)
 			)
-			.toSorted((a, b) => b.workout.date.getTime() - a.workout.date.getTime());
+			.toSorted((a, b) => b.workout.date.getTime() - a.workout.date.getTime())
+			.slice(0, 50);
 	});
 </script>
 

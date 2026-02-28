@@ -28,5 +28,4 @@ vite.config.ts.timestamp-*
 ideas
 
 # Convex
-.convex/
-convex/_generated/
+migrate.txt
