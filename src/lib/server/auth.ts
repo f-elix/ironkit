@@ -12,12 +12,8 @@ const requiredEnv = (name: string, value: string | undefined) => {
 };
 
 const createSyncServerUrl = () => {
-	if (env.JAZZ_AUTH_SYNC_SERVER) {
-		return env.JAZZ_AUTH_SYNC_SERVER;
-	}
-
 	const apiKey = requiredEnv('PUBLIC_JAZZ_API_KEY', PUBLIC_JAZZ_API_KEY);
-	return `wss://cloud.jazz.tools/?key=${encodeURIComponent(apiKey)}`;
+	return `wss://cloud.jazz.tools/?key=${apiKey}`;
 };
 
 const createSocialProviders = () => {
@@ -42,12 +38,13 @@ const createJazzBetterAuthOptions = () => {
 	}
 
 	return {
+		appName: 'Ironkit',
 		baseURL,
 		secret: requiredEnv('BETTER_AUTH_SECRET', env.BETTER_AUTH_SECRET),
 		database: JazzBetterAuthDatabaseAdapter({
 			syncServer: createSyncServerUrl(),
-			accountID: requiredEnv('JAZZ_WORKER_ACCOUNT', env.JAZZ_WORKER_ACCOUNT),
-			accountSecret: requiredEnv('JAZZ_WORKER_SECRET', env.JAZZ_WORKER_SECRET)
+			accountID: requiredEnv('JAZZ_AUTH_WORKER_ACCOUNT', env.JAZZ_AUTH_WORKER_ACCOUNT),
+			accountSecret: requiredEnv('JAZZ_AUTH_WORKER_SECRET', env.JAZZ_AUTH_WORKER_SECRET)
 		}),
 		socialProviders: createSocialProviders(),
 		emailAndPassword: {

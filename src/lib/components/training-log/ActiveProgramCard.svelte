@@ -14,12 +14,12 @@
 	import PauseIcon from '@lucide/svelte/icons/pause';
 	import PlayIcon from '@lucide/svelte/icons/play';
 	import { toast } from 'svelte-sonner';
-	import { AccountCoState } from 'jazz-tools/svelte';
-	import { Account } from '$lib/jazz/schema';
+import { AccountCoState } from 'jazz-tools/svelte';
+import { IronkitAccount } from '$lib/jazz/schema';
 
-	let { run }: { run: ResolvedProgramRun } = $props();
+let { run }: { run: ResolvedProgramRun } = $props();
 
-	const account = new AccountCoState(Account, {
+const account = new AccountCoState(IronkitAccount, {
 		resolve: {
 			root: {
 				workouts: true

@@ -219,7 +219,7 @@ export const AccountRoot = co
 		onInlineCreate: 'extendsContainer'
 	});
 
-export const Account = co
+export const IronkitAccount = co
 	.account({
 		profile: co.profile(),
 		root: AccountRoot

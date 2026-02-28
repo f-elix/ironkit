@@ -14,7 +14,7 @@
 	import PreviousWorkoutSelection from '$lib/components/training-log/PreviousWorkoutSelection.svelte';
 	import type { Workout as WorkoutType } from '$lib/jazz/types';
 	import { AccountCoState } from 'jazz-tools/svelte';
-	import { Account, Workout } from '$lib/jazz/schema';
+	import { IronkitAccount, Workout } from '$lib/jazz/schema';
 	import { createWorkoutFromTemplate } from '$lib/jazz/workout';
 
 	let {
@@ -25,7 +25,7 @@
 		trigger: Snippet<[{ props: Record<string, unknown> }]>;
 	} = $props();
 
-	const account = new AccountCoState(Account, {
+	const account = new AccountCoState(IronkitAccount, {
 		resolve: {
 			root: {
 				workouts: {

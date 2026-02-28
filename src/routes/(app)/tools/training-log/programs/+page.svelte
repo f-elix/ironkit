@@ -10,11 +10,10 @@
 	} from '$lib/training-log/program-template-status';
 	import ClipboardListIcon from '@lucide/svelte/icons/clipboard-list';
 	import PlusIcon from '@lucide/svelte/icons/plus';
-	import { Account } from '$lib/jazz/schema';
+	import { IronkitAccount, ProgramTemplate } from '$lib/jazz/schema';
 	import { AccountCoState } from 'jazz-tools/svelte';
-	import { ProgramTemplate } from '$lib/jazz/schema';
 
-	const account = new AccountCoState(Account, {
+	const account = new AccountCoState(IronkitAccount, {
 		resolve: {
 			root: {
 				programTemplates: {

@@ -9,10 +9,6 @@
 
 	const isAuthenticated = useIsAuthenticated();
 
-	const onSuccess = () => {
-		goto(resolve('/'));
-	};
-
 	// Redirect to home if already authenticated
 	$effect(() => {
 		if (isAuthenticated.current) {
@@ -29,9 +25,9 @@
 			</div>
 			<h1 class="text-2xl font-bold">Welcome to Ironkit</h1>
 			<p class="text-muted-foreground text-center">Sign in to start tracking your workouts</p>
-			<GoogleLogin {onSuccess} />
+			<GoogleLogin />
 			{#if dev}
-				<DevLogin {onSuccess} />
+				<DevLogin />
 			{/if}
 		</div>
 	</div>

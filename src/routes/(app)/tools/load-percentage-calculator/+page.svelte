@@ -9,10 +9,10 @@
 	import UnitSelector from '$lib/components/ui/UnitSelector.svelte';
 	import { roundWeightToNearest } from '$lib/math/roundWeightToNearest';
 	import { DEFAULT_WEIGHT_UNIT } from '$lib/constants';
-	import { Account } from '$lib/jazz/schema';
-	import { AccountCoState } from 'jazz-tools/svelte';
+import { IronkitAccount } from '$lib/jazz/schema';
+import { AccountCoState } from 'jazz-tools/svelte';
 
-	const account = new AccountCoState(Account, {
+const account = new AccountCoState(IronkitAccount, {
 		resolve: {
 			root: {
 				loadPercentageCalculator: true

@@ -13,10 +13,10 @@
 	import { muscleGroups as muscleGroupsList } from '$lib/data/muscleGroups';
 	import Badge from '$lib/shadcn/badge/badge.svelte';
 	import ExerciseHistoryDialog from '$lib/components/training-log/ExerciseHistoryDialog.svelte';
-	import { Account } from '$lib/jazz/schema';
-	import { AccountCoState } from 'jazz-tools/svelte';
+import { IronkitAccount } from '$lib/jazz/schema';
+import { AccountCoState } from 'jazz-tools/svelte';
 
-	const account = new AccountCoState(Account, {
+const account = new AccountCoState(IronkitAccount, {
 		resolve: {
 			root: {
 				exercises: { $each: true }

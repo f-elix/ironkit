@@ -1,19 +1,13 @@
 <script lang="ts">
 	import Button from '$lib/shadcn/button/button.svelte';
 	import { betterAuthClient } from '$lib/auth-client';
-
-	const { onSuccess }: { onSuccess: () => void } = $props();
+	import { PUBLIC_TEST_USER_EMAIL, PUBLIC_TEST_USER_PASSWORD } from '$env/static/public';
 
 	const handleDevLogin = () => {
-		betterAuthClient.signIn.email(
-			{
-				email: 'felix@ironkit.com',
-				password: 'tester'
-			},
-			{
-				onSuccess
-			}
-		);
+		betterAuthClient.signIn.email({
+			email: PUBLIC_TEST_USER_EMAIL,
+			password: PUBLIC_TEST_USER_PASSWORD
+		});
 	};
 </script>
 

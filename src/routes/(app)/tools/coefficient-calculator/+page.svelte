@@ -5,11 +5,11 @@
 	import { DEFAULT_WEIGHT_UNIT, DEFAULT_GENDER_CLASS, GENDER_CLASSES } from '$lib/constants';
 	import { Label } from '$lib/shadcn/label';
 	import ToolLayout from '$lib/components/app/ToolLayout.svelte';
-	import { Account } from '$lib/jazz/schema';
-	import { AccountCoState } from 'jazz-tools/svelte';
-	import LargeRadioButtons from '$lib/components/ui/LargeRadioButtons.svelte';
+import { IronkitAccount } from '$lib/jazz/schema';
+import { AccountCoState } from 'jazz-tools/svelte';
+import LargeRadioButtons from '$lib/components/ui/LargeRadioButtons.svelte';
 
-	const account = new AccountCoState(Account, {
+const account = new AccountCoState(IronkitAccount, {
 		resolve: {
 			root: {
 				coefficientCalculator: true

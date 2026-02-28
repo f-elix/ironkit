@@ -8,7 +8,7 @@
 	import { JazzSvelteProvider } from 'jazz-tools/svelte';
 	import AuthProvider from 'jazz-tools/better-auth/auth/svelte';
 	import { betterAuthClient } from '$lib/auth-client';
-	import { Account } from '$lib/jazz/schema';
+	import { IronkitAccount } from '$lib/jazz/schema';
 	import { PUBLIC_JAZZ_API_KEY } from '$env/static/public';
 
 	let { children } = $props();
@@ -22,7 +22,7 @@
 </script>
 
 <Toaster closeButton richColors theme="dark" />
-<JazzSvelteProvider sync={{ peer: jazzSyncPeer, when: 'signedUp' }} AccountSchema={Account}>
+<JazzSvelteProvider sync={{ peer: jazzSyncPeer, when: 'signedUp' }} AccountSchema={IronkitAccount}>
 	<AuthProvider {betterAuthClient}>
 		<Head />
 		{@render children()}

@@ -70,7 +70,7 @@
 		"@dnd-kit/svelte": "0.3.2",
 		"@svelte-put/copy": "4.0.0",
 		"@typescript/native-preview": "7.0.0-dev.20260227.1",
-		"better-auth": "1.4.9",
+		"better-auth": "1.4.20",
 		"jazz-tools": "0.20.10",
 		"powerlifting-formulas": "0.2.3",
 		"runed": "0.31.1",
