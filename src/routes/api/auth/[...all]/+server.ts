@@ -1,3 +1,6 @@
-import { createSvelteKitHandler } from '@mmailaender/convex-better-auth-svelte/sveltekit';
+import { auth } from '$lib/server/auth';
+import { toSvelteKitHandler } from 'better-auth/svelte-kit';
 
-export const { GET, POST } = createSvelteKitHandler();
+const handler = toSvelteKitHandler(auth);
+
+export { handler as GET, handler as POST };

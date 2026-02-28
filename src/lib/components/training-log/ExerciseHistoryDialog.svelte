@@ -1,16 +1,12 @@
 <script lang="ts">
-	import type { Workout } from '$lib/db/types';
+	import type { Workout } from '$lib/jazz/types';
 	import { buttonVariants } from '$lib/shadcn/button/button.svelte';
 	import * as Dialog from '$lib/shadcn/dialog';
 	import * as Tabs from '$lib/shadcn/tabs';
 	import History from '@lucide/svelte/icons/history';
 	import PastPerformancesList from '$lib/components/training-log/PastPerformancesList.svelte';
-	import type { Id } from '$convex/_generated/dataModel';
-
-	let {
-		exerciseId,
-		currentWorkout
-	}: { exerciseId: Id<'exercises'>; currentWorkout?: Maybe<Workout> } = $props();
+	let { exerciseId, currentWorkout }: { exerciseId: string; currentWorkout?: Maybe<Workout> } =
+		$props();
 
 	const allTimeId = 'allTime';
 	const upToWorkoutId = 'upToWorkout';

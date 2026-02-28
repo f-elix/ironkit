@@ -1,34 +1,31 @@
 <script lang="ts">
-	import type { WorkoutSummaryGroup } from '$lib/components/training-log/program-template/program-template-editor.types';
 	import Separator from '$lib/shadcn/separator/separator.svelte';
 	import { getPerformanceGroupLabel } from '$lib/training-log/performance-group.utils';
 	import LinkIcon from '@lucide/svelte/icons/link';
+	import type { ResolvedPerformanceGroup } from '$lib/jazz/types';
+	import type { ProgramTarget } from '$lib/jazz/schema';
 
-	let { groups }: { groups: WorkoutSummaryGroup[] } = $props();
+	let { performanceGroups }: { performanceGroups: ResolvedPerformanceGroup[] } = $props();
 
-	const showableGroups = $derived(groups.filter((group) => !!group.exercises.length));
-
-	const totalExercises = $derived(
-		showableGroups.reduce((acc, group) => acc + group.exercises.length, 0)
+	const showableGroups = $derived(
+		performanceGroups.filter((group) => !!group.performances.flatMap((p) => p.exercise).length)
 	);
 
-	function formatSetCompact(
-		set: { targetSetRange?: string; targetRepsRange?: string; targetDuration?: string },
-		executionType: 'reps' | 'time'
-	): { sets: string; reps: string } {
+	const totalExercises = $derived(
+		showableGroups.reduce(
+			(acc, group) => acc + group.performances.flatMap((p) => p.exercise).length,
+			0
+		)
+	);
+
+	function formatSetCompact(set: ProgramTarget, executionType: 'reps' | 'time') {
 		const sets = set.targetSetRange ?? '1';
 		const reps =
 			executionType === 'reps' ? (set.targetRepsRange ?? '—') : (set.targetDuration ?? '—');
 		return { sets, reps };
 	}
 
-	function getSetRanges(
-		sets: { targetSetRange?: string; targetRepsRange?: string; targetDuration?: string }[],
-		executionType: 'reps' | 'time'
-	): { sets: string; reps: string }[] {
-		if (!sets.length) {
-			return [];
-		}
+	function getSetRanges(sets: ProgramTarget[], executionType: 'reps' | 'time') {
 		return sets.map((s) => formatSetCompact(s, executionType));
 	}
 </script>
@@ -44,9 +41,9 @@
 	{#if showableGroups.length}
 		<div class="space-y-2">
 			{#each showableGroups as group, groupIndex}
-				{@const isGrouped = group.exercises.length > 1}
+				{@const isGrouped = group.performances.length > 1}
 				{@const groupLabel = isGrouped
-					? getPerformanceGroupLabel(group.exercises.length, group.label)
+					? getPerformanceGroupLabel(group.performances.length, group.label)
 					: null}
 				<div class={['relative', isGrouped && 'bg-muted/20 -mx-1 rounded-md px-1 py-2']}>
 					{#if groupLabel}
@@ -58,8 +55,12 @@
 						</div>
 					{/if}
 					<ul class={['space-y-2.5', isGrouped && 'pl-1']}>
-						{#each group.exercises as exercise}
-							{@const setRanges = getSetRanges(exercise.sets, exercise.executionType)}
+						{#each group.performances as performance}
+							{@const exercise = performance.exercise}
+							{@const setRanges = getSetRanges(
+								performance.programTargets ?? [],
+								exercise.executionType
+							)}
 							<li class="flex flex-col gap-2">
 								<span class="text-sm font-medium">
 									{exercise.name}

@@ -1,29 +1,24 @@
 <script lang="ts">
 	import { createSortable } from '@dnd-kit/svelte/sortable';
-	import type { Id } from '$convex/_generated/dataModel';
-	import type { WorkoutSummaryGroup } from '$lib/components/training-log/program-template/program-template-editor.types';
+	import type { ResolvedProgramWorkout } from '$lib/jazz/workout';
 	import ProgramTemplateWorkoutCardSummary from '$lib/components/training-log/program-template/ProgramTemplateWorkoutCardSummary.svelte';
+	import { getProgramTemplateEditorContext } from '$lib/components/training-log/program-template/program-template-editor.context.svelte.js';
+	import { getTrackColor } from '$lib/components/training-log/program-template/program-template-track.utils';
 	import GripVerticalIcon from '@lucide/svelte/icons/grip-vertical';
 
 	let {
-		workoutId,
-		trackKey,
-		label,
-		groups = [],
-		index,
-		isSelected,
-		trackColorClass,
-		onSelect
+		workout,
+		index
 	}: {
-		workoutId: Id<'programWorkouts'>;
-		trackKey: string;
-		label: string | undefined;
-		groups?: WorkoutSummaryGroup[];
+		workout: ResolvedProgramWorkout;
 		index: number;
-		isSelected: boolean;
-		trackColorClass: string;
-		onSelect: (id: Id<'programWorkouts'>) => void;
 	} = $props();
+
+	const editorState = getProgramTemplateEditorContext();
+	const workoutId = $derived(workout.$jazz.id);
+	const isSelected = $derived(editorState.selectedWorkoutId === workoutId);
+	const performanceGroups = $derived(workout.performanceGroups.filter((g) => g.$isLoaded));
+	const trackColorClass = $derived(getTrackColor(workout.trackKey));
 
 	const { attach: attachRef, isDragging } = $derived(
 		createSortable({
@@ -44,16 +39,18 @@
 	]}
 	{@attach attachRef}
 >
+	<button
+		type="button"
+		onclick={() => editorState.selectWorkout(workoutId)}
+		aria-label="Edit workout"
+		class="sr-only"
+	></button>
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		class="flex size-full flex-col gap-3 p-2 text-left sm:p-3"
-		onclick={() => onSelect(workoutId)}
+		onclick={() => editorState.selectWorkout(workoutId)}
 	>
-		<button
-			type="button"
-			onclick={() => onSelect(workoutId)}
-			aria-label="Edit workout"
-			class="sr-only"
-		></button>
 		<div class="flex items-center gap-2">
 			<div
 				class="text-muted-foreground/30 flex shrink-0 cursor-grab items-start active:cursor-grabbing"
@@ -66,12 +63,12 @@
 					trackColorClass
 				]}
 			>
-				{trackKey}
+				{workout.trackKey}
 			</span>
 			<span class="truncate text-sm leading-snug font-medium sm:text-[15px]">
-				{label || 'Untitled'}
+				{workout.label || 'Untitled'}
 			</span>
 		</div>
-		<ProgramTemplateWorkoutCardSummary {groups} />
+		<ProgramTemplateWorkoutCardSummary {performanceGroups} />
 	</div>
 </li>

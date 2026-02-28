@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { api } from '$convex/_generated/api';
-	import type { Doc } from '$convex/_generated/dataModel';
+	import type { ResolvedProgramRun } from '$lib/jazz/types';
 	import { Button, buttonVariants } from '$lib/shadcn/button';
 	import * as DropdownMenu from '$lib/shadcn/dropdown-menu';
 	import { cn } from '$lib/shadcn/utils';
@@ -10,64 +9,32 @@
 	import EyeIcon from '@lucide/svelte/icons/eye';
 	import PlayIcon from '@lucide/svelte/icons/play';
 	import XIcon from '@lucide/svelte/icons/x';
-	import { useConvexClient } from 'convex-svelte';
 	import { toast } from 'svelte-sonner';
 
-	let {
-		run,
-		template,
-		totalSessions,
-		completedSessions
-	}: {
-		run: Doc<'programRuns'>;
-		template: Doc<'programTemplates'>;
-		totalSessions: number;
-		completedSessions: number;
-	} = $props();
+	let { run }: { run: ResolvedProgramRun } = $props();
 
-	const client = useConvexClient();
+	const template = $derived(run.programTemplate);
 
-	let isResuming = $state(false);
-	let isCanceling = $state(false);
+	const totalSessions = $derived(template.programWorkouts.length);
+
+	const completedSessions = $derived(
+		run.programRunSessions.filter((s) => s.workoutId || s.skippedAt).length
+	);
 
 	const progressLabel = $derived(`Session ${completedSessions + 1} of ${totalSessions}`);
 
-	const handleResumeProgram = async () => {
-		if (isResuming) {
-			return;
-		}
-		isResuming = true;
-		try {
-			await client.mutation(api.programRuns.resumeRun, {
-				id: run._id
-			});
-			toast.success('Program resumed');
-		} catch (error) {
-			toast.error(error instanceof Error ? error.message : 'Could not resume program.');
-		} finally {
-			isResuming = false;
-		}
+	const handleResumeProgram = () => {
+		run.$jazz.set('status', 'active');
+		toast.success('Program resumed');
 	};
 
 	const handleViewProgram = () => {
-		goto(resolve('/(app)/tools/training-log/program-run-[id]', { id: run._id }));
+		goto(resolve('/(app)/tools/training-log/program-run-[id]', { id: run.$jazz.id }));
 	};
 
-	const handleCancelProgram = async () => {
-		if (isCanceling) {
-			return;
-		}
-		isCanceling = true;
-		try {
-			await client.mutation(api.programRuns.cancelRun, {
-				id: run._id
-			});
-			toast.success('Program canceled');
-		} catch (error) {
-			toast.error(error instanceof Error ? error.message : 'Could not cancel program.');
-		} finally {
-			isCanceling = false;
-		}
+	const handleCancelProgram = () => {
+		run.$jazz.set('status', 'canceled');
+		toast.success('Program canceled');
 	};
 </script>
 
@@ -94,7 +61,7 @@
 					<EyeIcon />
 					View program
 				</DropdownMenu.Item>
-				<DropdownMenu.Item onSelect={handleCancelProgram} disabled={isCanceling}>
+				<DropdownMenu.Item onSelect={handleCancelProgram}>
 					<XIcon />
 					Cancel program
 				</DropdownMenu.Item>
@@ -102,14 +69,8 @@
 		</DropdownMenu.Root>
 	</div>
 
-	<Button
-		variant="secondary"
-		size="lg"
-		class="mt-4 w-full"
-		onclick={handleResumeProgram}
-		disabled={isResuming}
-	>
+	<Button variant="secondary" size="lg" class="mt-4 w-full" onclick={handleResumeProgram}>
 		<PlayIcon />
-		{isResuming ? 'Resuming...' : 'Resume'}
+		Resume
 	</Button>
 </article>

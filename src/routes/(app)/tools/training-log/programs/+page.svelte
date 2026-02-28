@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { api } from '$convex/_generated/api';
 	import ProgramTemplateListItem from '$lib/components/training-log/programs/ProgramTemplateListItem.svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import { Button } from '$lib/shadcn/button';
@@ -11,22 +10,46 @@
 	} from '$lib/training-log/program-template-status';
 	import ClipboardListIcon from '@lucide/svelte/icons/clipboard-list';
 	import PlusIcon from '@lucide/svelte/icons/plus';
-	import { useConvexClient, useQuery } from 'convex-svelte';
+	import { IronkitAccount, ProgramTemplate } from '$lib/jazz/schema';
+	import { AccountCoState } from 'jazz-tools/svelte';
 
-	const templatesQuery = useQuery(api.programTemplates.list, {});
-	const activeRunQuery = useQuery(api.programRuns.getActiveRun, {});
-	const client = useConvexClient();
+	const account = new AccountCoState(IronkitAccount, {
+		resolve: {
+			root: {
+				programTemplates: {
+					$each: {
+						programWorkouts: { $each: true }
+					}
+				},
+				programRuns: {
+					$each: {
+						programTemplate: true
+					}
+				}
+			}
+		}
+	});
 
-	const activeRun = $derived(activeRunQuery.data ?? null);
+	const root = $derived(account.current.$isLoaded ? account.current.root : null);
+
+	const activeRun = $derived.by(() => {
+		if (!root) {
+			return null;
+		}
+
+		return (
+			root.programRuns
+				.filter((run) => run.status === 'active' || run.status === 'paused')
+				.toSorted((a, b) => b.startedAt.getTime() - a.startedAt.getTime())[0] ?? null
+		);
+	});
 
 	const dateFormatter = new Intl.DateTimeFormat('en-CA', { dateStyle: 'medium' });
-	const formatDate = (timestamp: number) => dateFormatter.format(new Date(timestamp));
+	const formatDate = (date: Date | number) => dateFormatter.format(new Date(date));
 
 	let filter = $state<ProgramTemplateFilter>('all');
-	let isCreating = $state(false);
-	let createError = $state('');
 
-	let templates = $derived(templatesQuery.data ?? []);
+	let templates = $derived(root?.programTemplates ?? []);
 	let filterCounts = $derived.by(() => ({
 		all: templates.length,
 		draft: templates.filter((t) => t.status === 'draft').length,
@@ -37,24 +60,18 @@
 		filter === 'all' ? templates : templates.filter((t) => t.status === filter)
 	);
 
-	const createTemplate = async () => {
-		if (isCreating) {
+	const createTemplate = () => {
+		if (!root) {
 			return;
 		}
-		isCreating = true;
-		createError = '';
-		try {
-			const newTemplateId = await client.mutation(api.programTemplates.create, {
-				name: 'Untitled program',
-				totalWeeks: 4,
-				status: 'draft'
-			});
-			goto(resolve('/(app)/tools/training-log/program-template-[id]', { id: newTemplateId }));
-		} catch (error) {
-			createError = error instanceof Error ? error.message : 'Could not create template.';
-		} finally {
-			isCreating = false;
-		}
+		const newTemplate = ProgramTemplate.create({
+			name: 'Untitled program',
+			totalWeeks: 4,
+			status: 'draft',
+			programWorkouts: []
+		});
+		root.programTemplates.$jazz.push(newTemplate);
+		goto(resolve('/(app)/tools/training-log/program-template-[id]', { id: newTemplate.$jazz.id }));
 	};
 </script>
 
@@ -65,15 +82,11 @@
 				<h1 class="text-2xl font-bold tracking-tight">Programs</h1>
 				<p class="text-muted-foreground mt-1 text-sm">Create and manage your training templates.</p>
 			</div>
-			<Button onclick={createTemplate} disabled={isCreating} class="shrink-0">
+			<Button onclick={createTemplate} class="shrink-0">
 				<PlusIcon />
-				{isCreating ? 'Creating...' : 'New program'}
+				New program
 			</Button>
 		</header>
-
-		{#if createError}
-			<p class="text-destructive text-sm">{createError}</p>
-		{/if}
 
 		{#if templates.length > 0}
 			<nav class="flex gap-1" aria-label="Filter templates">
@@ -98,7 +111,7 @@
 			</nav>
 		{/if}
 
-		{#if templatesQuery.isLoading}
+		{#if !root}
 			<ul class="grid gap-3">
 				{#each Array.from({ length: 3 }) as _, i (`skeleton-${i}`)}
 					<li
@@ -109,13 +122,13 @@
 			</ul>
 		{:else if filteredTemplates.length > 0}
 			<ul class="grid gap-3 pb-20 md:pb-0">
-				{#each filteredTemplates as template, i (template._id)}
-					{@const isActiveTemplate = activeRun?.programTemplateId === template._id}
+				{#each filteredTemplates as template, i (template.$jazz.id)}
+					{@const isActiveTemplate = activeRun?.programTemplate.$jazz.id === template.$jazz.id}
 					<ProgramTemplateListItem
 						{template}
-						updatedAtLabel={formatDate(template.updatedAt)}
-						workoutCount={template.workoutCount}
-						activeRunId={isActiveTemplate ? activeRun._id : undefined}
+						updatedAtLabel={formatDate(template.$jazz.lastUpdatedAt ?? Date.now())}
+						workoutCount={template.programWorkouts.length}
+						activeRunId={isActiveTemplate ? activeRun.$jazz.id : undefined}
 						hasOtherActiveRun={!!activeRun && !isActiveTemplate}
 						animationDelay={i * 50}
 					/>
@@ -136,9 +149,9 @@
 					structuring your training by week.
 				{/snippet}
 				{#snippet button()}
-					<Button onclick={createTemplate} disabled={isCreating}>
+					<Button onclick={createTemplate}>
 						<PlusIcon />
-						{isCreating ? 'Creating...' : 'New program'}
+						New program
 					</Button>
 				{/snippet}
 			</EmptyState>

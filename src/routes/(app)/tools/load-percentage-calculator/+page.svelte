@@ -8,18 +8,23 @@
 	import { Slider } from '$lib/shadcn/slider';
 	import UnitSelector from '$lib/components/ui/UnitSelector.svelte';
 	import { roundWeightToNearest } from '$lib/math/roundWeightToNearest';
-	import { api } from '$convex/_generated/api';
 	import { DEFAULT_WEIGHT_UNIT } from '$lib/constants';
-	import { useQueryMutation } from '$lib/useQueryMutation';
+import { IronkitAccount } from '$lib/jazz/schema';
+import { AccountCoState } from 'jazz-tools/svelte';
 
-	const [query, mutate] = useQueryMutation({
-		query: api.loadPercentageCalculator.get,
-		mutation: api.loadPercentageCalculator.upsert
+const account = new AccountCoState(IronkitAccount, {
+		resolve: {
+			root: {
+				loadPercentageCalculator: true
+			}
+		}
 	});
 
-	let loadPercentageCalculator = $derived(query.data);
-	let unit = $derived(loadPercentageCalculator?.unit ?? DEFAULT_WEIGHT_UNIT);
-	let round = $derived(loadPercentageCalculator?.round ?? false);
+	const loadPercentageCalculator = $derived(
+		account.current.$isLoaded ? account.current.root.loadPercentageCalculator : null
+	);
+	const unit = $derived(loadPercentageCalculator?.unit ?? DEFAULT_WEIGHT_UNIT);
+	const round = $derived(loadPercentageCalculator?.round ?? false);
 
 	let oneRepMax = $state<Maybe<number>>();
 	let percentage = $state<number>(60);
@@ -39,57 +44,51 @@
 	});
 </script>
 
-<ToolLayout>
-	{#snippet output()}
-		<div class="flex flex-col gap-4">
-			<ResultCopyOnClick text={currentWeight.toString()}>
-				<span class="text-4xl tabular-nums">
-					{currentWeight}
-					{unit}
-				</span>
-			</ResultCopyOnClick>
-			<div class="text-center text-3xl tabular-nums">
-				{percentage}%
-			</div>
-		</div>
-	{/snippet}
-	{#snippet input()}
-		<LargeWeightInput label="One rep max" bind:value={oneRepMax} {unit} />
-	{/snippet}
-	{#snippet settings()}
-		<div class="mx-auto flex max-w-80 flex-col gap-4">
+{#if loadPercentageCalculator}
+	<ToolLayout>
+		{#snippet output()}
 			<div class="flex flex-col gap-4">
-				<Label>Percentage</Label>
-				<Slider type="single" bind:value={percentage} min={30} max={110} step={2.5} />
+				<ResultCopyOnClick text={currentWeight.toString()}>
+					<span class="text-4xl tabular-nums">
+						{currentWeight}
+						{unit}
+					</span>
+				</ResultCopyOnClick>
+				<div class="text-center text-3xl tabular-nums">
+					{percentage}%
+				</div>
 			</div>
-			<div class="mt-6 flex w-full items-center justify-between gap-2">
-				<span class="flex items-center gap-1">
-					<Label for="round-to-nearest">Round to nearest increment</Label>
-					<HintBadge text="Kilos will be rounded to the nearest 2.5 and pounds to the nearest 5." />
-				</span>
-				<Switch
-					id="round-to-nearest"
-					checked={round}
-					onCheckedChange={(v) => {
-						mutate({
-							round: v
-						});
-					}}
-				/>
-			</div>
-			<fieldset>
-				<div class="flex items-center justify-between gap-2">
-					<legend class="text-sm font-medium">Unit</legend>
-					<UnitSelector
-						value={unit}
-						onValueChange={(v) => {
-							mutate({
-								unit: v
-							});
-						}}
+		{/snippet}
+		{#snippet input()}
+			<LargeWeightInput label="One rep max" bind:value={oneRepMax} {unit} />
+		{/snippet}
+		{#snippet settings()}
+			<div class="mx-auto flex max-w-80 flex-col gap-4">
+				<div class="flex flex-col gap-4">
+					<Label>Percentage</Label>
+					<Slider type="single" bind:value={percentage} min={30} max={110} step={2.5} />
+				</div>
+				<div class="mt-6 flex w-full items-center justify-between gap-2">
+					<span class="flex items-center gap-1">
+						<Label for="round-to-nearest">Round to nearest increment</Label>
+						<HintBadge
+							text="Kilos will be rounded to the nearest 2.5 and pounds to the nearest 5."
+						/>
+					</span>
+					<Switch
+						id="round-to-nearest"
+						bind:checked={() => round, (v) => loadPercentageCalculator.$jazz.set('round', v)}
 					/>
 				</div>
-			</fieldset>
-		</div>
-	{/snippet}
-</ToolLayout>
+				<fieldset>
+					<div class="flex items-center justify-between gap-2">
+						<legend class="text-sm font-medium">Unit</legend>
+						<UnitSelector
+							bind:value={() => unit, (v) => loadPercentageCalculator.$jazz.set('unit', v)}
+						/>
+					</div>
+				</fieldset>
+			</div>
+		{/snippet}
+	</ToolLayout>
+{/if}

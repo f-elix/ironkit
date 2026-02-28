@@ -5,28 +5,26 @@
 	import { watchOffline } from '$lib/ui/watchOffline';
 	import { watchSWUpdate } from '$lib/ui/watchSWUpdate';
 	import { setupViewTransitions } from '$lib/ui/setupViewTransitions';
-	import { createSvelteAuthClient } from '@mmailaender/convex-better-auth-svelte/svelte';
-	import { authClient } from '$lib/auth-client';
-	import { useAuth } from '@mmailaender/convex-better-auth-svelte/svelte';
-	import Spinner from '$lib/shadcn/spinner/spinner.svelte';
+	import { JazzSvelteProvider } from 'jazz-tools/svelte';
+	import AuthProvider from 'jazz-tools/better-auth/auth/svelte';
+	import { betterAuthClient } from '$lib/auth-client';
+	import { IronkitAccount } from '$lib/jazz/schema';
+	import { PUBLIC_JAZZ_API_KEY } from '$env/static/public';
 
 	let { children } = $props();
-
-	createSvelteAuthClient({ authClient });
 
 	setupViewTransitions();
 	watchOffline();
 	watchSWUpdate();
 
-	const auth = useAuth();
+	const apiKey = PUBLIC_JAZZ_API_KEY;
+	const jazzSyncPeer = `wss://cloud.jazz.tools/?key=${apiKey}`;
 </script>
 
 <Toaster closeButton richColors theme="dark" />
-{#if auth.isLoading}
-	<div class="flex h-dvh flex-col items-center justify-center">
-		<Spinner class="size-10" />
-	</div>
-{:else}
-	<Head />
-	{@render children()}
-{/if}
+<JazzSvelteProvider sync={{ peer: jazzSyncPeer, when: 'signedUp' }} AccountSchema={IronkitAccount}>
+	<AuthProvider {betterAuthClient}>
+		<Head />
+		{@render children()}
+	</AuthProvider>
+</JazzSvelteProvider>

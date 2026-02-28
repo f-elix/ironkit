@@ -1,7 +1,4 @@
 <script lang="ts">
-	import { useConvexClient } from 'convex-svelte';
-	import { api } from '$convex/_generated/api';
-	import type { Id } from '$convex/_generated/dataModel';
 	import ExerciseSelection from './ExerciseSelection.svelte';
 	import ExerciseInfoDialog from './ExerciseInfoDialog.svelte';
 	import ExerciseCardPerformanceNotesPopover from './ExerciseCardPerformanceNotesPopover.svelte';
@@ -12,29 +9,24 @@
 	import Pencil from '@lucide/svelte/icons/pencil';
 	import Button from '$lib/shadcn/button/button.svelte';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
-	import type { PerformanceWithRelations } from '$lib/db/types';
+	import type { Performance } from '$lib/jazz/types';
 
 	let {
 		performance,
 		showDeleteButton,
 		onDelete
 	}: {
-		performance: PerformanceWithRelations;
+		performance: Performance;
 		showDeleteButton: boolean;
-		onDelete: (performanceId: Id<'performances'>) => void | Promise<void>;
+		onDelete: (performanceId: string) => void | Promise<void>;
 	} = $props();
-
-	const client = useConvexClient();
 </script>
 
 <div class="flex flex-col gap-2">
 	<div class="flex items-baseline gap-2">
 		<ExerciseSelection
-			onExerciseAdded={async (exerciseId) => {
-				await client.mutation(api.performances.update, {
-					id: performance._id,
-					exerciseId
-				});
+			onExerciseAdded={(exercise) => {
+				performance.$jazz.set('exercise', exercise);
 			}}
 		>
 			{#snippet trigger()}
@@ -45,12 +37,12 @@
 					})}
 				>
 					<span class="text-lg font-semibold whitespace-normal">
-						{performance.exercise?.name ?? 'Select exercise'}
+						{performance.exercise.$isLoaded ? performance.exercise.name : 'Select exercise'}
 					</span>
 				</Dialog.Trigger>
 			{/snippet}
 		</ExerciseSelection>
-		{#if performance.exercise}
+		{#if performance.exercise.$isLoaded}
 			<ExerciseInfoDialog exercise={performance.exercise}>
 				{#snippet trigger()}
 					<Dialog.Trigger
@@ -71,7 +63,7 @@
 				variant="ghost"
 				size="icon"
 				class="text-muted-foreground hover:text-destructive size-8"
-				onclick={() => onDelete(performance._id)}
+				onclick={() => onDelete(performance.$jazz.id)}
 			>
 				<Trash2 class="size-4" />
 			</Button>
@@ -81,15 +73,12 @@
 		<UnitSelector
 			value={performance.weightUnit}
 			onValueChange={(unit) => {
-				client.mutation(api.performances.update, {
-					id: performance._id,
-					weightUnit: unit
-				});
+				performance.$jazz.set('weightUnit', unit);
 			}}
 		/>
-		{#if performance.exercise}
-			<ExerciseHistoryDialog exerciseId={performance.exerciseId} />
+		{#if performance.exercise.$isLoaded}
+			<ExerciseHistoryDialog exerciseId={performance.exercise.$jazz.id} />
 		{/if}
-		<ExerciseCardPerformanceNotesPopover performanceId={performance._id} note={performance.note} />
+		<ExerciseCardPerformanceNotesPopover note={performance.note} {performance} />
 	</div>
 </div>

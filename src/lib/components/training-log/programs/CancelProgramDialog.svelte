@@ -4,12 +4,10 @@
 
 	let {
 		open = $bindable(),
-		onConfirm,
-		isLoading
+		onConfirm
 	}: {
 		open: boolean;
 		onConfirm: () => void;
-		isLoading: boolean;
 	} = $props();
 </script>
 
@@ -26,12 +24,8 @@
 			<AlertDialog.Cancel class={buttonVariants({ variant: 'outline' })}>
 				Keep running
 			</AlertDialog.Cancel>
-			<AlertDialog.Action
-				class={buttonVariants({ variant: 'destructive' })}
-				disabled={isLoading}
-				onclick={onConfirm}
-			>
-				{isLoading ? 'Canceling...' : 'Cancel program'}
+			<AlertDialog.Action class={buttonVariants({ variant: 'destructive' })} onclick={onConfirm}>
+				Cancel program
 			</AlertDialog.Action>
 		</AlertDialog.Footer>
 	</AlertDialog.Content>

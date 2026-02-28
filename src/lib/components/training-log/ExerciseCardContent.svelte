@@ -1,7 +1,4 @@
 <script lang="ts">
-	import { useConvexClient } from 'convex-svelte';
-	import { api } from '$convex/_generated/api';
-	import type { Id } from '$convex/_generated/dataModel';
 	import ExerciseSelection from './ExerciseSelection.svelte';
 	import * as Dialog from '$lib/shadcn/dialog';
 	import { buttonVariants } from '$lib/shadcn/button';
@@ -12,54 +9,45 @@
 	import Label from '$lib/shadcn/label/label.svelte';
 	import Input from '$lib/shadcn/input/input.svelte';
 	import Button from '$lib/shadcn/button/button.svelte';
-	import type { PerformanceWithRelations } from '$lib/db/types';
+	import type { ResolvedPerformanceGroup } from '$lib/jazz/types';
 	import ExerciseCardTargetSummary from '$lib/components/training-log/ExerciseCardTargetSummary.svelte';
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
-
-	type PerformanceGroupWithRelations = {
-		_id: Id<'performanceGroups'>;
-		workoutId?: Id<'workouts'>;
-		label?: string;
-		performances?: PerformanceWithRelations[];
-	};
+	import { Performance, PerformanceSet } from '$lib/jazz/schema';
+	import type { Exercise } from '$lib/jazz/types';
+	import { deleteCoValues } from 'jazz-tools';
 
 	let {
 		performanceGroup,
-		performances,
 		onNext,
 		onRemoveGroup
 	}: {
-		performanceGroup: PerformanceGroupWithRelations;
-		performances: PerformanceWithRelations[];
+		performanceGroup: ResolvedPerformanceGroup;
 		onNext?: () => void;
-		onRemoveGroup: () => void;
+		onRemoveGroup?: () => void;
 	} = $props();
 
-	const client = useConvexClient();
+	const performances = $derived(
+		performanceGroup.$isLoaded ? performanceGroup.performances.filter((p) => p.$isLoaded) : []
+	);
 
-	const onExerciseAdded = async (exerciseId: Id<'exercises'>) => {
-		const lastOrder = performances.at(-1)?.groupOrder ?? 0;
-		await addExerciseToPerformanceGroup(client, performanceGroup, exerciseId, lastOrder + 1);
+	const onExerciseAdded = async (exercise: Exercise) => {
+		addExerciseToPerformanceGroup(performanceGroup, exercise);
 	};
 
 	const onLabelChange = async (event: Event) => {
 		const value = (event.currentTarget as HTMLInputElement).value;
-		await client.mutation(api.performanceGroups.update, {
-			id: performanceGroup._id,
-			label: value
-		});
+		performanceGroup.$jazz.set('label', value);
 	};
 
-	const onDeletePerformance = async (performanceId: Id<'performances'>) => {
-		const currentCount = performances.length;
-		await client.mutation(api.performances.remove, { id: performanceId });
-		if (currentCount === 2) {
-			await client.mutation(api.performanceGroups.update, {
-				id: performanceGroup._id,
-				label: ''
-			});
+	const onDeletePerformance = async (performanceId: string) => {
+		if (!performanceGroup.performances.$isLoaded) {
+			return;
 		}
+		performanceGroup.performances.$jazz.remove((p) => p.$jazz.id === performanceId);
+		await deleteCoValues(Performance, performanceId, {
+			resolve: { performanceSets: { $each: true } }
+		});
 	};
 </script>
 
@@ -79,7 +67,11 @@
 	{/if}
 
 	<!-- Exercise performances -->
-	{#each performances as performance (performance._id)}
+	{#each performances as performance (performance.$jazz.id)}
+		{@const performanceSets = performance.performanceSets.$isLoaded
+			? performance.performanceSets.filter((s) => s.$isLoaded)
+			: []}
+		{@const exercise = performance.exercise.$isLoaded ? performance.exercise : null}
 		<div class="flex flex-col gap-2">
 			<ExerciseCardExerciseRow
 				{performance}
@@ -89,15 +81,22 @@
 			<ExerciseCardTargetSummary {performance} />
 
 			<!-- Sets -->
-			{#if performance.sets && performance.sets.length > 0}
+			{#if performanceSets.length > 0}
 				<div class="flex flex-col gap-2">
-					{#each performance.sets as set, setIndex (set._id)}
+					{#each performanceSets as set, setIndex (set.$jazz.id)}
 						<ExerciseSetRow
 							{set}
 							{setIndex}
 							unit={performance.weightUnit ?? 'lbs'}
-							exercise={performance.exercise}
-							previousSet={setIndex > 0 ? performance.sets[setIndex - 1] : null}
+							{exercise}
+							previousSet={setIndex > 0 ? performanceSets[setIndex - 1] : null}
+							onDelete={async () => {
+								if (performance.performanceSets.$isLoaded) {
+									const setId = set.$jazz.id;
+									performance.performanceSets.$jazz.remove((s) => s.$jazz.id === setId);
+									await deleteCoValues(PerformanceSet, setId);
+								}
+							}}
 						/>
 					{/each}
 				</div>
@@ -109,12 +108,19 @@
 				size="sm"
 				class="w-full"
 				onclick={() => {
-					const lastSet = performance.sets?.at(-1);
+					if (!performance.performanceSets.$isLoaded) {
+						return;
+					}
+					const lastSet = performanceSets.at(-1);
 					const order = lastSet ? lastSet.performanceOrder + 1 : 1;
-					client.mutation(api.performanceSets.create, {
-						performanceId: performance._id,
+					const newSet = PerformanceSet.create({
+						weight: undefined,
+						reps: undefined,
+						durationSeconds: undefined,
+						note: undefined,
 						performanceOrder: order
 					});
+					performance.performanceSets.$jazz.push(newSet);
 				}}
 			>
 				<Plus class="mr-1 size-4" />

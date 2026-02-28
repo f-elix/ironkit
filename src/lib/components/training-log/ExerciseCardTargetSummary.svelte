@@ -1,9 +1,10 @@
 <script lang="ts">
-	import type { PerformanceWithRelations } from '$lib/db/types';
+	import type { ResolvedPerformance } from '$lib/jazz/types';
+	import type { ProgramTarget } from '$lib/jazz/schema';
 
-	let { performance }: { performance: PerformanceWithRelations } = $props();
+	let { performance }: { performance: ResolvedPerformance } = $props();
 
-	const exercise = $derived(performance.exercise);
+	const exercise = $derived(performance.exercise.$isLoaded ? performance.exercise : null);
 	const programTargets = $derived(performance.programTargets ?? []);
 	const executionType = $derived(exercise?.executionType ?? 'reps');
 	const showSummary = $derived(
@@ -19,9 +20,7 @@
 		return executionType === 'reps' ? `${value} reps` : `${value} sec`;
 	};
 
-	const formatSetRange = (
-		target: NonNullable<PerformanceWithRelations['programTargets']>[number]
-	) => {
+	const formatSetRange = (target: ProgramTarget) => {
 		const targetRange =
 			executionType === 'reps' ? target.targetRepsRange?.trim() : target.targetDuration?.trim();
 		if (!targetRange) {

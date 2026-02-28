@@ -1,30 +1,34 @@
 <script lang="ts">
-	import type { CreateWorkoutMode } from '$lib/components/training-log/program-template/program-template-editor.types';
-	import { getTrackColor } from '$lib/components/training-log/program-template/program-template-track.utils';
+	import { getProgramTemplateEditorContext } from '$lib/components/training-log/program-template/program-template-editor.context.svelte.js';
+	import {
+		getTrackColor,
+		normalizeTrackKey
+	} from '$lib/components/training-log/program-template/program-template-track.utils';
+	import { ProgramWorkout, PerformanceGroup, Performance, PerformanceSet } from '$lib/jazz/schema';
+	import type {
+		ProgramWorkout as ProgramWorkoutType,
+		ResolvedProgramTemplate
+	} from '$lib/jazz/types';
+	import type { ResolvedProgramWorkout } from '$lib/jazz/workout';
 	import Button from '$lib/shadcn/button/button.svelte';
 	import Input from '$lib/shadcn/input/input.svelte';
 	import * as Popover from '$lib/shadcn/popover';
 	import PlusIcon from '@lucide/svelte/icons/plus';
 
-	type CreateWorkoutPayload = {
-		mode: CreateWorkoutMode;
-		weekNumber: number;
-		trackKey: string;
-		label: string;
-	};
+	type CreateWorkoutMode = 'scratch' | 'copy';
+
+	const editorState = getProgramTemplateEditorContext();
 
 	let {
 		weekNumber,
 		defaultTrackKey,
-		isCreating = false,
 		canCopyPrior,
-		onCreate
+		template
 	}: {
 		weekNumber: number;
 		defaultTrackKey: string;
-		isCreating?: boolean;
 		canCopyPrior: (trackKey: string) => boolean;
-		onCreate: (payload: CreateWorkoutPayload) => Promise<boolean> | boolean;
+		template: ResolvedProgramTemplate | undefined;
 	} = $props();
 
 	let isOpen = $state(false);
@@ -43,13 +47,93 @@
 		}
 	};
 
-	const createWorkout = async (mode: CreateWorkoutMode) => {
-		const wasCreated = await onCreate({
-			mode,
-			weekNumber,
-			trackKey,
-			label: title
+	const createWorkout = (mode: CreateWorkoutMode): boolean => {
+		if (!template) {
+			return false;
+		}
+
+		const normalizedTrackKey = normalizeTrackKey(trackKey);
+		const workoutLabel = title.trim() || undefined;
+
+		let newWorkout;
+
+		if (mode === 'copy') {
+			const previousWorkout = template.programWorkouts
+				.filter(
+					(w: ProgramWorkoutType) =>
+						w.weekNumber < weekNumber && normalizeTrackKey(w.trackKey) === normalizedTrackKey
+				)
+				.toSorted((a: ProgramWorkoutType, b: ProgramWorkoutType) => b.weekNumber - a.weekNumber)[0];
+
+			if (!previousWorkout) {
+				return false;
+			}
+
+			const resolvedPrevious = previousWorkout as ResolvedProgramWorkout;
+			const newGroups = resolvedPrevious.performanceGroups.map((group) => {
+				const performances = group.performances.map((performance) => {
+					const sets = performance.performanceSets.map((set) =>
+						PerformanceSet.create({
+							weight: set.weight,
+							reps: set.reps,
+							durationSeconds: set.durationSeconds,
+							note: set.note,
+							performanceOrder: set.performanceOrder
+						})
+					);
+					return Performance.create({
+						performanceGroupId: '',
+						exercise: performance.exercise,
+						performanceSets: sets,
+						groupOrder: performance.groupOrder,
+						note: performance.note,
+						programTargets: performance.programTargets,
+						weightUnit: performance.weightUnit
+					});
+				});
+				return PerformanceGroup.create({
+					workoutId: undefined,
+					programWorkoutId: '',
+					label: group.label,
+					workoutOrder: group.workoutOrder,
+					performances
+				});
+			});
+			newWorkout = ProgramWorkout.create({
+				programTemplateId: editorState.templateId,
+				weekNumber,
+				slotOrder: 0,
+				trackKey: normalizedTrackKey,
+				label: previousWorkout.label,
+				notes: previousWorkout.notes,
+				performanceGroups: newGroups
+			});
+		} else {
+			newWorkout = ProgramWorkout.create({
+				programTemplateId: editorState.templateId,
+				weekNumber,
+				slotOrder: 0,
+				trackKey: normalizedTrackKey,
+				label: workoutLabel,
+				notes: undefined,
+				performanceGroups: []
+			});
+		}
+
+		newWorkout.performanceGroups.forEach((group) => {
+			group.$jazz.set('programWorkoutId', newWorkout.$jazz.id);
+			group.performances.forEach((performance) => {
+				performance.$jazz.set('performanceGroupId', group.$jazz.id);
+			});
 		});
+
+		template.programWorkouts.$jazz.push(newWorkout);
+		editorState.selectWorkout(newWorkout.$jazz.id);
+		return true;
+	};
+
+	const handleCreate = (mode: CreateWorkoutMode) => {
+		const wasCreated = createWorkout(mode);
 		if (wasCreated) {
 			isOpen = false;
 		}
@@ -57,7 +141,7 @@
 
 	const handleSubmit = (e: Event) => {
 		e.preventDefault();
-		createWorkout('scratch');
+		handleCreate('scratch');
 	};
 </script>
 
@@ -92,22 +176,9 @@
 				/>
 			</label>
 			<div class="flex gap-2">
-				<Button
-					size="sm"
-					class="flex-1"
-					onclick={() => createWorkout('scratch')}
-					disabled={isCreating}
-				>
-					Create
-				</Button>
+				<Button type="submit" size="sm" class="flex-1">Create</Button>
 				{#if canCopyPrior(trackKey)}
-					<Button
-						size="sm"
-						variant="outline"
-						class="flex-1"
-						onclick={() => createWorkout('copy')}
-						disabled={isCreating}
-					>
+					<Button size="sm" variant="outline" class="flex-1" onclick={() => handleCreate('copy')}>
 						Copy prior
 					</Button>
 				{/if}

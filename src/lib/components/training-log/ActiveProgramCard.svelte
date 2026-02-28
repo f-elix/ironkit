@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { api } from '$convex/_generated/api';
-	import type { Doc } from '$convex/_generated/dataModel';
+	import { ProgramRunSession } from '$lib/jazz/schema';
+	import type { ResolvedProgramRun } from '$lib/jazz/types';
+	import { createWorkoutFromProgramWorkout } from '$lib/jazz/workout';
 	import { Button, buttonVariants } from '$lib/shadcn/button';
 	import * as DropdownMenu from '$lib/shadcn/dropdown-menu';
 	import { cn } from '$lib/shadcn/utils';
@@ -12,40 +13,52 @@
 	import FastForwardIcon from '@lucide/svelte/icons/fast-forward';
 	import PauseIcon from '@lucide/svelte/icons/pause';
 	import PlayIcon from '@lucide/svelte/icons/play';
-	import { useConvexClient } from 'convex-svelte';
 	import { toast } from 'svelte-sonner';
+	import { AccountCoState } from 'jazz-tools/svelte';
+	import { IronkitAccount } from '$lib/jazz/schema';
 
-	interface NextSession {
-		weekNumber: number;
-		label?: string;
-		trackKey: string;
-	}
+	let { run }: { run: ResolvedProgramRun } = $props();
 
-	let {
-		run,
-		template,
-		nextSession,
-		totalSessions,
-		completedSessions
-	}: {
-		run: Doc<'programRuns'>;
-		template: Doc<'programTemplates'>;
-		nextSession: NextSession | null;
-		totalSessions: number;
-		completedSessions: number;
-	} = $props();
+	const account = new AccountCoState(IronkitAccount, {
+		resolve: {
+			root: {
+				workouts: true
+			}
+		}
+	});
 
-	const client = useConvexClient();
+	const root = $derived(account.current.$isLoaded ? account.current.root : null);
 
-	let isStarting = $state(false);
-	let isSkipping = $state(false);
-	let isPausing = $state(false);
+	const template = $derived(run.programTemplate);
 
-	const isCompleted = $derived(!nextSession);
+	const totalSessions = $derived(template.programWorkouts.length);
+
+	const completedSessions = $derived(
+		run.programRunSessions.filter((s) => s.workoutId || s.skippedAt).length
+	);
+
+	const nextSessionData = $derived.by(() => {
+		const completedWorkoutIds = new Set(
+			run.programRunSessions
+				.filter((s) => s.workoutId || s.skippedAt)
+				.map((s) => s.programWorkoutId)
+		);
+
+		const sortedWorkouts = template.programWorkouts.toSorted((a, b) => {
+			if (a.weekNumber !== b.weekNumber) {
+				return a.weekNumber - b.weekNumber;
+			}
+			return a.slotOrder - b.slotOrder;
+		});
+
+		return sortedWorkouts.find((w) => !completedWorkoutIds.has(w.$jazz.id)) ?? null;
+	});
+
+	const isCompleted = $derived(!nextSessionData);
 
 	const sessionLabel = $derived(
-		nextSession
-			? `Week ${nextSession.weekNumber} · ${nextSession.label ?? nextSession.trackKey}`
+		nextSessionData
+			? `Week ${nextSessionData.weekNumber} · ${nextSessionData.label ?? nextSessionData.trackKey}`
 			: null
 	);
 
@@ -55,65 +68,52 @@
 			: `Session ${completedSessions + 1} of ${totalSessions}`
 	);
 
-	const handleStartWorkout = async () => {
-		if (isStarting || !nextSession) {
+	const handleStartWorkout = () => {
+		if (!nextSessionData || !root) {
 			return;
 		}
-		isStarting = true;
-		try {
-			const result = await client.mutation(api.programRunSessions.startNextAsWorkout, {
-				programRunId: run._id
-			});
-			if (result) {
-				goto(resolve('/(app)/tools/training-log/workout-[id]', { id: result.workoutId }));
-			}
-		} catch (error) {
-			toast.error(error instanceof Error ? error.message : 'Could not start workout.');
-		} finally {
-			isStarting = false;
-		}
+
+		const workout = createWorkoutFromProgramWorkout(nextSessionData);
+		workout.$jazz.set('programRun', run);
+
+		const session = ProgramRunSession.create({
+			programRunId: run.$jazz.id,
+			programWorkoutId: nextSessionData.$jazz.id,
+			workoutId: workout.$jazz.id
+		});
+
+		run.programRunSessions.$jazz.push(session);
+		root.workouts.$jazz.push(workout);
+
+		goto(resolve('/(app)/tools/training-log/workout-[id]', { id: workout.$jazz.id }));
 	};
 
-	const handleSkipSession = async () => {
-		if (isSkipping || !nextSession) {
+	const handleSkipSession = () => {
+		if (!nextSessionData) {
 			return;
 		}
-		isSkipping = true;
-		try {
-			await client.mutation(api.programRunSessions.skipNext, {
-				programRunId: run._id
-			});
-			toast.success('Session skipped');
-		} catch (error) {
-			toast.error(error instanceof Error ? error.message : 'Could not skip session.');
-		} finally {
-			isSkipping = false;
-		}
+		const session = ProgramRunSession.create({
+			programRunId: run.$jazz.id,
+			programWorkoutId: nextSessionData.$jazz.id,
+			skippedAt: new Date()
+		});
+
+		run.programRunSessions.$jazz.push(session);
+
+		toast.success('Session skipped');
 	};
 
 	const handleViewProgram = () => {
-		goto(resolve('/(app)/tools/training-log/program-template-[id]', { id: template._id }));
+		goto(resolve('/(app)/tools/training-log/program-template-[id]', { id: template.$jazz.id }));
 	};
 
 	const handleViewRun = () => {
-		goto(resolve('/(app)/tools/training-log/program-run-[id]', { id: run._id }));
+		goto(resolve('/(app)/tools/training-log/program-run-[id]', { id: run.$jazz.id }));
 	};
 
-	const handlePauseProgram = async () => {
-		if (isPausing) {
-			return;
-		}
-		isPausing = true;
-		try {
-			await client.mutation(api.programRuns.pauseRun, {
-				id: run._id
-			});
-			toast.success('Program paused');
-		} catch (error) {
-			toast.error(error instanceof Error ? error.message : 'Could not pause program.');
-		} finally {
-			isPausing = false;
-		}
+	const handlePauseProgram = () => {
+		run.$jazz.set('status', 'paused');
+		toast.success('Program paused');
 	};
 </script>
 
@@ -141,7 +141,7 @@
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Content align="end">
 				{#if !isCompleted}
-					<DropdownMenu.Item onSelect={handleSkipSession} disabled={isSkipping}>
+					<DropdownMenu.Item onSelect={handleSkipSession}>
 						<FastForwardIcon />
 						Skip session
 					</DropdownMenu.Item>
@@ -154,7 +154,7 @@
 					<NotebookPenIcon />
 					View program
 				</DropdownMenu.Item>
-				<DropdownMenu.Item onSelect={handlePauseProgram} disabled={isPausing}>
+				<DropdownMenu.Item onSelect={handlePauseProgram}>
 					<PauseIcon />
 					Pause program
 				</DropdownMenu.Item>
@@ -163,9 +163,9 @@
 	</div>
 
 	{#if !isCompleted}
-		<Button size="lg" class="mt-4 w-full" onclick={handleStartWorkout} disabled={isStarting}>
+		<Button size="lg" class="mt-4 w-full" onclick={handleStartWorkout}>
 			<PlayIcon />
-			{isStarting ? 'Starting...' : 'Start Workout'}
+			Start Workout
 		</Button>
 	{/if}
 </article>

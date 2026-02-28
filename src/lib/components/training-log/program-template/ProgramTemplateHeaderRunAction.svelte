@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { api } from '$convex/_generated/api';
 	import { getProgramTemplateEditorContext } from '$lib/components/training-log/program-template/program-template-editor.context.svelte.js';
 	import Button from '$lib/shadcn/button/button.svelte';
 	import { buttonVariants } from '$lib/shadcn/button';
@@ -14,25 +13,53 @@
 	} from '$lib/training-log/program-template-status';
 	import EyeIcon from '@lucide/svelte/icons/eye';
 	import PlayIcon from '@lucide/svelte/icons/play';
-	import { useConvexClient, useQuery } from 'convex-svelte';
-	import { toast } from 'svelte-sonner';
+import { IronkitAccount, ProgramRun, ProgramTemplate } from '$lib/jazz/schema';
+import { AccountCoState } from 'jazz-tools/svelte';
+import { CoState } from 'jazz-tools/svelte';
 
-	let { status }: { status: ProgramTemplateStatus } = $props();
+let { status }: { status: ProgramTemplateStatus } = $props();
 
-	const editorState = getProgramTemplateEditorContext();
-	const client = useConvexClient();
+const editorState = getProgramTemplateEditorContext();
 
-	const activeRunQuery = useQuery(api.programRuns.getActiveRun, {});
-	const workoutsQuery = useQuery(api.programWorkouts.listByTemplate, () => ({
-		programTemplateId: editorState.templateId
-	}));
+const account = new AccountCoState(IronkitAccount, {
+		resolve: {
+			root: {
+				programRuns: {
+					$each: true
+				}
+			}
+		}
+	});
 
-	const activeRun = $derived(activeRunQuery.data ?? null);
-	const workouts = $derived(workoutsQuery.data ?? []);
+	const templateState = new CoState(ProgramTemplate, () => editorState.templateId, {
+		resolve: {
+			programWorkouts: { $each: true }
+		}
+	});
+
+	const root = $derived(account.current.$isLoaded ? account.current.root : null);
+	const template = $derived(templateState.current.$isLoaded ? templateState.current : undefined);
+
+	const activeRun = $derived.by(() => {
+		if (!root) {
+			return null;
+		}
+		return (
+			root.programRuns
+				.filter((run) => run.status === 'active' || run.status === 'paused')
+				.toSorted((a, b) => b.startedAt.getTime() - a.startedAt.getTime())[0] ?? null
+		);
+	});
+
+	const workouts = $derived(
+		template?.$isLoaded && template.programWorkouts.$isLoaded
+			? [...template.programWorkouts].filter((w) => w.$isLoaded)
+			: []
+	);
 	const workoutCount = $derived(workouts.length);
 
 	const activeRunForThisTemplate = $derived(
-		activeRun?.programTemplateId === editorState.templateId ? activeRun : null
+		activeRun && activeRun.programTemplate.$jazz.id === editorState.templateId ? activeRun : null
 	);
 	const hasOtherActiveRun = $derived(activeRun !== null && activeRunForThisTemplate === null);
 	const canStart = $derived(
@@ -51,14 +78,14 @@
 
 	const viewActiveRunHref = $derived(
 		activeRunForThisTemplate
-			? resolve('/(app)/tools/training-log/program-run-[id]', { id: activeRunForThisTemplate._id })
+			? resolve('/(app)/tools/training-log/program-run-[id]', {
+					id: activeRunForThisTemplate.$jazz.id
+				})
 			: null
 	);
 
-	let isActivating = $state(false);
-
-	const handleStart = async () => {
-		if (!canStart || isActivating) {
+	const handleStart = () => {
+		if (!canStart || !template || !root) {
 			return;
 		}
 
@@ -71,18 +98,25 @@
 			}
 		}
 
-		isActivating = true;
-		try {
-			await client.mutation(api.programRuns.activateTemplate, {
-				programTemplateId: editorState.templateId
-			});
-			toast.success('Program started');
-			goto(resolve('/(app)/tools/training-log'));
-		} catch (error) {
-			toast.error(error instanceof Error ? error.message : 'Could not start program.');
-		} finally {
-			isActivating = false;
-		}
+		// End any existing active runs
+		const existingActiveRuns = root.programRuns.filter(
+			(run) => run.status === 'active' || run.status === 'paused'
+		);
+		existingActiveRuns.forEach((run) => {
+			run.$jazz.set('status', 'completed');
+			run.$jazz.set('endedAt', new Date());
+		});
+
+		// Create new active run
+		const newRun = ProgramRun.create({
+			programTemplate: template,
+			status: 'active',
+			startedAt: new Date(),
+			programRunSessions: []
+		});
+
+		root.programRuns.$jazz.push(newRun);
+		goto(resolve('/(app)/tools/training-log'));
 	};
 </script>
 
@@ -92,15 +126,9 @@
 		View Run
 	</Button>
 {:else if canStart}
-	<Button
-		variant="secondary"
-		size="sm"
-		class="h-7 gap-1 px-2 text-xs"
-		disabled={isActivating}
-		onclick={handleStart}
-	>
+	<Button variant="secondary" size="sm" class="h-7 gap-1 px-2 text-xs" onclick={handleStart}>
 		<PlayIcon class="size-3.5" />
-		{isActivating ? 'Starting...' : 'Start'}
+		Start
 	</Button>
 {:else}
 	<Tooltip.Provider>

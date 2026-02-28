@@ -1,77 +1,74 @@
 <script lang="ts">
-	import { api } from '$convex/_generated/api';
-	import type { Doc, Id } from '$convex/_generated/dataModel';
 	import ProgramTemplateExerciseSetRow from '$lib/components/training-log/program-template/ProgramTemplateExerciseSetRow.svelte';
 	import Button from '$lib/shadcn/button/button.svelte';
 	import PlusIcon from '@lucide/svelte/icons/plus';
-	import { useConvexClient } from 'convex-svelte';
-	import { toast } from 'svelte-sonner';
+	import { Performance } from '$lib/jazz/schema';
+	import { CoState } from 'jazz-tools/svelte';
 
 	let {
-		exerciseTargetId,
-		executionType,
-		exactSets
+		performanceId,
+		executionType
 	}: {
-		exerciseTargetId: Id<'performances'>;
+		performanceId: string;
 		executionType: 'reps' | 'time';
-		exactSets: Doc<'programWorkoutExerciseTargets'>[];
 	} = $props();
 
-	const client = useConvexClient();
-	const toErrorMessage = (error: unknown, fallback: string) => {
-		if (error instanceof Error && error.message) {
-			return error.message;
-		}
-		return fallback;
-	};
-	let sortedSets = $derived(
-		(exactSets ?? []).slice().toSorted((a, b) => a.targetOrder - b.targetOrder)
+	const performanceState = new CoState(Performance, () => performanceId);
+
+	const performance = $derived(
+		performanceState.current.$isLoaded ? performanceState.current : undefined
 	);
-	let targetExamples = $derived(
+
+	const exactSets = $derived(performance?.programTargets ?? []);
+	const targetExamples = $derived(
 		executionType === 'reps'
 			? 'Examples: 1 set + 8 reps, 3-4 sets + 10-15 reps'
 			: 'Examples: 1 set + 60 sec, 3-4 sets + 30-45 sec'
 	);
 
-	const addSet = async () => {
-		const last = sortedSets.at(-1);
-		try {
-			await client.mutation(api.programWorkoutExerciseSets.create, {
-				programWorkoutExerciseId: exerciseTargetId,
-				setOrder: (last?.targetOrder ?? -1) + 1,
+	const addSet = () => {
+		if (!performance) {
+			return;
+		}
+		const current = performance.programTargets ?? [];
+		performance.$jazz.set('programTargets', [
+			...current,
+			{
 				targetSetRange: '1',
 				targetRepsRange: executionType === 'reps' ? '8' : undefined,
 				targetDuration: executionType === 'time' ? '60 sec' : undefined
-			});
-		} catch (error) {
-			toast.error(toErrorMessage(error, 'Could not add set target.'));
-		}
+			}
+		]);
 	};
 
-	const updateSetValue = async (
-		id: Id<'programWorkoutExerciseTargets'>,
+	const updateSetValue = (
+		index: number,
 		nextExecutionType: 'reps' | 'time',
 		targetSetRange: string,
 		targetValue: string
 	) => {
-		try {
-			await client.mutation(api.programWorkoutExerciseSets.update, {
-				id,
-				targetSetRange,
-				targetRepsRange: nextExecutionType === 'reps' ? targetValue : undefined,
-				targetDuration: nextExecutionType === 'time' ? targetValue : undefined
-			});
-		} catch (error) {
-			toast.error(toErrorMessage(error, 'Could not update set target.'));
+		if (!performance) {
+			return;
 		}
+		const programTargets = performance.programTargets ?? [];
+		programTargets[index] = {
+			...programTargets[index],
+			targetSetRange,
+			targetRepsRange: nextExecutionType === 'reps' ? targetValue : undefined,
+			targetDuration: nextExecutionType === 'time' ? targetValue : undefined
+		};
+		performance.$jazz.set('programTargets', programTargets);
 	};
 
-	const removeSet = async (id: Id<'programWorkoutExerciseTargets'>) => {
-		try {
-			await client.mutation(api.programWorkoutExerciseSets.remove, { id });
-		} catch (error) {
-			toast.error(toErrorMessage(error, 'Could not remove set target.'));
+	const removeSet = (index: number) => {
+		if (!performance?.programTargets) {
+			return;
 		}
+		const current = performance.programTargets;
+		performance.$jazz.set(
+			'programTargets',
+			current.filter((_, i) => i !== index)
+		);
 	};
 </script>
 
@@ -79,14 +76,15 @@
 	<p class="text-muted-foreground/60 mb-2 text-[11px]">
 		Enter a set count/range and a matching target range. {targetExamples}
 	</p>
-	{#each sortedSets as setTarget, index (setTarget._id)}
+	{#each exactSets as setTarget, index (`${index}-${setTarget.targetSetRange}`)}
 		<ProgramTemplateExerciseSetRow
 			{setTarget}
 			{executionType}
 			order={index + 1}
+			{index}
 			onUpdate={updateSetValue}
 			onRemove={removeSet}
-			canRemove={sortedSets.length > 1}
+			canRemove={exactSets.length > 1}
 		/>
 	{/each}
 	<Button

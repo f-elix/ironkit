@@ -10,7 +10,7 @@
 </script>
 
 <div
-	class="flex h-full flex-col items-center justify-center gap-2 rounded-md border border-dashed p-4"
+	class="flex size-full flex-col items-center justify-center gap-2 rounded-md border border-dashed p-4"
 >
 	{#if icon}
 		<div class="mb-2">

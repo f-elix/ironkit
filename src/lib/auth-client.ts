@@ -1,6 +1,6 @@
-import { createAuthClient } from 'better-auth/svelte';
-import { convexClient } from '@convex-dev/better-auth/client/plugins';
+import { createAuthClient } from 'better-auth/client';
+import { jazzPluginClient } from 'jazz-tools/better-auth/auth/client';
 
-export const authClient = createAuthClient({
-	plugins: [convexClient()]
+export const betterAuthClient = createAuthClient({
+	plugins: [jazzPluginClient()]
 });

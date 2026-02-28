@@ -1,16 +1,15 @@
-import type { Id } from '$convex/_generated/dataModel';
-import { getContext, setContext } from 'svelte';
+import { Context } from 'runed';
 
 class ProgramTemplateEditorState {
-	templateId: Id<'programTemplates'>;
-	selectedWorkoutId = $state<Id<'programWorkouts'> | undefined>(undefined);
+	templateId = $state<string>('');
+	selectedWorkoutId = $state<string | undefined>(undefined);
 	sheetOpen = $state(false);
 
-	constructor(templateId: Id<'programTemplates'>) {
-		this.templateId = templateId;
+	constructor(templateId: () => string) {
+		this.templateId = templateId();
 	}
 
-	selectWorkout = (id: Id<'programWorkouts'>) => {
+	selectWorkout = (id: string) => {
 		this.selectedWorkoutId = id;
 		this.sheetOpen = true;
 	};
@@ -28,12 +27,14 @@ class ProgramTemplateEditorState {
 	};
 }
 
-const programTemplateEditorContextKey = Symbol('program-template-editor');
+const programTemplateEditorContext = new Context<ProgramTemplateEditorState>(
+	'program-template-editor'
+);
 
-export const setProgramTemplateEditorContext = (templateId: Id<'programTemplates'>) => {
-	return setContext(programTemplateEditorContextKey, new ProgramTemplateEditorState(templateId));
+export const setProgramTemplateEditorContext = (templateId: () => string) => {
+	return programTemplateEditorContext.set(new ProgramTemplateEditorState(templateId));
 };
 
 export const getProgramTemplateEditorContext = () => {
-	return getContext<ProgramTemplateEditorState>(programTemplateEditorContextKey);
+	return programTemplateEditorContext.get();
 };

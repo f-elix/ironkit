@@ -2,30 +2,31 @@
 	import * as Dialog from '$lib/shadcn/dialog';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
 	import { Button, buttonVariants } from '$lib/shadcn/button';
-	import type { Doc } from '$convex/_generated/dataModel';
-	import { useConvexClient } from 'convex-svelte';
-	import { api } from '$convex/_generated/api';
+	import type { Exercise } from '$lib/jazz/types';
+import { IronkitAccount, Exercise as ExerciseSchema } from '$lib/jazz/schema';
+import { deleteCoValues } from 'jazz-tools';
+import { AccountCoState } from 'jazz-tools/svelte';
 
-	let { exercise }: { exercise: Doc<'exercises'> } = $props();
+let { exercise }: { exercise: Exercise } = $props();
 
-	const client = useConvexClient();
+const account = new AccountCoState(IronkitAccount, {
+		resolve: {
+			root: {
+				exercises: { $each: true }
+			}
+		}
+	});
+
+	const root = $derived(account.current.$isLoaded ? account.current.root : null);
 
 	let open = $state(false);
 
-	const onDelete = () => {
-		client.mutation(
-			api.exercises.remove,
-			{ id: exercise._id },
-			{
-				optimisticUpdate: (localStore) => {
-					localStore.setQuery(
-						api.exercises.list,
-						{},
-						localStore.getQuery(api.exercises.list, {})?.filter((e) => e._id !== exercise._id) ?? []
-					);
-				}
-			}
-		);
+	const onDelete = async () => {
+		if (!root) {
+			return;
+		}
+		const exerciseId = exercise.$jazz.id;
+		await deleteCoValues(ExerciseSchema, exerciseId);
 		open = false;
 	};
 </script>

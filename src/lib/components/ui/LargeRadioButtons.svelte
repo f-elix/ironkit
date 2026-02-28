@@ -12,7 +12,7 @@
 		label,
 		value = $bindable(),
 		onValueChange
-	}: { items: Item[]; label: string; value: string; onValueChange: (value: T) => void } = $props();
+	}: { items: Item[]; label: string; value: string; onValueChange?: (value: T) => void } = $props();
 </script>
 
 <fieldset>

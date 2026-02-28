@@ -1,9 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
-	import { useQuery } from 'convex-svelte';
-	import { api } from '$convex/_generated/api';
-	import type { Id } from '$convex/_generated/dataModel';
-	import type { Workout } from '$lib/db/types';
+	import type { WorkoutData } from '$lib/jazz/workout';
 	import { formatDate } from '$lib/ui/formatDate';
 	import Scale from '@lucide/svelte/icons/scale';
 	import Dumbbell from '@lucide/svelte/icons/dumbbell';
@@ -13,12 +10,20 @@
 	import WorkoutInfoDialog from '$lib/components/training-log/WorkoutInfoDialog.svelte';
 	import { buttonVariants } from '$lib/shadcn/button';
 
-	let { workoutId, workout }: { workoutId: Id<'workouts'>; workout: Workout } = $props();
+	let { workout }: { workout: WorkoutData } = $props();
 
 	let date = $derived(workout.date ? new Date(workout.date) : undefined);
-	const statsQuery = useQuery(api.performanceGroups.getWorkoutStats, { workoutId });
-	let exerciseCount = $derived(statsQuery.data?.exerciseCount ?? 0);
-	let setCount = $derived(statsQuery.data?.setCount ?? 0);
+
+	// Calculate stats directly from workout data
+	let exerciseCount = $derived(workout.performanceGroups.length);
+	let setCount = $derived(
+		workout.performanceGroups.reduce((total, group) => {
+			const groupSetCount = group.performances.reduce((groupTotal, performance) => {
+				return groupTotal + performance.performanceSets.length;
+			}, 0);
+			return total + groupSetCount;
+		}, 0)
+	);
 
 	type StatPillProps = {
 		Icon: typeof Scale;

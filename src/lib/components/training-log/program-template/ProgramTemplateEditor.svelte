@@ -1,37 +1,39 @@
 <script lang="ts">
-	import { api } from '$convex/_generated/api';
-	import type { Id } from '$convex/_generated/dataModel';
 	import ProgramTemplateHeaderCard from '$lib/components/training-log/program-template/ProgramTemplateHeaderCard.svelte';
 	import ProgramTemplateWeekPlanner from '$lib/components/training-log/program-template/ProgramTemplateWeekPlanner.svelte';
 	import ProgramTemplateWorkoutDetails from '$lib/components/training-log/program-template/ProgramTemplateWorkoutDetails.svelte';
 	import { setProgramTemplateEditorContext } from '$lib/components/training-log/program-template/program-template-editor.context.svelte.js';
 	import * as Sheet from '$lib/shadcn/sheet';
-	import { useQuery } from 'convex-svelte';
+	import { CoState } from 'jazz-tools/svelte';
+	import { ProgramTemplate } from '$lib/jazz/schema';
 
-	let { templateId }: { templateId: Id<'programTemplates'> } = $props();
+	let { templateId }: { templateId: string } = $props();
 
-	const editorState = setProgramTemplateEditorContext(templateId);
+	const editorState = setProgramTemplateEditorContext(() => templateId);
 
-	const templateQuery = useQuery(api.programTemplates.getById, () => ({ id: templateId }));
-	let template = $derived(templateQuery.data);
+	const templateState = new CoState(ProgramTemplate, () => templateId, {
+		resolve: {
+			programWorkouts: {
+				$each: {
+					performanceGroups: {
+						$each: {
+							performances: {
+								$each: {
+									exercise: true,
+									performanceSets: { $each: true }
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	});
+
+	const template = $derived(templateState.current.$isLoaded ? templateState.current : undefined);
 </script>
 
-{#if templateQuery.isLoading && !template}
-	<div class="flex flex-col gap-5 p-4 md:p-0">
-		<div class="bg-card/50 h-12 animate-pulse rounded-xl"></div>
-		<div class="space-y-3">
-			{#each { length: 3 } as _, i (i)}
-				<div class="space-y-2">
-					<div class="bg-muted/30 h-4 w-16 animate-pulse rounded"></div>
-					<div class="flex gap-2">
-						<div class="bg-card/30 h-[4.5rem] w-32 animate-pulse rounded-lg"></div>
-						<div class="bg-card/30 h-[4.5rem] w-32 animate-pulse rounded-lg"></div>
-					</div>
-				</div>
-			{/each}
-		</div>
-	</div>
-{:else if !template}
+{#if !template?.$isLoaded}
 	<div class="flex min-h-[60vh] items-center justify-center">
 		<div class="text-center">
 			<h1 class="text-lg font-semibold">Template not found</h1>
@@ -45,7 +47,6 @@
 		<ProgramTemplateHeaderCard />
 		<ProgramTemplateWeekPlanner />
 	</div>
-
 	<Sheet.Root open={editorState.sheetOpen} onOpenChange={editorState.setSheetOpen}>
 		<Sheet.Content
 			side="right"

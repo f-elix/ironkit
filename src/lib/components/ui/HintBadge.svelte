@@ -12,7 +12,7 @@
 		children
 	}: { type?: 'info' | 'help'; text?: string; children?: Snippet } = $props();
 
-	const label = type === 'info' ? 'More information' : 'Help';
+	const label = $derived(type === 'info' ? 'More information' : 'Help');
 	const iconSize = '1em';
 </script>
 

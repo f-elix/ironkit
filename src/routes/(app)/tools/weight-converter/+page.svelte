@@ -9,17 +9,22 @@
 	import ToolLayout from '$lib/components/app/ToolLayout.svelte';
 	import ResultCopyOnClick from '$lib/components/ui/ResultCopyOnClick.svelte';
 	import { DEFAULT_WEIGHT_UNIT } from '$lib/constants';
-	import { api } from '$convex/_generated/api';
-	import { useQueryMutation } from '$lib/useQueryMutation';
+import { IronkitAccount } from '$lib/jazz/schema';
+import { AccountCoState } from 'jazz-tools/svelte';
 
-	const [query, mutate] = useQueryMutation({
-		query: api.weightConverter.get,
-		mutation: api.weightConverter.upsert
+const account = new AccountCoState(IronkitAccount, {
+		resolve: {
+			root: {
+				weightConverter: true
+			}
+		}
 	});
 
-	let weightConverter = $derived(query.data);
-	let unit = $derived(weightConverter?.unit ?? DEFAULT_WEIGHT_UNIT);
-	let round = $derived(weightConverter?.round ?? false);
+	const weightConverter = $derived(
+		account.current.$isLoaded ? account.current.root.weightConverter : null
+	);
+	const unit = $derived(weightConverter?.unit ?? DEFAULT_WEIGHT_UNIT);
+	const round = $derived(weightConverter?.round ?? false);
 
 	let weight = $state<Maybe<number>>();
 
@@ -37,48 +42,41 @@
 	});
 </script>
 
-<ToolLayout>
-	{#snippet output()}
-		<ResultCopyOnClick text={result.toString()}>
-			<span class="text-4xl">
-				{result}
-				{altUnit}
-			</span>
-		</ResultCopyOnClick>
-	{/snippet}
-	{#snippet input()}
-		<LargeWeightInput label="Weight" bind:value={weight} {unit} />
-	{/snippet}
-	{#snippet settings()}
-		<div class="mx-auto flex max-w-80 flex-col gap-4">
-			<div class="flex w-full items-center justify-between gap-2">
-				<span class="flex items-center gap-1">
-					<Label for="round-to-nearest">Round to nearest increment</Label>
-					<HintBadge text="Kilos will be rounded to the nearest 2.5 and pounds to the nearest 5." />
+{#if weightConverter}
+	<ToolLayout>
+		{#snippet output()}
+			<ResultCopyOnClick text={result.toString()}>
+				<span class="text-4xl">
+					{result}
+					{altUnit}
 				</span>
-				<Switch
-					id="round-to-nearest"
-					checked={round}
-					onCheckedChange={(v) => {
-						mutate({
-							round: v
-						});
-					}}
-				/>
-			</div>
-			<fieldset>
-				<div class="flex items-center justify-between gap-2">
-					<legend class="text-sm font-medium">Unit</legend>
-					<UnitSelector
-						value={unit}
-						onValueChange={(v) => {
-							mutate({
-								unit: v
-							});
-						}}
+			</ResultCopyOnClick>
+		{/snippet}
+		{#snippet input()}
+			<LargeWeightInput label="Weight" bind:value={weight} {unit} />
+		{/snippet}
+		{#snippet settings()}
+			<div class="mx-auto flex max-w-80 flex-col gap-4">
+				<div class="flex w-full items-center justify-between gap-2">
+					<span class="flex items-center gap-1">
+						<Label for="round-to-nearest">Round to nearest increment</Label>
+						<HintBadge
+							text="Kilos will be rounded to the nearest 2.5 and pounds to the nearest 5."
+						/>
+					</span>
+					<Switch
+						id="round-to-nearest"
+						bind:checked={() => round, (v) => weightConverter.$jazz.set('round', v)}
 					/>
 				</div>
-			</fieldset>
-		</div>
-	{/snippet}
-</ToolLayout>
+				<fieldset>
+					<legend class="sr-only">Unit</legend>
+					<div class="flex items-center justify-between gap-2">
+						<div class="text-sm font-medium" aria-hidden="true">Unit</div>
+						<UnitSelector bind:value={() => unit, (v) => weightConverter.$jazz.set('unit', v)} />
+					</div>
+				</fieldset>
+			</div>
+		{/snippet}
+	</ToolLayout>
+{/if}

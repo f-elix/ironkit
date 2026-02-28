@@ -9,11 +9,11 @@ const config = {
 		typescript: {
 			config: (config) => {
 				config.exclude.push('../src/lib/shadcn/**/*');
+				config.include.push('../scripts/**/*');
 				return config;
 			}
 		},
 		alias: {
-			$convex: 'src/convex',
 			$routes: 'src/routes'
 		}
 	},

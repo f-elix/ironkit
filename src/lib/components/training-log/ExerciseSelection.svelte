@@ -1,30 +1,41 @@
 <script lang="ts">
 	import * as Command from '$lib/shadcn/command';
 	import * as Dialog from '$lib/shadcn/dialog';
-	import { api } from '$convex/_generated/api';
-	import { useQuery } from 'convex-svelte';
 	import ExerciseInfoDialog from '$lib/components/training-log/ExerciseInfoDialog.svelte';
 	import type { Snippet } from 'svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import Separator from '$lib/shadcn/separator/separator.svelte';
-	import type { Id } from '$convex/_generated/dataModel';
+import { IronkitAccount } from '$lib/jazz/schema';
+import { AccountCoState } from 'jazz-tools/svelte';
+import type { Exercise } from '$lib/jazz/types';
 
-	let {
-		onExerciseAdded,
-		trigger
-	}: {
-		onExerciseAdded?: (exerciseId: Id<'exercises'>) => Promise<void> | void;
-		trigger?: Snippet;
-	} = $props();
+let {
+	onExerciseAdded,
+	trigger
+}: {
+	onExerciseAdded?: (exercise: Exercise) => void;
+	trigger?: Snippet;
+} = $props();
 
-	const exercisesQuery = useQuery(api.exercises.list, {});
+const account = new AccountCoState(IronkitAccount, {
+		resolve: {
+			root: {
+				exercises: { $each: true }
+			}
+		}
+	});
 
-	let exercises = $derived(exercisesQuery.data ?? []);
+	const root = $derived(account.current.$isLoaded ? account.current.root : null);
+	const exercises = $derived(root?.exercises ?? []);
+
 	let value = $state('');
 	let open = $state(false);
 
-	const onExerciseSelected = async (exerciseId: Id<'exercises'>) => {
-		await onExerciseAdded?.(exerciseId);
+	const onExerciseSelected = async (exerciseId: string) => {
+		const exercise = exercises.find((e) => e.$jazz.id === exerciseId);
+		if (exercise) {
+			onExerciseAdded?.(exercise);
+		}
 		open = false;
 		value = '';
 	};
@@ -57,13 +68,13 @@
 							}}
 						/>
 						<Separator class="my-2" />
-						{#each exercises as exercise (exercise._id)}
+						{#each exercises as exercise (exercise.$jazz.id)}
 							<Command.Item
 								class="text-lg"
 								value={exercise.name.toLowerCase()}
 								keywords={[...exercise.muscleGroups, exercise.loadType, exercise.executionType]}
 								onSelect={() => {
-									onExerciseSelected(exercise._id);
+									onExerciseSelected(exercise.$jazz.id);
 								}}
 							>
 								{exercise.name}
@@ -74,7 +85,7 @@
 			</Command.Root>
 		</Dialog.Content>
 	</Dialog.Root>
-{:else if !exercisesQuery.isLoading}
+{:else if root}
 	<EmptyState title="No exercises yet">
 		{#snippet description()}
 			Create your first<br />exercise to get started.

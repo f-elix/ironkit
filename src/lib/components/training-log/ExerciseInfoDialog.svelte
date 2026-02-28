@@ -5,7 +5,7 @@
 	import Input from '$lib/shadcn/input/input.svelte';
 	import LargeRadioButtons from '$lib/components/ui/LargeRadioButtons.svelte';
 	import MuscleGroupSelection from '$lib/components/training-log/MuscleGroupSelection.svelte';
-	import type { Exercise } from '$lib/db/types';
+	import type { Exercise } from '$lib/jazz/types';
 	import type { Snippet } from 'svelte';
 	import {
 		DEFAULT_EXERCISE_EXECUTION_TYPE,
@@ -13,79 +13,68 @@
 		EXERCISE_EXECUTION_TYPES,
 		EXERCISE_LOAD_TYPES
 	} from '$lib/constants';
-	import { exerciseLoadType } from '$lib/db/exerciseLoadType';
-	import { useConvexClient } from 'convex-svelte';
-	import { api } from '$convex/_generated/api';
-	import type { Id } from '$convex/_generated/dataModel';
+import { Exercise as ExerciseSchema, IronkitAccount } from '$lib/jazz/schema';
+import { AccountCoState } from 'jazz-tools/svelte';
 
-	let {
-		exercise,
-		trigger,
-		name,
-		onExerciseCreated,
-		triggerSize = 'default'
-	}: {
-		exercise?: Exercise;
-		trigger?: Snippet;
-		name?: string;
-		triggerSize?: 'default' | 'sm';
-		onExerciseCreated?: (exerciseId: Id<'exercises'>) => void;
-	} = $props();
+let {
+	exercise,
+	trigger,
+	name,
+	onExerciseCreated,
+	triggerSize = 'default'
+}: {
+	exercise?: Exercise;
+	trigger?: Snippet;
+	name?: string;
+	triggerSize?: 'default' | 'sm';
+	onExerciseCreated?: (exerciseId: string) => void;
+} = $props();
 
-	const client = useConvexClient();
+const account = new AccountCoState(IronkitAccount, {
+		resolve: {
+			root: {
+				exercises: { $each: true }
+			}
+		}
+	});
+
+	const root = $derived(account.current.$isLoaded ? account.current.root : null);
+
 	let open = $state(false);
 
 	const title = $derived(exercise ? 'Edit exercise' : 'Create exercise');
 	const buttonText = $derived(exercise ? 'Save changes' : 'Create');
 
 	let exerciseName = $derived(name ?? exercise?.name ?? '');
-
-	let executionType = $derived<(typeof EXERCISE_EXECUTION_TYPES)[number]>(
-		exercise?.executionType ?? DEFAULT_EXERCISE_EXECUTION_TYPE
-	);
-	let loadType = $derived<(typeof EXERCISE_LOAD_TYPES)[number]>(
-		exerciseLoadType(exercise) ?? DEFAULT_EXERCISE_LOAD_TYPE
-	);
-	let muscleGroups = $derived<string[]>(Array.from(exercise?.muscleGroups ?? []) ?? []);
-
-	const resetState = () => {
-		name = '';
-		muscleGroups = [];
-		executionType = DEFAULT_EXERCISE_EXECUTION_TYPE;
-		loadType = DEFAULT_EXERCISE_LOAD_TYPE;
-	};
+	let executionType = $derived(exercise?.executionType ?? DEFAULT_EXERCISE_EXECUTION_TYPE);
+	let loadType = $derived(exercise?.loadType ?? DEFAULT_EXERCISE_LOAD_TYPE);
+	let muscleGroups = $derived(exercise?.muscleGroups ?? []);
 
 	const onSave = async () => {
+		if (!root) {
+			return;
+		}
+
 		if (exercise) {
-			await client.mutation(api.exercises.update, {
-				id: exercise._id,
-				name: name ?? '',
-				executionType: executionType,
-				loadType: loadType,
-				muscleGroups
-			});
+			exercise.$jazz.set('name', exerciseName);
+			exercise.$jazz.set('executionType', executionType);
+			exercise.$jazz.set('loadType', loadType);
+			exercise.$jazz.set('muscleGroups', muscleGroups);
 		} else {
-			const newExerciseId = await client.mutation(api.exercises.create, {
-				name: name ?? '',
+			const newExercise = ExerciseSchema.create({
+				name: exerciseName,
 				executionType: executionType,
 				loadType: loadType,
 				muscleGroups: muscleGroups
 			});
-			onExerciseCreated?.(newExerciseId);
+			root.exercises.$jazz.push(newExercise);
+			onExerciseCreated?.(newExercise.$jazz.id);
 		}
 		open = false;
-		resetState();
 	};
 </script>
 
-<Dialog.Root
-	bind:open
-	onOpenChange={(o) => {
-		if (!o && !exercise) {
-			resetState();
-		}
-	}}
->
+<Dialog.Root bind:open>
 	{#if trigger}
 		{@render trigger()}
 	{:else}
@@ -101,8 +90,8 @@
 		>
 			<span>
 				Create exercise
-				{#if exerciseName}
-					"<span class="font-normal">{exerciseName}</span>"
+				{#if name}
+					"<span class="font-normal">{name}</span>"
 				{/if}
 			</span>
 			<PlusIcon />

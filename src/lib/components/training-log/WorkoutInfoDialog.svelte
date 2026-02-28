@@ -11,34 +11,44 @@
 	import Label from '$lib/shadcn/label/label.svelte';
 	import UnitSelector from '$lib/components/ui/UnitSelector.svelte';
 	import { resolve } from '$app/paths';
-	import { api } from '$convex/_generated/api';
-	import type { Doc } from '$convex/_generated/dataModel';
-	import { useConvexClient, useQuery } from 'convex-svelte';
 	import PreviousWorkoutSelection from '$lib/components/training-log/PreviousWorkoutSelection.svelte';
+	import type { Workout as WorkoutType } from '$lib/jazz/types';
+	import { AccountCoState } from 'jazz-tools/svelte';
+	import { IronkitAccount, Workout } from '$lib/jazz/schema';
+	import { createWorkoutFromTemplate } from '$lib/jazz/workout';
 
 	let {
 		trigger,
 		workout
 	}: {
-		workout?: Doc<'workouts'>;
+		workout?: WorkoutType;
 		trigger: Snippet<[{ props: Record<string, unknown> }]>;
 	} = $props();
 
-	const client = useConvexClient();
-	const previousWorkoutsQuery = useQuery(api.workouts.list, {});
-	let previousWorkouts = $derived(previousWorkoutsQuery.data ?? []);
-	let showPreviousWorkoutSelection = $derived(!workout && previousWorkouts.length);
+	const account = new AccountCoState(IronkitAccount, {
+		resolve: {
+			root: {
+				workouts: {
+					$each: true
+				}
+			}
+		}
+	});
 
-	const dialogTitle = workout ? 'Edit workout' : 'Create workout';
-	const buttonText = workout ? 'Save changes' : 'Create';
-	const workoutDate = workout ? new Date(workout.date) : undefined;
+	const root = $derived(account.current.$isLoaded ? account.current.root : null);
+	const previousWorkouts = $derived(root?.workouts?.filter((w) => w.$isLoaded) ?? []);
+	const showPreviousWorkoutSelection = $derived(!workout && previousWorkouts.length);
+
+	const dialogTitle = $derived(workout ? 'Edit workout' : 'Create workout');
+	const buttonText = $derived(workout ? 'Save changes' : 'Create');
+	const workoutDate = $derived(workout ? new Date(workout.date) : undefined);
 
 	let open = $state(false);
 
-	let templateWorkout = $state<Maybe<Doc<'workouts'>>>(null);
+	let templateWorkout = $state<WorkoutType>();
 	let title = $derived(workout?.title ?? templateWorkout?.title);
-	let notes = $state(workout?.notes);
-	let date = $state(
+	let notes = $derived(workout?.notes);
+	let date = $derived(
 		workoutDate
 			? new CalendarDate(
 					workoutDate.getFullYear(),
@@ -47,33 +57,35 @@
 				)
 			: today(TIMEZONE)
 	);
-	let bodyweight = $state(workout?.bodyweight);
-	let bodyweightUnit = $state(workout?.bodyweightUnit ?? 'lbs');
+	let bodyweight = $derived(workout?.bodyweight);
+	let bodyweightUnit = $derived(workout?.bodyweightUnit ?? 'lbs');
 
 	const onSave = async (e: Event) => {
+		if (!root) {
+			return;
+		}
 		e.preventDefault();
 		if (workout) {
-			await client.mutation(api.workouts.update, {
-				id: workout._id,
-				title: title ?? DEFAULT_WORKOUT_TITLE,
-				notes: notes?.trim() ?? '',
-				date: date.toDate(TIMEZONE).getTime(),
-				bodyweight: bodyweight || 0,
-				bodyweightUnit
-			});
+			workout.$jazz.set('title', title ?? DEFAULT_WORKOUT_TITLE);
+			workout.$jazz.set('notes', notes?.trim() ?? '');
+			workout.$jazz.set('date', date.toDate(TIMEZONE));
+			workout.$jazz.set('bodyweight', bodyweight || undefined);
+			workout.$jazz.set('bodyweightUnit', bodyweightUnit);
 			open = false;
 			return;
 		}
-		const newWorkoutId = await client.mutation(api.workouts.create, {
-			title: title ?? DEFAULT_WORKOUT_TITLE,
-			notes: notes?.trim() ?? '',
-			date: date.toDate(TIMEZONE).getTime(),
-			bodyweight:
-				typeof bodyweight === 'number' && Number.isFinite(bodyweight) ? bodyweight : undefined,
-			bodyweightUnit,
-			templateWorkoutId: templateWorkout?._id
-		});
-		goto(resolve('/(app)/tools/training-log/workout-[id]', { id: newWorkoutId }));
+		const newWorkout = templateWorkout
+			? await createWorkoutFromTemplate(templateWorkout.$jazz.id)
+			: Workout.create({
+					title: title ?? DEFAULT_WORKOUT_TITLE,
+					notes: notes?.trim() ?? '',
+					date: date.toDate(TIMEZONE),
+					bodyweight: bodyweight || undefined,
+					bodyweightUnit,
+					performanceGroups: []
+				});
+		root.workouts.$jazz.push(newWorkout);
+		await goto(resolve('/(app)/tools/training-log/workout-[id]', { id: newWorkout.$jazz.id }));
 	};
 </script>
 
