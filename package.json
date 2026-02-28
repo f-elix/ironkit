@@ -65,17 +65,12 @@
 		]
 	},
 	"dependencies": {
-		"@convex-dev/auth": "0.0.90",
-		"@convex-dev/better-auth": "0.10.10",
 		"@dnd-kit/abstract": "^0.3.2",
 		"@dnd-kit/helpers": "0.3.2",
 		"@dnd-kit/svelte": "0.3.2",
-		"@mmailaender/convex-better-auth-svelte": "0.5.0",
 		"@svelte-put/copy": "4.0.0",
 		"@typescript/native-preview": "7.0.0-dev.20260227.1",
 		"better-auth": "1.4.9",
-		"convex": "1.31.7",
-		"convex-svelte": "0.0.12",
 		"jazz-tools": "0.20.10",
 		"powerlifting-formulas": "0.2.3",
 		"runed": "0.31.1",
