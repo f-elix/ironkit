@@ -4,7 +4,8 @@ import {
 	PerformanceGroup,
 	PerformanceSet,
 	ProgramWorkout,
-	Workout
+	Workout,
+	type WeightUnit
 } from '$lib/jazz/schema';
 import type { ResolvedWorkout } from '$lib/jazz/types';
 import type { co } from 'jazz-tools';
@@ -75,7 +76,19 @@ const linkPerformanceGroupsToWorkout = (
 	});
 };
 
-export const createWorkoutFromTemplate = async (workoutId: string) => {
+export const createWorkoutFromTemplate = async ({
+	workoutId,
+	date,
+	bodyweight,
+	bodyweightUnit,
+	notes
+}: {
+	workoutId: string;
+	date?: Date;
+	bodyweight?: number;
+	bodyweightUnit?: WeightUnit;
+	notes?: string;
+}) => {
 	const workout = await Workout.load(workoutId, {
 		resolve: {
 			performanceGroups: PERFORMANCE_GROUPS_RESOLUTION
@@ -87,10 +100,10 @@ export const createWorkoutFromTemplate = async (workoutId: string) => {
 	const performanceGroups = workout.performanceGroups.map(createPerformanceGroupFromTemplate);
 	const newWorkout = Workout.create({
 		title: workout?.title ?? '',
-		date: workout?.date ?? new Date(),
-		notes: workout?.notes ?? '',
-		bodyweight: workout?.bodyweight ?? undefined,
-		bodyweightUnit: workout?.bodyweightUnit ?? DEFAULT_WEIGHT_UNIT,
+		date: date ?? new Date(),
+		notes: notes ?? workout?.notes ?? '',
+		bodyweight: bodyweight || undefined,
+		bodyweightUnit: bodyweightUnit ?? workout?.bodyweightUnit ?? DEFAULT_WEIGHT_UNIT,
 		performanceGroups
 	});
 	linkPerformanceGroupsToWorkout(performanceGroups, newWorkout.$jazz.id);

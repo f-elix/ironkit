@@ -36,7 +36,11 @@
 	});
 
 	const root = $derived(account.current.$isLoaded ? account.current.root : null);
-	const previousWorkouts = $derived(root?.workouts?.filter((w) => w.$isLoaded) ?? []);
+	const previousWorkouts = $derived(
+		root?.workouts
+			?.filter((w) => w.$isLoaded)
+			?.toSorted((a, b) => b.date.getTime() - a.date.getTime()) ?? []
+	);
 	const showPreviousWorkoutSelection = $derived(!workout && previousWorkouts.length);
 
 	const dialogTitle = $derived(workout ? 'Edit workout' : 'Create workout');
@@ -61,10 +65,10 @@
 	let bodyweightUnit = $derived(workout?.bodyweightUnit ?? 'lbs');
 
 	const onSave = async (e: Event) => {
+		e.preventDefault();
 		if (!root) {
 			return;
 		}
-		e.preventDefault();
 		if (workout) {
 			workout.$jazz.set('title', title ?? DEFAULT_WORKOUT_TITLE);
 			workout.$jazz.set('notes', notes?.trim() ?? '');
@@ -75,7 +79,13 @@
 			return;
 		}
 		const newWorkout = templateWorkout
-			? await createWorkoutFromTemplate(templateWorkout.$jazz.id)
+			? await createWorkoutFromTemplate({
+					workoutId: templateWorkout.$jazz.id,
+					date: date.toDate(TIMEZONE),
+					bodyweight: bodyweight || undefined,
+					bodyweightUnit,
+					notes
+				})
 			: Workout.create({
 					title: title ?? DEFAULT_WORKOUT_TITLE,
 					notes: notes?.trim() ?? '',
