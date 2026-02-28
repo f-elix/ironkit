@@ -14,12 +14,12 @@
 	import PauseIcon from '@lucide/svelte/icons/pause';
 	import PlayIcon from '@lucide/svelte/icons/play';
 	import { toast } from 'svelte-sonner';
-import { AccountCoState } from 'jazz-tools/svelte';
-import { IronkitAccount } from '$lib/jazz/schema';
+	import { AccountCoState } from 'jazz-tools/svelte';
+	import { IronkitAccount } from '$lib/jazz/schema';
 
-let { run }: { run: ResolvedProgramRun } = $props();
+	let { run }: { run: ResolvedProgramRun } = $props();
 
-const account = new AccountCoState(IronkitAccount, {
+	const account = new AccountCoState(IronkitAccount, {
 		resolve: {
 			root: {
 				workouts: true
@@ -28,9 +28,6 @@ const account = new AccountCoState(IronkitAccount, {
 	});
 
 	const root = $derived(account.current.$isLoaded ? account.current.root : null);
-
-	let isSkipping = $state(false);
-	let isPausing = $state(false);
 
 	const template = $derived(run.programTemplate);
 
@@ -115,18 +112,8 @@ const account = new AccountCoState(IronkitAccount, {
 	};
 
 	const handlePauseProgram = () => {
-		if (isPausing) {
-			return;
-		}
-		isPausing = true;
-		try {
-			run.$jazz.set('status', 'paused');
-			toast.success('Program paused');
-		} catch (error) {
-			toast.error(error instanceof Error ? error.message : 'Could not pause program.');
-		} finally {
-			isPausing = false;
-		}
+		run.$jazz.set('status', 'paused');
+		toast.success('Program paused');
 	};
 </script>
 
@@ -154,7 +141,7 @@ const account = new AccountCoState(IronkitAccount, {
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Content align="end">
 				{#if !isCompleted}
-					<DropdownMenu.Item onSelect={handleSkipSession} disabled={isSkipping}>
+					<DropdownMenu.Item onSelect={handleSkipSession}>
 						<FastForwardIcon />
 						Skip session
 					</DropdownMenu.Item>
@@ -167,7 +154,7 @@ const account = new AccountCoState(IronkitAccount, {
 					<NotebookPenIcon />
 					View program
 				</DropdownMenu.Item>
-				<DropdownMenu.Item onSelect={handlePauseProgram} disabled={isPausing}>
+				<DropdownMenu.Item onSelect={handlePauseProgram}>
 					<PauseIcon />
 					Pause program
 				</DropdownMenu.Item>

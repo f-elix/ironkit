@@ -40,6 +40,9 @@
 
 	const openNextGroup = (groupId: string) => {
 		const currentIndex = performanceGroups.findIndex((g) => g.$jazz.id === groupId);
+		if (currentIndex < 0) {
+			return;
+		}
 		const nextGroupId = performanceGroups[currentIndex + 1]?.$jazz.id;
 		if (!nextGroupId) {
 			return;

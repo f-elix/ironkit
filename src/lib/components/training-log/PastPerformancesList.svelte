@@ -51,7 +51,7 @@
 								performance.exercise.$isLoaded &&
 								performance.exercise.$jazz.id === exerciseId &&
 								!(currentWorkout && workout.$jazz.id === currentWorkout.$jazz.id) &&
-								(currentWorkout || workout.date <= maxDate)
+								workout.date <= maxDate
 						)
 						.map((performance) => ({ performance, workout }))
 				)

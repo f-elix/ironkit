@@ -35,8 +35,8 @@
 		}
 		const current = ordered[currentIndex];
 		const next = ordered[nextIndex];
-		current.$jazz.set('slotOrder', nextIndex);
-		next.$jazz.set('slotOrder', currentIndex);
+		current.$jazz.set('slotOrder', next.slotOrder);
+		next.$jazz.set('slotOrder', current.slotOrder);
 	};
 </script>
 
