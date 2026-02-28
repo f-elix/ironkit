@@ -5,19 +5,28 @@ import svelte from 'eslint-plugin-svelte';
 import globals from 'globals';
 import { fileURLToPath } from 'node:url';
 import ts from 'typescript-eslint';
+import oxlint from 'eslint-plugin-oxlint';
+import { defineConfig } from 'eslint/config';
 
 const gitignorePath = fileURLToPath(new URL('./.gitignore', import.meta.url));
 
-export default ts.config(
+export default defineConfig([
 	includeIgnoreFile(gitignorePath),
 	js.configs.recommended,
+	prettier,
 	...ts.configs.recommended,
 	...svelte.configs.recommended,
-	prettier,
 	...svelte.configs.prettier,
+	...oxlint.configs['flat/recommended'],
 	{
+		files: ['**/*.svelte', '**/*.svelte.ts', '**/*.svelte.js'],
 		languageOptions: {
-			globals: { ...globals.browser, ...globals.node }
+			globals: { ...globals.browser, ...globals.node },
+			parserOptions: {
+				projectService: true,
+				extraFileExtensions: ['.svelte'],
+				parser: ts.parser
+			}
 		},
 		rules: {
 			'no-undef': 'off',
@@ -43,17 +52,14 @@ export default ts.config(
 		}
 	},
 	{
-		files: ['**/*.svelte', '**/*.svelte.ts', '**/*.svelte.js'],
-		ignores: ['eslint.config.js', 'svelte.config.js'],
-		languageOptions: {
-			parserOptions: {
-				projectService: true,
-				extraFileExtensions: ['.svelte'],
-				parser: ts.parser
-			}
-		}
-	},
-	{
-		ignores: ['src/lib/shadcn']
+		ignores: [
+			'src/lib/shadcn',
+			'**/*.ts',
+			'**/*.js',
+			'**/*.tsx',
+			'**/*.jsx',
+			'**/*.mjs',
+			'**/*.cjs'
+		]
 	}
-);
+]);

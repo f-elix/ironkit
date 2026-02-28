@@ -56,10 +56,6 @@
 
 	let isDeleteDialogOpen = $state(false);
 
-	const href = $derived(
-		resolve('/(app)/tools/training-log/program-template-[id]', { id: template.$jazz.id })
-	);
-
 	const viewActiveRunHref = $derived(
 		activeRunId ? resolve('/(app)/tools/training-log/program-run-[id]', { id: activeRunId }) : null
 	);
@@ -150,7 +146,10 @@
 	]}
 	style:animation-delay="{animationDelay}ms"
 >
-	<a {href} class="block p-4 pr-12">
+	<a
+		href={resolve('/(app)/tools/training-log/program-template-[id]', { id: template.$jazz.id })}
+		class="block p-4 pr-12"
+	>
 		<div class="flex items-center gap-2.5">
 			<h3 class="min-w-0 truncate text-base font-semibold">{template.name}</h3>
 			<Badge variant={statusBadgeVariant} class="shrink-0 text-[11px] tracking-wider uppercase">

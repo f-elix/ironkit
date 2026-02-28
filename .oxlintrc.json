@@ -1,0 +1,43 @@
+{
+	"plugins": ["import", "typescript", "unicorn"],
+	"categories": {
+		"correctness": "error"
+	},
+	"rules": {
+		"no-unused-vars": [
+			"warn",
+			{
+				"ignoreRestSiblings": true,
+				"destructuredArrayIgnorePattern": "^_",
+				"argsIgnorePattern": "^_",
+				"caughtErrorsIgnorePattern": ".*",
+				"varsIgnorePattern": "^\\$\\$(Props|Events|Slots|Generic)"
+			}
+		],
+		"typescript/explicit-module-boundary-types": "off",
+		"typescript/consistent-type-definitions": "off",
+		"typescript/array-type": "off",
+		"typescript/consistent-indexed-object-style": "off",
+		"typescript/prefer-for-of": "off",
+		"typescript/no-explicit-any": "warn",
+		"no-console": ["error", { "allow": ["warn", "error", "dir"] }],
+		"no-undef": "off",
+		"no-implied-eval": "error",
+		"no-eval": "error",
+		"curly": "off",
+		"no-mixed-spaces-and-tabs": ["error", "smart-tabs"],
+		"prefer-set-has": "off",
+		"no-await-in-loop": "warn",
+		"no-map-spread": "off"
+	},
+	"ignorePatterns": [
+		"**/node_modules/**",
+		".svelte-kit/**",
+		"build/**",
+		".output/**",
+		"**/*.svelte",
+		"**/*.svelte.ts",
+		"**/*.svelte.js",
+		"src/lib/shadcn/**"
+	]
+}
