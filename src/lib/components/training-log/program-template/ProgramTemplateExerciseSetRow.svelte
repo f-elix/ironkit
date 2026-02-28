@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { ProgramWorkoutExerciseTarget } from '$lib/jazz/types';
+	import type { ProgramTarget } from '$lib/jazz/schema';
 	import Input from '$lib/shadcn/input/input.svelte';
 	import XIcon from '@lucide/svelte/icons/x';
 
@@ -7,20 +7,22 @@
 		setTarget,
 		executionType,
 		order,
+		index,
 		onUpdate,
 		onRemove,
 		canRemove
 	}: {
-		setTarget: ProgramWorkoutExerciseTarget;
+		setTarget: ProgramTarget;
 		executionType: 'reps' | 'time';
 		order: number;
+		index: number;
 		onUpdate: (
-			target: ProgramWorkoutExerciseTarget,
+			index: number,
 			executionType: 'reps' | 'time',
 			targetSetRange: string,
 			targetValue: string
 		) => void;
-		onRemove: (target: ProgramWorkoutExerciseTarget) => void;
+		onRemove: (index: number) => void;
 		canRemove: boolean;
 	} = $props();
 
@@ -52,7 +54,7 @@
 			placeholder="e.g. 1 or 3-4"
 			class="h-8 w-24 text-center text-sm"
 			oninput={(event) =>
-				onUpdate(setTarget, executionType, event.currentTarget.value, targetRangeValue)}
+				onUpdate(index, executionType, event.currentTarget.value, targetRangeValue)}
 		/>
 	</label>
 	<span class="text-muted-foreground/70 -translate-y-1.5 text-base">&times;</span>
@@ -64,14 +66,14 @@
 			placeholder={targetRangePlaceholder}
 			class="h-8 w-40 text-center text-xs"
 			oninput={(event) =>
-				onUpdate(setTarget, executionType, targetSetRangeValue, event.currentTarget.value)}
+				onUpdate(index, executionType, targetSetRangeValue, event.currentTarget.value)}
 		/>
 	</label>
 	{#if canRemove}
 		<button
 			type="button"
 			class="text-muted-foreground/30 hover:text-destructive mb-1 ml-auto transition-colors"
-			onclick={() => onRemove(setTarget)}
+			onclick={() => onRemove(index)}
 		>
 			<XIcon class="size-3.5" />
 		</button>

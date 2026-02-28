@@ -1,19 +1,25 @@
 <script lang="ts">
-	import type { ResolvedPerformance, ProgramWorkoutExerciseTarget } from '$lib/jazz/types';
 	import ProgramTemplateExerciseSetRow from '$lib/components/training-log/program-template/ProgramTemplateExerciseSetRow.svelte';
 	import Button from '$lib/shadcn/button/button.svelte';
 	import PlusIcon from '@lucide/svelte/icons/plus';
-	import { ProgramWorkoutExerciseTarget as ProgramWorkoutExerciseTargetSchema } from '$lib/jazz/schema';
+	import { Performance } from '$lib/jazz/schema';
+	import { CoState } from 'jazz-tools/svelte';
 
 	let {
-		performance,
+		performanceId,
 		executionType
 	}: {
-		performance: ResolvedPerformance;
+		performanceId: string;
 		executionType: 'reps' | 'time';
 	} = $props();
 
-	const exactSets = $derived(performance.programWorkoutExerciseTargets ?? []);
+	const performanceState = new CoState(Performance, () => performanceId);
+
+	const performance = $derived(
+		performanceState.current.$isLoaded ? performanceState.current : undefined
+	);
+
+	const exactSets = $derived(performance?.programTargets ?? []);
 	const targetExamples = $derived(
 		executionType === 'reps'
 			? 'Examples: 1 set + 8 reps, 3-4 sets + 10-15 reps'
@@ -21,40 +27,50 @@
 	);
 
 	const addSet = () => {
-		if (!performance.programWorkoutExerciseTargets) {
+		if (!performance) {
 			return;
 		}
-		const last = exactSets.at(-1);
-		const newTarget = ProgramWorkoutExerciseTargetSchema.create({
-			performance,
-			targetOrder: (last?.targetOrder ?? -1) + 1,
-			targetSetRange: '1',
-			targetRepsRange: executionType === 'reps' ? '8' : undefined,
-			targetDuration: executionType === 'time' ? '60 sec' : undefined,
-			updatedAt: new Date()
-		});
-
-		performance.programWorkoutExerciseTargets.$jazz.push(newTarget);
+		const current = performance.programTargets ?? [];
+		performance.$jazz.set('programTargets', [
+			...current,
+			{
+				targetSetRange: '1',
+				targetRepsRange: executionType === 'reps' ? '8' : undefined,
+				targetDuration: executionType === 'time' ? '60 sec' : undefined
+			}
+		]);
 		performance.$jazz.set('updatedAt', new Date());
 	};
 
 	const updateSetValue = (
-		target: ProgramWorkoutExerciseTarget,
+		index: number,
 		nextExecutionType: 'reps' | 'time',
 		targetSetRange: string,
 		targetValue: string
 	) => {
-		target.$jazz.set('targetSetRange', targetSetRange);
-		target.$jazz.set('targetRepsRange', nextExecutionType === 'reps' ? targetValue : undefined);
-		target.$jazz.set('targetDuration', nextExecutionType === 'time' ? targetValue : undefined);
-		target.$jazz.set('updatedAt', new Date());
-	};
-
-	const removeSet = (target: ProgramWorkoutExerciseTarget) => {
-		if (!performance.programWorkoutExerciseTargets) {
+		if (!performance) {
 			return;
 		}
-		performance.programWorkoutExerciseTargets.$jazz.remove((t) => t.$jazz.id === target.$jazz.id);
+		const programTargets = performance.programTargets ?? [];
+		programTargets[index] = {
+			...programTargets[index],
+			targetSetRange,
+			targetRepsRange: nextExecutionType === 'reps' ? targetValue : undefined,
+			targetDuration: nextExecutionType === 'time' ? targetValue : undefined
+		};
+		performance.$jazz.set('programTargets', programTargets);
+		performance.$jazz.set('updatedAt', new Date());
+	};
+
+	const removeSet = (index: number) => {
+		if (!performance?.programTargets) {
+			return;
+		}
+		const current = performance.programTargets;
+		performance.$jazz.set(
+			'programTargets',
+			current.filter((_, i) => i !== index)
+		);
 		performance.$jazz.set('updatedAt', new Date());
 	};
 </script>
@@ -63,11 +79,12 @@
 	<p class="text-muted-foreground/60 mb-2 text-[11px]">
 		Enter a set count/range and a matching target range. {targetExamples}
 	</p>
-	{#each exactSets as setTarget (setTarget.$jazz.id)}
+	{#each exactSets as setTarget, index (`${index}-${setTarget.targetSetRange}`)}
 		<ProgramTemplateExerciseSetRow
 			{setTarget}
 			{executionType}
-			order={setTarget.targetOrder ?? 0}
+			order={index + 1}
+			{index}
 			onUpdate={updateSetValue}
 			onRemove={removeSet}
 			canRemove={exactSets.length > 1}

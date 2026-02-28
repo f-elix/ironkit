@@ -7,8 +7,7 @@ import {
 	Exercise as ExerciseSchema,
 	PerformanceGroup as PerformanceGroupSchema,
 	Performance as PerformanceSchema,
-	PerformanceSet as PerformanceSetSchema,
-	ProgramWorkoutExerciseTarget as ProgramWorkoutExerciseTargetSchema
+	PerformanceSet as PerformanceSetSchema
 } from '$lib/jazz/schema';
 import { PERFORMANCE_GROUPS_RESOLUTION } from '$lib/jazz/workout';
 import type { co } from 'jazz-tools';
@@ -46,7 +45,6 @@ export type ResolvedPerformanceGroup = co.loaded<
 			$each: {
 				exercise: true;
 				performanceSets: { $each: true };
-				programWorkoutExerciseTargets: { $each: true };
 			};
 		};
 	}
@@ -55,11 +53,11 @@ export type Performance = co.loaded<typeof PerformanceSchema>;
 export type ResolvedPerformance = co.loaded<
 	typeof PerformanceSchema,
 	{
-		programWorkoutExerciseTargets: { $each: true };
+		exercise: true;
+		performanceSets: { $each: true };
 	}
 >;
 export type PerformanceSet = co.loaded<typeof PerformanceSetSchema>;
-export type ProgramWorkoutExerciseTarget = co.loaded<typeof ProgramWorkoutExerciseTargetSchema>;
 
 export type ResolvedWorkout = co.loaded<
 	typeof WorkoutSchema,

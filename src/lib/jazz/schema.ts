@@ -131,9 +131,6 @@ export const Performance = co
 		get performanceSets() {
 			return co.list(PerformanceSet);
 		},
-		get programWorkoutExerciseTargets() {
-			return co.optional(co.list(ProgramWorkoutExerciseTarget));
-		},
 		groupOrder: z.number(),
 		note: z.optional(z.string()),
 		programTargets: z.optional(z.array(PROGRAM_TARGET_SNAPSHOT_SCHEMA)),
@@ -149,17 +146,6 @@ export const PerformanceSet = co
 		durationSeconds: z.optional(z.number()),
 		note: z.optional(z.string()),
 		performanceOrder: z.number(),
-		updatedAt: z.date()
-	})
-	.withPermissions(USER_OWNED_ENTITY_PERMISSIONS);
-
-export const ProgramWorkoutExerciseTarget = co
-	.map({
-		performance: Performance,
-		targetSetRange: z.string(),
-		targetRepsRange: z.optional(z.string()),
-		targetDuration: z.optional(z.string()),
-		targetOrder: z.number(),
 		updatedAt: z.date()
 	})
 	.withPermissions(USER_OWNED_ENTITY_PERMISSIONS);
@@ -225,7 +211,6 @@ export const JAZZ_ENTITY_SCHEMAS = {
 	performanceGroups: PerformanceGroup,
 	performances: Performance,
 	performanceSets: PerformanceSet,
-	programWorkoutExerciseTargets: ProgramWorkoutExerciseTarget,
 	programTemplates: ProgramTemplate,
 	programWorkouts: ProgramWorkout,
 	programRuns: ProgramRun,

@@ -17,8 +17,7 @@
 					performances: {
 						$each: {
 							exercise: true,
-							performanceSets: { $each: true },
-							programWorkoutExerciseTargets: { $each: true }
+							performanceSets: { $each: true }
 						}
 					}
 				}

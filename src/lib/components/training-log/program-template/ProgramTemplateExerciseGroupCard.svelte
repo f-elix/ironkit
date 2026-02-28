@@ -83,27 +83,30 @@
 </script>
 
 <article class="border-border/40 bg-card/20 rounded-lg border">
-	<div class="border-border/25 flex items-center gap-2 border-b px-3 py-2.5">
-		{#if displayBadge && exerciseCount > 1}
-			<Badge variant="secondary" class="shrink-0 text-[10px]">
-				{displayBadge}
-			</Badge>
-		{/if}
-		<input
-			type="text"
-			class="placeholder:text-muted-foreground/50 min-w-0 flex-1 bg-transparent text-xs font-medium outline-none"
-			placeholder={placeholderText}
-			value={group.label ?? ''}
-			oninput={(e) => updateGroupLabel(e.currentTarget.value)}
-		/>
-		<button
-			type="button"
-			class="text-muted-foreground/50 hover:text-destructive shrink-0 transition-colors"
-			onclick={() => onDeleteGroup(group.$jazz.id)}
-		>
-			<TrashIcon class="size-3.5" />
-		</button>
-	</div>
+	{#if exerciseCount > 1}
+		<div class="border-border/25 flex items-center gap-2 border-b px-3 py-2.5">
+			{#if displayBadge}
+				<Badge variant="secondary" class="shrink-0 text-[10px]">
+					{displayBadge}
+				</Badge>
+			{/if}
+
+			<input
+				type="text"
+				class="placeholder:text-muted-foreground/50 min-w-0 flex-1 bg-transparent text-xs font-medium outline-none"
+				placeholder={placeholderText}
+				value={group.label ?? ''}
+				oninput={(e) => updateGroupLabel(e.currentTarget.value)}
+			/>
+			<button
+				type="button"
+				class="text-muted-foreground/50 hover:text-destructive shrink-0 transition-colors"
+				onclick={() => onDeleteGroup(group.$jazz.id)}
+			>
+				<TrashIcon class="size-3.5" />
+			</button>
+		</div>
+	{/if}
 
 	<div class="px-3 py-3">
 		{#if exerciseCount > 0}
@@ -146,7 +149,7 @@
 						</div>
 
 						<ProgramTemplateExerciseSetsEditor
-							{performance}
+							performanceId={performance.$jazz.id}
 							executionType={exercise?.executionType ?? 'reps'}
 						/>
 					</div>

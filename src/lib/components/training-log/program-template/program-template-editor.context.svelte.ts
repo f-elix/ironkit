@@ -1,12 +1,12 @@
 import { Context } from 'runed';
 
 class ProgramTemplateEditorState {
-	templateId: string;
+	templateId = $state<string>('');
 	selectedWorkoutId = $state<string | undefined>(undefined);
 	sheetOpen = $state(false);
 
-	constructor(templateId: string) {
-		this.templateId = templateId;
+	constructor(templateId: () => string) {
+		this.templateId = templateId();
 	}
 
 	selectWorkout = (id: string) => {
@@ -31,7 +31,7 @@ const programTemplateEditorContext = new Context<ProgramTemplateEditorState>(
 	'program-template-editor'
 );
 
-export const setProgramTemplateEditorContext = (templateId: string) => {
+export const setProgramTemplateEditorContext = (templateId: () => string) => {
 	return programTemplateEditorContext.set(new ProgramTemplateEditorState(templateId));
 };
 
