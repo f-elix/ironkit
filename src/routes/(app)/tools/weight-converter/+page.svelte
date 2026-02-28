@@ -9,10 +9,10 @@
 	import ToolLayout from '$lib/components/app/ToolLayout.svelte';
 	import ResultCopyOnClick from '$lib/components/ui/ResultCopyOnClick.svelte';
 	import { DEFAULT_WEIGHT_UNIT } from '$lib/constants';
-import { IronkitAccount } from '$lib/jazz/schema';
-import { AccountCoState } from 'jazz-tools/svelte';
+	import { IronkitAccount } from '$lib/jazz/schema';
+	import { AccountCoState } from 'jazz-tools/svelte';
 
-const account = new AccountCoState(IronkitAccount, {
+	const account = new AccountCoState(IronkitAccount, {
 		resolve: {
 			root: {
 				weightConverter: true

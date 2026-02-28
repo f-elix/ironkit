@@ -5,19 +5,19 @@
 	import type { Snippet } from 'svelte';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
 	import Separator from '$lib/shadcn/separator/separator.svelte';
-import { IronkitAccount } from '$lib/jazz/schema';
-import { AccountCoState } from 'jazz-tools/svelte';
-import type { Exercise } from '$lib/jazz/types';
+	import { IronkitAccount } from '$lib/jazz/schema';
+	import { AccountCoState } from 'jazz-tools/svelte';
+	import type { Exercise } from '$lib/jazz/types';
 
-let {
-	onExerciseAdded,
-	trigger
-}: {
-	onExerciseAdded?: (exercise: Exercise) => void;
-	trigger?: Snippet;
-} = $props();
+	let {
+		onExerciseAdded,
+		trigger
+	}: {
+		onExerciseAdded?: (exercise: Exercise) => void;
+		trigger?: Snippet;
+	} = $props();
 
-const account = new AccountCoState(IronkitAccount, {
+	const account = new AccountCoState(IronkitAccount, {
 		resolve: {
 			root: {
 				exercises: { $each: true }

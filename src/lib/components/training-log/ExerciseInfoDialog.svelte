@@ -13,24 +13,24 @@
 		EXERCISE_EXECUTION_TYPES,
 		EXERCISE_LOAD_TYPES
 	} from '$lib/constants';
-import { Exercise as ExerciseSchema, IronkitAccount } from '$lib/jazz/schema';
-import { AccountCoState } from 'jazz-tools/svelte';
+	import { Exercise as ExerciseSchema, IronkitAccount } from '$lib/jazz/schema';
+	import { AccountCoState } from 'jazz-tools/svelte';
 
-let {
-	exercise,
-	trigger,
-	name,
-	onExerciseCreated,
-	triggerSize = 'default'
-}: {
-	exercise?: Exercise;
-	trigger?: Snippet;
-	name?: string;
-	triggerSize?: 'default' | 'sm';
-	onExerciseCreated?: (exerciseId: string) => void;
-} = $props();
+	let {
+		exercise,
+		trigger,
+		name,
+		onExerciseCreated,
+		triggerSize = 'default'
+	}: {
+		exercise?: Exercise;
+		trigger?: Snippet;
+		name?: string;
+		triggerSize?: 'default' | 'sm';
+		onExerciseCreated?: (exerciseId: string) => void;
+	} = $props();
 
-const account = new AccountCoState(IronkitAccount, {
+	const account = new AccountCoState(IronkitAccount, {
 		resolve: {
 			root: {
 				exercises: { $each: true }

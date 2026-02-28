@@ -14,11 +14,11 @@
 	} from '$lib/plateCalculator';
 	import { buttonVariants } from '$lib/shadcn/button';
 	import ToolLayout from '$lib/components/app/ToolLayout.svelte';
-import { IronkitAccount } from '$lib/jazz/schema';
-import { AccountCoState } from 'jazz-tools/svelte';
-import { DEFAULT_BAR_WEIGHT } from '$lib/constants';
+	import { IronkitAccount } from '$lib/jazz/schema';
+	import { AccountCoState } from 'jazz-tools/svelte';
+	import { DEFAULT_BAR_WEIGHT } from '$lib/constants';
 
-const account = new AccountCoState(IronkitAccount, {
+	const account = new AccountCoState(IronkitAccount, {
 		resolve: {
 			root: {
 				plateCalculator: true

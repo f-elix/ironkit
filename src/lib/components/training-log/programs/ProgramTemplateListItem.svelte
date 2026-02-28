@@ -18,28 +18,32 @@
 	import EyeIcon from '@lucide/svelte/icons/eye';
 	import PlayIcon from '@lucide/svelte/icons/play';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
-import { IronkitAccount, ProgramRun, ProgramTemplate as ProgramTemplateSchema } from '$lib/jazz/schema';
-import { deleteCoValues } from 'jazz-tools';
-import { AccountCoState } from 'jazz-tools/svelte';
-import { toast } from 'svelte-sonner';
+	import {
+		IronkitAccount,
+		ProgramRun,
+		ProgramTemplate as ProgramTemplateSchema
+	} from '$lib/jazz/schema';
+	import { deleteCoValues } from 'jazz-tools';
+	import { AccountCoState } from 'jazz-tools/svelte';
+	import { toast } from 'svelte-sonner';
 
-let {
-	template,
-	updatedAtLabel,
-	workoutCount,
-	activeRunId,
-	hasOtherActiveRun,
-	animationDelay = 0
-}: {
-	template: ProgramTemplate;
-	updatedAtLabel: string;
-	workoutCount: number;
-	activeRunId?: string;
-	hasOtherActiveRun: boolean;
-	animationDelay?: number;
-} = $props();
+	let {
+		template,
+		updatedAtLabel,
+		workoutCount,
+		activeRunId,
+		hasOtherActiveRun,
+		animationDelay = 0
+	}: {
+		template: ProgramTemplate;
+		updatedAtLabel: string;
+		workoutCount: number;
+		activeRunId?: string;
+		hasOtherActiveRun: boolean;
+		animationDelay?: number;
+	} = $props();
 
-const account = new AccountCoState(IronkitAccount, {
+	const account = new AccountCoState(IronkitAccount, {
 		resolve: {
 			root: {
 				programRuns: { $each: true },

@@ -13,15 +13,15 @@
 	} from '$lib/training-log/program-template-status';
 	import EyeIcon from '@lucide/svelte/icons/eye';
 	import PlayIcon from '@lucide/svelte/icons/play';
-import { IronkitAccount, ProgramRun, ProgramTemplate } from '$lib/jazz/schema';
-import { AccountCoState } from 'jazz-tools/svelte';
-import { CoState } from 'jazz-tools/svelte';
+	import { IronkitAccount, ProgramRun, ProgramTemplate } from '$lib/jazz/schema';
+	import { AccountCoState } from 'jazz-tools/svelte';
+	import { CoState } from 'jazz-tools/svelte';
 
-let { status }: { status: ProgramTemplateStatus } = $props();
+	let { status }: { status: ProgramTemplateStatus } = $props();
 
-const editorState = getProgramTemplateEditorContext();
+	const editorState = getProgramTemplateEditorContext();
 
-const account = new AccountCoState(IronkitAccount, {
+	const account = new AccountCoState(IronkitAccount, {
 		resolve: {
 			root: {
 				programRuns: {

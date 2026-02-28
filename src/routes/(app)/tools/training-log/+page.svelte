@@ -11,11 +11,11 @@
 	import { flip } from 'svelte/animate';
 	import { expoOut } from 'svelte/easing';
 	import { scale } from 'svelte/transition';
-import { IronkitAccount, Workout } from '$lib/jazz/schema';
-import { AccountCoState } from 'jazz-tools/svelte';
-import { deleteCoValues } from 'jazz-tools';
+	import { IronkitAccount, Workout } from '$lib/jazz/schema';
+	import { AccountCoState } from 'jazz-tools/svelte';
+	import { deleteCoValues } from 'jazz-tools';
 
-const account = new AccountCoState(IronkitAccount, {
+	const account = new AccountCoState(IronkitAccount, {
 		resolve: {
 			root: {
 				workouts: {

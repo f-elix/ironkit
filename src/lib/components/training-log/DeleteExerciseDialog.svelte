@@ -3,13 +3,13 @@
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
 	import { Button, buttonVariants } from '$lib/shadcn/button';
 	import type { Exercise } from '$lib/jazz/types';
-import { IronkitAccount, Exercise as ExerciseSchema } from '$lib/jazz/schema';
-import { deleteCoValues } from 'jazz-tools';
-import { AccountCoState } from 'jazz-tools/svelte';
+	import { IronkitAccount, Exercise as ExerciseSchema } from '$lib/jazz/schema';
+	import { deleteCoValues } from 'jazz-tools';
+	import { AccountCoState } from 'jazz-tools/svelte';
 
-let { exercise }: { exercise: Exercise } = $props();
+	let { exercise }: { exercise: Exercise } = $props();
 
-const account = new AccountCoState(IronkitAccount, {
+	const account = new AccountCoState(IronkitAccount, {
 		resolve: {
 			root: {
 				exercises: { $each: true }
