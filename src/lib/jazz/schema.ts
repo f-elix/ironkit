@@ -2,11 +2,11 @@ import { DEFAULT_BAR_WEIGHT, DEFAULT_GENDER_CLASS, DEFAULT_WEIGHT_UNIT } from '$
 import { co, z } from 'jazz-tools';
 
 export const WEIGHT_UNITS = ['kg', 'lbs'] as const;
-export const GENDER_CLASSES = ['male', 'female'] as const;
-export const EXERCISE_LOAD_TYPES = ['weighted', 'bodyweight'] as const;
-export const EXERCISE_EXECUTION_TYPES = ['reps', 'time'] as const;
-export const PROGRAM_TEMPLATE_STATUSES = ['draft', 'published', 'archived'] as const;
-export const PROGRAM_RUN_STATUSES = [
+const GENDER_CLASSES = ['male', 'female'] as const;
+const EXERCISE_LOAD_TYPES = ['weighted', 'bodyweight'] as const;
+const EXERCISE_EXECUTION_TYPES = ['reps', 'time'] as const;
+const PROGRAM_TEMPLATE_STATUSES = ['draft', 'published', 'archived'] as const;
+const PROGRAM_RUN_STATUSES = [
 	'active',
 	'paused',
 	'completed',
@@ -15,11 +15,6 @@ export const PROGRAM_RUN_STATUSES = [
 ] as const;
 
 export type WeightUnit = (typeof WEIGHT_UNITS)[number];
-export type GenderClass = (typeof GENDER_CLASSES)[number];
-export type ExerciseLoadType = (typeof EXERCISE_LOAD_TYPES)[number];
-export type ExerciseExecutionType = (typeof EXERCISE_EXECUTION_TYPES)[number];
-export type ProgramTemplateStatus = (typeof PROGRAM_TEMPLATE_STATUSES)[number];
-export type ProgramRunStatus = (typeof PROGRAM_RUN_STATUSES)[number];
 
 export type ProgramTarget = {
 	targetSetRange: string;
@@ -40,18 +35,18 @@ const PROGRAM_TARGET_SNAPSHOT_SCHEMA = z.object({
 	targetDuration: z.optional(z.string())
 });
 
-export const USER_OWNED_ENTITY_PERMISSIONS = {
+const USER_OWNED_ENTITY_PERMISSIONS = {
 	onInlineCreate: 'extendsContainer'
 } as const;
 
-export const WeightConverter = co
+const WeightConverter = co
 	.map({
 		unit: WEIGHT_UNIT_ENUM,
 		round: z.boolean()
 	})
 	.withPermissions(USER_OWNED_ENTITY_PERMISSIONS);
 
-export const CoefficientCalculator = co
+const CoefficientCalculator = co
 	.map({
 		genderClass: GENDER_CLASS_ENUM,
 		totalUnit: WEIGHT_UNIT_ENUM,
@@ -59,14 +54,14 @@ export const CoefficientCalculator = co
 	})
 	.withPermissions(USER_OWNED_ENTITY_PERMISSIONS);
 
-export const LoadPercentageCalculator = co
+const LoadPercentageCalculator = co
 	.map({
 		unit: WEIGHT_UNIT_ENUM,
 		round: z.boolean()
 	})
 	.withPermissions(USER_OWNED_ENTITY_PERMISSIONS);
 
-export const PlateCalculator = co
+const PlateCalculator = co
 	.map({
 		barWeight: z.number(),
 		heavyCollars: z.boolean(),
@@ -188,23 +183,7 @@ export const ProgramRunSession = co
 	})
 	.withPermissions(USER_OWNED_ENTITY_PERMISSIONS);
 
-export const JAZZ_ENTITY_SCHEMAS = {
-	weightConverter: WeightConverter,
-	coefficientCalculator: CoefficientCalculator,
-	loadPercentageCalculator: LoadPercentageCalculator,
-	plateCalculator: PlateCalculator,
-	exercises: Exercise,
-	workouts: Workout,
-	performanceGroups: PerformanceGroup,
-	performances: Performance,
-	performanceSets: PerformanceSet,
-	programTemplates: ProgramTemplate,
-	programWorkouts: ProgramWorkout,
-	programRuns: ProgramRun,
-	programRunSessions: ProgramRunSession
-} as const;
-
-export const AccountRoot = co
+const AccountRoot = co
 	.map({
 		weightConverter: WeightConverter,
 		coefficientCalculator: CoefficientCalculator,

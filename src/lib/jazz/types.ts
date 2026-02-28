@@ -1,6 +1,5 @@
 import {
 	ProgramRun as ProgramRunSchema,
-	ProgramRunSession as ProgramRunSessionSchema,
 	ProgramWorkout as ProgramWorkoutSchema,
 	ProgramTemplate as ProgramTemplateSchema,
 	Workout as WorkoutSchema,
@@ -32,10 +31,8 @@ export type ResolvedProgramTemplate = co.loaded<
 		};
 	}
 >;
-export type ProgramRun = co.loaded<typeof ProgramRunSchema>;
 export type ProgramWorkout = co.loaded<typeof ProgramWorkoutSchema>;
 export type Workout = co.loaded<typeof WorkoutSchema>;
-export type ProgramRunSession = co.loaded<typeof ProgramRunSessionSchema>;
 export type Exercise = co.loaded<typeof ExerciseSchema>;
 export type PerformanceGroup = co.loaded<typeof PerformanceGroupSchema>;
 export type ResolvedPerformanceGroup = co.loaded<

@@ -2,5 +2,5 @@
 	"$schema": "https://unpkg.com/knip@5/schema.json",
 	"tags": ["-lintignore"],
 	"ignore": ["src/lib/shadcn/**/*"],
-	"ignoreDependencies": ["@convex-dev/auth"]
+	"ignoreDependencies": ["@typescript/native-preview"]
 }
