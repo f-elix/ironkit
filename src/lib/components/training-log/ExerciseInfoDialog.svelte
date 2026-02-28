@@ -60,14 +60,12 @@
 			exercise.$jazz.set('executionType', executionType);
 			exercise.$jazz.set('loadType', loadType);
 			exercise.$jazz.set('muscleGroups', muscleGroups);
-			exercise.$jazz.set('updatedAt', new Date());
 		} else {
 			const newExercise = ExerciseSchema.create({
 				name: exerciseName,
 				executionType: executionType,
 				loadType: loadType,
-				muscleGroups: muscleGroups,
-				updatedAt: new Date()
+				muscleGroups: muscleGroups
 			});
 			root.exercises.$jazz.push(newExercise);
 			onExerciseCreated?.(newExercise.$jazz.id);

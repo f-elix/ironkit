@@ -78,8 +78,7 @@
 							reps: set.reps,
 							durationSeconds: set.durationSeconds,
 							note: set.note,
-							performanceOrder: set.performanceOrder,
-							updatedAt: new Date()
+							performanceOrder: set.performanceOrder
 						})
 					);
 					return Performance.create({
@@ -89,8 +88,7 @@
 						groupOrder: performance.groupOrder,
 						note: performance.note,
 						programTargets: performance.programTargets,
-						weightUnit: performance.weightUnit,
-						updatedAt: new Date()
+						weightUnit: performance.weightUnit
 					});
 				});
 				return PerformanceGroup.create({
@@ -98,7 +96,6 @@
 					programWorkoutId: '',
 					label: group.label,
 					workoutOrder: group.workoutOrder,
-					updatedAt: new Date(),
 					performances
 				});
 			});
@@ -109,8 +106,7 @@
 				trackKey: normalizedTrackKey,
 				label: previousWorkout.label,
 				notes: previousWorkout.notes,
-				performanceGroups: newGroups,
-				updatedAt: new Date()
+				performanceGroups: newGroups
 			});
 		} else {
 			newWorkout = ProgramWorkout.create({
@@ -120,8 +116,7 @@
 				trackKey: normalizedTrackKey,
 				label: workoutLabel,
 				notes: undefined,
-				performanceGroups: [],
-				updatedAt: new Date()
+				performanceGroups: []
 			});
 		}
 
@@ -133,7 +128,6 @@
 		});
 
 		template.programWorkouts.$jazz.push(newWorkout);
-		template.$jazz.set('updatedAt', new Date());
 		editorState.selectWorkout(newWorkout.$jazz.id);
 		return true;
 	};

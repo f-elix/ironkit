@@ -11,8 +11,9 @@
 	import { flip } from 'svelte/animate';
 	import { expoOut } from 'svelte/easing';
 	import { scale } from 'svelte/transition';
-	import { Account } from '$lib/jazz/schema';
+	import { Account, Workout } from '$lib/jazz/schema';
 	import { AccountCoState } from 'jazz-tools/svelte';
+	import { deleteCoValues } from 'jazz-tools';
 
 	const account = new AccountCoState(Account, {
 		resolve: {
@@ -78,7 +79,21 @@
 		if (!root) {
 			return;
 		}
-		root.workouts.$jazz.remove((workout) => workout.$jazz.id === workoutId);
+		deleteCoValues(Workout, workoutId, {
+			resolve: {
+				performanceGroups: {
+					$each: {
+						performances: {
+							$each: {
+								performanceSets: {
+									$each: true
+								}
+							}
+						}
+					}
+				}
+			}
+		});
 	};
 </script>
 

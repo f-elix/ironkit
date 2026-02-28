@@ -27,7 +27,6 @@
 			return;
 		}
 		template.$jazz.set('status', next);
-		template.$jazz.set('updatedAt', new Date());
 	};
 </script>
 

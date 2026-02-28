@@ -113,8 +113,7 @@
 			programTemplate: template,
 			status: 'active',
 			startedAt: new Date(),
-			programRunSessions: [],
-			updatedAt: new Date()
+			programRunSessions: []
 		});
 
 		root.programRuns.$jazz.push(newRun);

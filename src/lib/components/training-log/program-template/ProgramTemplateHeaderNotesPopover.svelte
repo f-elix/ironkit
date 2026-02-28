@@ -20,7 +20,6 @@
 			return;
 		}
 		template.$jazz.set('notes', value.trim());
-		template.$jazz.set('updatedAt', new Date());
 	};
 </script>
 

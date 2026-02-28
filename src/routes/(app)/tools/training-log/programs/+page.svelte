@@ -69,8 +69,7 @@
 			name: 'Untitled program',
 			totalWeeks: 4,
 			status: 'draft',
-			programWorkouts: [],
-			updatedAt: new Date()
+			programWorkouts: []
 		});
 		root.programTemplates.$jazz.push(newTemplate);
 		goto(resolve('/(app)/tools/training-log/program-template-[id]', { id: newTemplate.$jazz.id }));
@@ -128,7 +127,7 @@
 					{@const isActiveTemplate = activeRun?.programTemplate.$jazz.id === template.$jazz.id}
 					<ProgramTemplateListItem
 						{template}
-						updatedAtLabel={formatDate(template.updatedAt)}
+						updatedAtLabel={formatDate(template.$jazz.lastUpdatedAt ?? Date.now())}
 						workoutCount={template.programWorkouts.length}
 						activeRunId={isActiveTemplate ? activeRun.$jazz.id : undefined}
 						hasOtherActiveRun={!!activeRun && !isActiveTemplate}

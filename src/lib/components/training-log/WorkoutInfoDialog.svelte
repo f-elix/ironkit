@@ -82,8 +82,7 @@
 					date: date.toDate(TIMEZONE),
 					bodyweight: bodyweight || undefined,
 					bodyweightUnit,
-					performanceGroups: [],
-					updatedAt: new Date()
+					performanceGroups: []
 				});
 		root.workouts.$jazz.push(newWorkout);
 		await goto(resolve('/(app)/tools/training-log/workout-[id]', { id: newWorkout.$jazz.id }));

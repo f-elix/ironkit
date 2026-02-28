@@ -112,8 +112,7 @@
 						reps: undefined,
 						durationSeconds: undefined,
 						note: undefined,
-						performanceOrder: order,
-						updatedAt: new Date()
+						performanceOrder: order
 					});
 					performance.performanceSets.$jazz.push(newSet);
 				}}

@@ -37,11 +37,9 @@
 			programWorkoutId: selectedWorkoutId,
 			label: undefined,
 			workoutOrder: groups.length,
-			updatedAt: new Date(),
 			performances: []
 		});
 		w.performanceGroups.$jazz.push(newGroup);
-		w.$jazz.set('updatedAt', new Date());
 	};
 
 	let groupPendingDelete = $state<string | undefined>(undefined);
@@ -57,7 +55,6 @@
 			return;
 		}
 		workout.performanceGroups.$jazz.remove((group) => group.$jazz.id === groupPendingDelete);
-		workout.$jazz.set('updatedAt', new Date());
 		groupDeleteDialogOpen = false;
 		groupPendingDelete = undefined;
 	};

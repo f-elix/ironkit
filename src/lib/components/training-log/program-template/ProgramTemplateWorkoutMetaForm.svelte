@@ -105,7 +105,6 @@
 			return;
 		}
 		selectedWorkout.$jazz.set('weekNumber', normalizePositiveInt(value, 1));
-		selectedWorkout.$jazz.set('updatedAt', new Date());
 	};
 
 	const setTrackKey = (value: string) => {
@@ -113,7 +112,6 @@
 			return;
 		}
 		selectedWorkout.$jazz.set('trackKey', normalizeTrackKey(value));
-		selectedWorkout.$jazz.set('updatedAt', new Date());
 	};
 
 	const setLabel = (value: string) => {
@@ -121,7 +119,6 @@
 			return;
 		}
 		selectedWorkout.$jazz.set('label', value.trim());
-		selectedWorkout.$jazz.set('updatedAt', new Date());
 	};
 
 	const setNotes = (value: string) => {
@@ -129,7 +126,6 @@
 			return;
 		}
 		selectedWorkout.$jazz.set('notes', value.trim());
-		selectedWorkout.$jazz.set('updatedAt', new Date());
 	};
 </script>
 

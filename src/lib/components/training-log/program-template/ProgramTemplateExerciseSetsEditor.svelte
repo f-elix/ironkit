@@ -39,7 +39,6 @@
 				targetDuration: executionType === 'time' ? '60 sec' : undefined
 			}
 		]);
-		performance.$jazz.set('updatedAt', new Date());
 	};
 
 	const updateSetValue = (
@@ -59,7 +58,6 @@
 			targetDuration: nextExecutionType === 'time' ? targetValue : undefined
 		};
 		performance.$jazz.set('programTargets', programTargets);
-		performance.$jazz.set('updatedAt', new Date());
 	};
 
 	const removeSet = (index: number) => {
@@ -71,7 +69,6 @@
 			'programTargets',
 			current.filter((_, i) => i !== index)
 		);
-		performance.$jazz.set('updatedAt', new Date());
 	};
 </script>
 

@@ -51,7 +51,6 @@
 			return;
 		}
 		template.programWorkouts.$jazz.remove((workout) => workout.$jazz.id === selectedWorkoutId);
-		template.$jazz.set('updatedAt', new Date());
 		editorState.clearSelection();
 	};
 </script>

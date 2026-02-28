@@ -82,8 +82,7 @@
 		const session = ProgramRunSession.create({
 			programRunId: run.$jazz.id,
 			programWorkoutId: nextSessionData.$jazz.id,
-			workoutId: workout.$jazz.id,
-			updatedAt: new Date()
+			workoutId: workout.$jazz.id
 		});
 
 		run.programRunSessions.$jazz.push(session);
@@ -99,8 +98,7 @@
 		const session = ProgramRunSession.create({
 			programRunId: run.$jazz.id,
 			programWorkoutId: nextSessionData.$jazz.id,
-			skippedAt: new Date(),
-			updatedAt: new Date()
+			skippedAt: new Date()
 		});
 
 		run.programRunSessions.$jazz.push(session);

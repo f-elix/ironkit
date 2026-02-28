@@ -18,8 +18,7 @@ export const addExerciseToPerformanceGroup = (
 		reps: undefined,
 		durationSeconds: undefined,
 		note: undefined,
-		performanceOrder: 1,
-		updatedAt: new Date()
+		performanceOrder: 1
 	});
 
 	const performance = Performance.create({
@@ -27,8 +26,7 @@ export const addExerciseToPerformanceGroup = (
 		exercise,
 		performanceSets: [initialSet],
 		groupOrder,
-		weightUnit: DEFAULT_WEIGHT_UNIT,
-		updatedAt: new Date()
+		weightUnit: DEFAULT_WEIGHT_UNIT
 	});
 
 	performanceGroup.performances.$jazz.push(performance);

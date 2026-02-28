@@ -25,7 +25,6 @@
 		}
 		const name = value.trim() || 'Untitled program';
 		template.$jazz.set('name', name);
-		template.$jazz.set('updatedAt', new Date());
 	};
 
 	const handleTotalWeeksChange = (value: number) => {
@@ -34,7 +33,6 @@
 		}
 		const totalWeeks = normalizePositiveInt(value, 1);
 		template.$jazz.set('totalWeeks', totalWeeks);
-		template.$jazz.set('updatedAt', new Date());
 	};
 </script>
 

@@ -41,14 +41,12 @@ const createPerformanceFromTemplate = (performance: TemplatePerformanceData) => 
 		groupOrder: performance.groupOrder,
 		weightUnit: performance.weightUnit,
 		note: performance.note,
-		updatedAt: new Date(),
 		performanceSets: performance.performanceSets.map((set) => {
 			return PerformanceSet.create({
 				reps: undefined,
 				durationSeconds: undefined,
 				note: undefined,
-				performanceOrder: set.performanceOrder,
-				updatedAt: new Date()
+				performanceOrder: set.performanceOrder
 			});
 		})
 	});
@@ -60,7 +58,6 @@ const createPerformanceGroupFromTemplate = (group: TemplatePerformanceGroupData)
 	const newGroup = PerformanceGroup.create({
 		workoutOrder: group.workoutOrder,
 		label: group.label,
-		updatedAt: new Date(),
 		performances
 	});
 	return newGroup;
@@ -94,8 +91,7 @@ export const createWorkoutFromTemplate = async (workoutId: string) => {
 		notes: workout?.notes ?? '',
 		bodyweight: workout?.bodyweight ?? undefined,
 		bodyweightUnit: workout?.bodyweightUnit ?? DEFAULT_WEIGHT_UNIT,
-		performanceGroups,
-		updatedAt: new Date()
+		performanceGroups
 	});
 	linkPerformanceGroupsToWorkout(performanceGroups, newWorkout.$jazz.id);
 	return newWorkout;
@@ -109,8 +105,7 @@ export const createWorkoutFromProgramWorkout = (programWorkout: ResolvedProgramW
 		title: programWorkout.label ?? programWorkout.trackKey,
 		date: new Date(),
 		notes: programWorkout.notes,
-		performanceGroups,
-		updatedAt: new Date()
+		performanceGroups
 	});
 	linkPerformanceGroupsToWorkout(performanceGroups, workout.$jazz.id);
 	return workout;

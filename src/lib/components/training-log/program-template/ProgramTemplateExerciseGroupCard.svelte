@@ -2,13 +2,14 @@
 	import ExerciseSelection from '$lib/components/training-log/ExerciseSelection.svelte';
 	import ProgramTemplateExerciseSetsEditor from '$lib/components/training-log/program-template/ProgramTemplateExerciseSetsEditor.svelte';
 	import type { Exercise, ResolvedPerformanceGroup } from '$lib/jazz/types';
-	import { Performance as PerformanceSchema } from '$lib/jazz/schema';
+	import { Performance, Performance as PerformanceSchema } from '$lib/jazz/schema';
 	import Badge from '$lib/shadcn/badge/badge.svelte';
 	import { buttonVariants } from '$lib/shadcn/button/button.svelte';
 	import * as Dialog from '$lib/shadcn/dialog';
 	import Input from '$lib/shadcn/input/input.svelte';
 	import PlusIcon from '@lucide/svelte/icons/plus';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
+	import { deleteCoValues } from 'jazz-tools';
 
 	let {
 		group,
@@ -23,7 +24,6 @@
 
 	const updateGroupLabel = (label: string) => {
 		group.$jazz.set('label', label);
-		group.$jazz.set('updatedAt', new Date());
 	};
 
 	const addExerciseToGroup = (exercise: Exercise) => {
@@ -32,11 +32,9 @@
 			exercise,
 			performanceSets: [],
 			groupOrder: performances.length,
-			weightUnit: 'lbs',
-			updatedAt: new Date()
+			weightUnit: 'lbs'
 		});
 		performances.$jazz.push(newPerformance);
-		group.$jazz.set('updatedAt', new Date());
 	};
 
 	const updateExercise = (
@@ -56,12 +54,10 @@
 		if (updates.note !== undefined) {
 			performance.$jazz.set('note', updates.note);
 		}
-		performance.$jazz.set('updatedAt', new Date());
 	};
 
 	const removeExercise = (performanceId: string) => {
-		performances.$jazz.remove((p) => p.$jazz.id === performanceId);
-		group.$jazz.set('updatedAt', new Date());
+		deleteCoValues(Performance, performanceId);
 	};
 
 	const autoGroupType = $derived.by(() => {

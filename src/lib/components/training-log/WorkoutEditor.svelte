@@ -64,8 +64,7 @@
 			reps: undefined,
 			durationSeconds: undefined,
 			note: undefined,
-			performanceOrder: 1,
-			updatedAt: new Date()
+			performanceOrder: 1
 		});
 
 		// Create performance
@@ -74,8 +73,7 @@
 			exercise,
 			performanceSets: [initialSet],
 			groupOrder: 0,
-			weightUnit: DEFAULT_WEIGHT_UNIT,
-			updatedAt: new Date()
+			weightUnit: DEFAULT_WEIGHT_UNIT
 		});
 
 		// Create a new performance group for the exercise
@@ -83,7 +81,6 @@
 			workoutId: workout.$jazz.id,
 			label: undefined,
 			workoutOrder: lastOrder + 1,
-			updatedAt: new Date(),
 			performances: [performance]
 		});
 
