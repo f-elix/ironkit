@@ -18,7 +18,8 @@
 	import EyeIcon from '@lucide/svelte/icons/eye';
 	import PlayIcon from '@lucide/svelte/icons/play';
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
-	import { Account, ProgramRun } from '$lib/jazz/schema';
+	import { Account, ProgramRun, ProgramTemplate as ProgramTemplateSchema } from '$lib/jazz/schema';
+	import { deleteCoValues } from 'jazz-tools';
 	import { AccountCoState } from 'jazz-tools/svelte';
 	import { toast } from 'svelte-sonner';
 
@@ -118,7 +119,21 @@
 		if (!root) {
 			return;
 		}
-		root.programTemplates.$jazz.remove((t) => t.$jazz.id === template.$jazz.id);
+		const templateId = template.$jazz.id;
+		root.programTemplates.$jazz.remove((t) => t.$jazz.id === templateId);
+		await deleteCoValues(ProgramTemplateSchema, templateId, {
+			resolve: {
+				programWorkouts: {
+					$each: {
+						performanceGroups: {
+							$each: {
+								performances: true
+							}
+						}
+					}
+				}
+			}
+		});
 		isDeleteDialogOpen = false;
 	};
 </script>

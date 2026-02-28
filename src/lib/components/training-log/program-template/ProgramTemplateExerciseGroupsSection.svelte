@@ -5,6 +5,7 @@
 	import PlusIcon from '@lucide/svelte/icons/plus';
 	import { CoState } from 'jazz-tools/svelte';
 	import { ProgramWorkout, PerformanceGroup } from '$lib/jazz/schema';
+	import { deleteCoValues } from 'jazz-tools';
 	import { getProgramTemplateEditorContext } from '$lib/components/training-log/program-template/program-template-editor.context.svelte.js';
 
 	const editorState = getProgramTemplateEditorContext();
@@ -50,11 +51,17 @@
 		groupDeleteDialogOpen = true;
 	};
 
-	const confirmRemoveGroup = () => {
+	const confirmRemoveGroup = async () => {
 		if (!groupPendingDelete || !workout) {
 			return;
 		}
-		workout.performanceGroups.$jazz.remove((group) => group.$jazz.id === groupPendingDelete);
+		await deleteCoValues(PerformanceGroup, groupPendingDelete, {
+			resolve: {
+				performances: {
+					$each: true
+				}
+			}
+		});
 		groupDeleteDialogOpen = false;
 		groupPendingDelete = undefined;
 	};

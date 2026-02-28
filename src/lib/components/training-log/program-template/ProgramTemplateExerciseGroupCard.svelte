@@ -56,8 +56,8 @@
 		}
 	};
 
-	const removeExercise = (performanceId: string) => {
-		deleteCoValues(Performance, performanceId);
+	const removeExercise = async (performanceId: string) => {
+		await deleteCoValues(Performance, performanceId);
 	};
 
 	const autoGroupType = $derived.by(() => {

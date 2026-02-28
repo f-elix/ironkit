@@ -6,7 +6,8 @@
 	import ProgramTemplateWorkoutReorderControls from '$lib/components/training-log/program-template/ProgramTemplateWorkoutReorderControls.svelte';
 	import { getProgramTemplateEditorContext } from '$lib/components/training-log/program-template/program-template-editor.context.svelte.js';
 	import { CoState } from 'jazz-tools/svelte';
-	import { ProgramTemplate } from '$lib/jazz/schema';
+	import { ProgramTemplate, ProgramWorkout } from '$lib/jazz/schema';
+	import { deleteCoValues } from 'jazz-tools';
 
 	const editorState = getProgramTemplateEditorContext();
 
@@ -46,11 +47,19 @@
 			.toSorted((a, b) => a.slotOrder - b.slotOrder);
 	});
 
-	const confirmDeleteWorkout = () => {
+	const confirmDeleteWorkout = async () => {
 		if (!template || !selectedWorkoutId) {
 			return;
 		}
-		template.programWorkouts.$jazz.remove((workout) => workout.$jazz.id === selectedWorkoutId);
+		await deleteCoValues(ProgramWorkout, selectedWorkoutId, {
+			resolve: {
+				performanceGroups: {
+					$each: {
+						performances: true
+					}
+				}
+			}
+		});
 		editorState.clearSelection();
 	};
 </script>

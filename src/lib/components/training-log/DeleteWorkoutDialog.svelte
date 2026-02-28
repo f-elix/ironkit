@@ -13,9 +13,8 @@
 
 	const onDelete = async () => {
 		if (onConfirmDelete) {
-			onConfirmDelete();
+			await onConfirmDelete();
 			open = false;
-			return;
 		}
 	};
 </script>

@@ -10,7 +10,7 @@
 	}: {
 		open: boolean;
 		template: ProgramTemplate | null;
-		onConfirmDelete: () => void;
+		onConfirmDelete: () => void | Promise<void>;
 	} = $props();
 </script>
 

@@ -12,6 +12,7 @@
 	import type { WorkoutData } from '$lib/jazz/workout';
 	import type { ComponentProps } from 'svelte';
 	import { PerformanceGroup, Performance, PerformanceSet } from '$lib/jazz/schema';
+	import { deleteCoValues } from 'jazz-tools';
 	import { DEFAULT_WEIGHT_UNIT } from '$lib/constants';
 	import type { Exercise } from '$lib/jazz/types';
 
@@ -107,8 +108,15 @@
 		});
 	};
 
-	const onRemoveGroup = (groupId: string) => {
+	const onRemoveGroup = async (groupId: string) => {
 		workout.performanceGroups.$jazz.remove((g) => g.$jazz.id === groupId);
+		await deleteCoValues(PerformanceGroup, groupId, {
+			resolve: {
+				performances: {
+					$each: { performanceSets: { $each: true } }
+				}
+			}
+		});
 	};
 </script>
 

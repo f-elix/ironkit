@@ -13,8 +13,9 @@
 	import ExerciseCardTargetSummary from '$lib/components/training-log/ExerciseCardTargetSummary.svelte';
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
 	import Trash2 from '@lucide/svelte/icons/trash-2';
-	import { PerformanceSet } from '$lib/jazz/schema';
+	import { Performance, PerformanceSet } from '$lib/jazz/schema';
 	import type { Exercise } from '$lib/jazz/types';
+	import { deleteCoValues } from 'jazz-tools';
 
 	let {
 		performanceGroup,
@@ -44,6 +45,9 @@
 			return;
 		}
 		performanceGroup.performances.$jazz.remove((p) => p.$jazz.id === performanceId);
+		await deleteCoValues(Performance, performanceId, {
+			resolve: { performanceSets: { $each: true } }
+		});
 	};
 </script>
 
@@ -86,9 +90,11 @@
 							unit={performance.weightUnit ?? 'lbs'}
 							{exercise}
 							previousSet={setIndex > 0 ? performanceSets[setIndex - 1] : null}
-							onDelete={() => {
+							onDelete={async () => {
 								if (performance.performanceSets.$isLoaded) {
-									performance.performanceSets.$jazz.remove((s) => s.$jazz.id === set.$jazz.id);
+									const setId = set.$jazz.id;
+									performance.performanceSets.$jazz.remove((s) => s.$jazz.id === setId);
+									await deleteCoValues(PerformanceSet, setId);
 								}
 							}}
 						/>

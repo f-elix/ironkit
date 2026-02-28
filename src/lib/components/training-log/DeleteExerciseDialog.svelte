@@ -3,7 +3,8 @@
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
 	import { Button, buttonVariants } from '$lib/shadcn/button';
 	import type { Exercise } from '$lib/jazz/types';
-	import { Account } from '$lib/jazz/schema';
+	import { Account, Exercise as ExerciseSchema } from '$lib/jazz/schema';
+	import { deleteCoValues } from 'jazz-tools';
 	import { AccountCoState } from 'jazz-tools/svelte';
 
 	let { exercise }: { exercise: Exercise } = $props();
@@ -20,11 +21,12 @@
 
 	let open = $state(false);
 
-	const onDelete = () => {
+	const onDelete = async () => {
 		if (!root) {
 			return;
 		}
-		root.exercises.$jazz.remove((e) => e.$jazz.id === exercise.$jazz.id);
+		const exerciseId = exercise.$jazz.id;
+		await deleteCoValues(ExerciseSchema, exerciseId);
 		open = false;
 	};
 </script>
