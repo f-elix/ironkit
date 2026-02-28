@@ -63,7 +63,7 @@
 <div
 	class={cn(
 		'focus-within:bg-primary/5 relative flex flex-col gap-2 rounded-lg border p-2 transition-colors',
-		isCompleted ? 'border-primary/30 bg-primary/5' : 'border-border bg-muted/30 hover:bg-muted/50'
+		isCompleted ? 'border-primary/30 bg-primary/5' : 'border-border bg-muted/30 hover:bg-primary/5'
 	)}
 >
 	<!-- Set number indicator -->
@@ -92,9 +92,9 @@
 					() => (executionType === 'reps' ? (set.reps ?? '') : (set.durationSeconds ?? '')),
 					(v) => {
 						if (executionType === 'reps') {
-							set.$jazz.set('reps', v || 0);
+							set.$jazz.set('reps', v || undefined);
 						} else {
-							set.$jazz.set('durationSeconds', v || 0);
+							set.$jazz.set('durationSeconds', v || undefined);
 						}
 					}
 				}
@@ -124,7 +124,7 @@
 					bind:value={
 						() => set.weight ?? '',
 						(v) => {
-							set.$jazz.set('weight', v || 0);
+							set.$jazz.set('weight', v || undefined);
 						}
 					}
 					placeholder="0"
