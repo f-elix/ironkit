@@ -68,12 +68,12 @@
 			: `Session ${completedSessions + 1} of ${totalSessions}`
 	);
 
-	const handleStartWorkout = () => {
+	const handleStartWorkout = async () => {
 		if (!nextSessionData || !root) {
 			return;
 		}
 
-		const workout = createWorkoutFromProgramWorkout(nextSessionData);
+		const workout = await createWorkoutFromProgramWorkout(nextSessionData);
 		workout.$jazz.set('programRun', run);
 
 		const session = ProgramRunSession.create({

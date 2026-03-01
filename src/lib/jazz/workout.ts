@@ -9,12 +9,15 @@ import {
 } from '$lib/jazz/schema';
 import type { ResolvedWorkout } from '$lib/jazz/types';
 import type { co } from 'jazz-tools';
+import { toast } from 'svelte-sonner';
 
 export const PERFORMANCE_GROUPS_RESOLUTION = {
 	$each: {
 		performances: {
 			$each: {
-				exercise: true,
+				exercise: {
+					performances: true
+				},
 				performanceSets: {
 					$each: true
 				}
@@ -89,7 +92,7 @@ const denormalizeWorkoutDataToPerformances = (
 
 			// Add to exercise.performances for reverse index lookup
 			const exercise = performance.exercise;
-			if (exercise) {
+			if (exercise.performances.$isLoaded) {
 				exercise.performances.$jazz.push(performance);
 			}
 		});
@@ -115,6 +118,7 @@ export const createWorkoutFromTemplate = async ({
 		}
 	});
 	if (!workout.$isLoaded) {
+		toast.error('Workout not found');
 		throw new Error('Workout not found');
 	}
 	const performanceGroups = workout.performanceGroups.map(createPerformanceGroupFromTemplate);
