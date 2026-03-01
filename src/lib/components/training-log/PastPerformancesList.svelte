@@ -5,6 +5,8 @@
 	import PerformanceSetSummary from '$lib/components/training-log/PerformanceSetSummary.svelte';
 	import { Exercise } from '$lib/jazz/schema';
 	import { CoState } from 'jazz-tools/svelte';
+	import { today } from '@internationalized/date';
+	import { TIMEZONE } from '$lib/constants';
 
 	let { exerciseId }: { exerciseId: string } = $props();
 
@@ -25,7 +27,16 @@
 			return [];
 		}
 
+		const todayDate = today(TIMEZONE).toDate(TIMEZONE);
+
 		return exercise.performances
+			.filter((performance) => {
+				const workoutDate = performance.workoutDate;
+				if (!workoutDate) {
+					return false;
+				}
+				return workoutDate.getTime() < todayDate.getTime();
+			})
 			.toSorted((a, b) => (b.workoutDate?.getTime() ?? 0) - (a.workoutDate?.getTime() ?? 0))
 			.slice(0, 50);
 	});
