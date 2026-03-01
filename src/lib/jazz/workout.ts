@@ -76,6 +76,26 @@ const linkPerformanceGroupsToWorkout = (
 	});
 };
 
+const denormalizeWorkoutDataToPerformances = (
+	performanceGroups: ReturnType<typeof createPerformanceGroupFromTemplate>[],
+	workoutDate: Date,
+	workoutId: string
+) => {
+	performanceGroups.forEach((group) => {
+		group.performances.forEach((performance) => {
+			// Set denormalized workout data for efficient querying
+			performance.$jazz.set('workoutDate', workoutDate);
+			performance.$jazz.set('workoutId', workoutId);
+
+			// Add to exercise.performances for reverse index lookup
+			const exercise = performance.exercise;
+			if (exercise) {
+				exercise.performances.$jazz.push(performance);
+			}
+		});
+	});
+};
+
 export const createWorkoutFromTemplate = async ({
 	workoutId,
 	date,
@@ -98,15 +118,17 @@ export const createWorkoutFromTemplate = async ({
 		throw new Error('Workout not found');
 	}
 	const performanceGroups = workout.performanceGroups.map(createPerformanceGroupFromTemplate);
+	const workoutDate = date ?? new Date();
 	const newWorkout = Workout.create({
 		title: workout?.title ?? '',
-		date: date ?? new Date(),
+		date: workoutDate,
 		notes: notes ?? workout?.notes ?? '',
 		bodyweight: bodyweight || undefined,
 		bodyweightUnit: bodyweightUnit ?? workout?.bodyweightUnit ?? DEFAULT_WEIGHT_UNIT,
 		performanceGroups
 	});
 	linkPerformanceGroupsToWorkout(performanceGroups, newWorkout.$jazz.id);
+	denormalizeWorkoutDataToPerformances(performanceGroups, workoutDate, newWorkout.$jazz.id);
 	return newWorkout;
 };
 
@@ -114,12 +136,14 @@ export const createWorkoutFromProgramWorkout = (programWorkout: ResolvedProgramW
 	const performanceGroups = programWorkout.performanceGroups.map(
 		createPerformanceGroupFromTemplate
 	);
+	const workoutDate = new Date();
 	const workout = Workout.create({
 		title: programWorkout.label ?? programWorkout.trackKey,
-		date: new Date(),
+		date: workoutDate,
 		notes: programWorkout.notes,
 		performanceGroups
 	});
 	linkPerformanceGroupsToWorkout(performanceGroups, workout.$jazz.id);
+	denormalizeWorkoutDataToPerformances(performanceGroups, workoutDate, workout.$jazz.id);
 	return workout;
 };

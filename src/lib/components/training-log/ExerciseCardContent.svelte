@@ -44,6 +44,17 @@
 		if (!performanceGroup.performances.$isLoaded) {
 			return;
 		}
+
+		const performance = performanceGroup.performances.find((p) => p.$jazz.id === performanceId);
+
+		// Remove from exercise.performances reverse-lookup list
+		if (performance?.$isLoaded && performance.exercise.$isLoaded) {
+			const exercisePerformances = performance.exercise.performances;
+			if (exercisePerformances.$isLoaded) {
+				exercisePerformances.$jazz.remove((p) => p.$jazz.id === performanceId);
+			}
+		}
+
 		performanceGroup.performances.$jazz.remove((p) => p.$jazz.id === performanceId);
 		await deleteCoValues(Performance, performanceId, {
 			resolve: { performanceSets: { $each: true } }

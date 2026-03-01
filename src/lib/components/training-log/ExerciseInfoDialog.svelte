@@ -65,7 +65,8 @@
 				name: exerciseName,
 				executionType: executionType,
 				loadType: loadType,
-				muscleGroups: muscleGroups
+				muscleGroups: muscleGroups,
+				performances: []
 			});
 			root.exercises.$jazz.push(newExercise);
 			onExerciseCreated?.(newExercise.$jazz.id);

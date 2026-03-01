@@ -6,13 +6,7 @@ const GENDER_CLASSES = ['male', 'female'] as const;
 const EXERCISE_LOAD_TYPES = ['weighted', 'bodyweight'] as const;
 const EXERCISE_EXECUTION_TYPES = ['reps', 'time'] as const;
 const PROGRAM_TEMPLATE_STATUSES = ['draft', 'published', 'archived'] as const;
-const PROGRAM_RUN_STATUSES = [
-	'active',
-	'paused',
-	'completed',
-	'canceled',
-	'archived'
-] as const;
+const PROGRAM_RUN_STATUSES = ['active', 'paused', 'completed', 'canceled', 'archived'] as const;
 
 export type WeightUnit = (typeof WEIGHT_UNITS)[number];
 
@@ -74,7 +68,10 @@ export const Exercise = co
 		name: z.string(),
 		executionType: EXERCISE_EXECUTION_TYPE_ENUM,
 		loadType: EXERCISE_LOAD_TYPE_ENUM,
-		muscleGroups: z.array(z.string())
+		muscleGroups: z.array(z.string()),
+		get performances() {
+			return co.list(Performance);
+		}
 	})
 	.withPermissions(USER_OWNED_ENTITY_PERMISSIONS);
 
@@ -122,7 +119,9 @@ export const Performance = co
 		groupOrder: z.number(),
 		note: z.optional(z.string()),
 		programTargets: z.optional(z.array(PROGRAM_TARGET_SNAPSHOT_SCHEMA)),
-		weightUnit: WEIGHT_UNIT_ENUM
+		weightUnit: WEIGHT_UNIT_ENUM,
+		workoutDate: z.optional(z.date()),
+		workoutId: z.optional(z.string())
 	})
 	.withPermissions(USER_OWNED_ENTITY_PERMISSIONS);
 
@@ -192,18 +191,21 @@ const AccountRoot = co
 		exercises: co.list(Exercise),
 		workouts: co.list(Workout),
 		programTemplates: co.list(ProgramTemplate),
-		programRuns: co.list(ProgramRun)
+		programRuns: co.list(ProgramRun),
+		migrationVersion: z.optional(z.number())
 	})
 	.withPermissions({
 		onInlineCreate: 'extendsContainer'
 	});
+
+const CURRENT_MIGRATION_VERSION = 1;
 
 export const IronkitAccount = co
 	.account({
 		profile: co.profile(),
 		root: AccountRoot
 	})
-	.withMigration((account) => {
+	.withMigration(async (account) => {
 		if (!account.$jazz.has('root')) {
 			account.$jazz.set('root', {
 				weightConverter: WeightConverter.create({
@@ -227,7 +229,75 @@ export const IronkitAccount = co
 				exercises: [],
 				workouts: [],
 				programTemplates: [],
-				programRuns: []
+				programRuns: [],
+				migrationVersion: CURRENT_MIGRATION_VERSION
 			});
+			return;
 		}
+
+		// Skip expensive migration if already at current version
+		const { root: rootForVersionCheck } = await account.$jazz.ensureLoaded({
+			resolve: { root: true }
+		});
+		if (rootForVersionCheck.migrationVersion === CURRENT_MIGRATION_VERSION) {
+			return;
+		}
+
+		// Migration v1: Backfill exercise.performances reverse-lookup lists
+		const { root } = await account.$jazz.ensureLoaded({
+			resolve: {
+				root: {
+					exercises: {
+						$each: {
+							performances: { $each: true }
+						}
+					},
+					workouts: {
+						$each: {
+							performanceGroups: {
+								$each: {
+									performances: {
+										$each: {
+											exercise: {
+												performances: { $each: true }
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		});
+
+		// Initialize empty performances list on existing exercises
+		root.exercises.forEach((exercise) => {
+			if (!exercise.performances) {
+				exercise.$jazz.set('performances', []);
+			}
+		});
+
+		// Backfill workoutDate/workoutId and populate exercise.performances
+		root.workouts.forEach((workout) => {
+			workout.performanceGroups.forEach((group) => {
+				group.performances.forEach((performance) => {
+					if (!performance.workoutDate) {
+						performance.$jazz.set('workoutDate', workout.date);
+					}
+					if (!performance.workoutId) {
+						performance.$jazz.set('workoutId', workout.$jazz.id);
+					}
+					const exercisePerformances = performance.exercise.performances;
+					const alreadyInList = exercisePerformances.some(
+						(p) => p.$jazz.id === performance.$jazz.id
+					);
+					if (!alreadyInList) {
+						exercisePerformances.$jazz.push(performance);
+					}
+				});
+			});
+		});
+
+		root.$jazz.set('migrationVersion', CURRENT_MIGRATION_VERSION);
 	});

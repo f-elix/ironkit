@@ -5,9 +5,16 @@
 	import LogInIcon from '@lucide/svelte/icons/log-in';
 	import { resolve } from '$app/paths';
 	import { betterAuthClient } from '$lib/auth-client';
-	import { useIsAuthenticated } from 'jazz-tools/svelte';
+	import { AccountCoState, useIsAuthenticated } from 'jazz-tools/svelte';
+	import { IronkitAccount } from '$lib/jazz/schema';
 
 	const isAuthenticated = useIsAuthenticated();
+	const account = new AccountCoState(IronkitAccount, {
+		resolve: {
+			profile: true
+		}
+	});
+	const profile = $derived(account.current.$isLoaded ? account.current.profile : null);
 </script>
 
 <header
@@ -18,10 +25,15 @@
 		<LogoSymbol class="size-6 sm:size-8" />
 	</a>
 	{#if isAuthenticated.current}
-		<Button variant="ghost" size="sm" onclick={async () => await betterAuthClient.signOut()}>
-			<LogOutIcon />
-			Logout
-		</Button>
+		<div class="flex items-center gap-2">
+			<p class="text-muted-foreground text-sm">
+				{profile?.name}
+			</p>
+			<Button variant="ghost" size="sm" onclick={async () => await betterAuthClient.signOut()}>
+				<LogOutIcon />
+				Logout
+			</Button>
+		</div>
 	{:else}
 		<Button href={resolve('/auth')} variant="ghost" size="sm">
 			<LogInIcon />

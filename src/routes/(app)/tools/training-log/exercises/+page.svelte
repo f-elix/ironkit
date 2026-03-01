@@ -26,7 +26,7 @@
 
 	const root = $derived(account.current.$isLoaded ? account.current.root : null);
 
-	let allExercises = $derived(root?.exercises ?? []);
+	const allExercises = $derived(root?.exercises ?? []);
 
 	let search = $state('');
 

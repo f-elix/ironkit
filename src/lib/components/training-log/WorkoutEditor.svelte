@@ -71,14 +71,21 @@
 			performanceOrder: 1
 		});
 
-		// Create performance
+		// Create performance with denormalized workout data
 		const performance = Performance.create({
 			performanceGroupId: '', // Will be set when added to group
 			exercise,
 			performanceSets: [initialSet],
 			groupOrder: 0,
-			weightUnit: DEFAULT_WEIGHT_UNIT
+			weightUnit: DEFAULT_WEIGHT_UNIT,
+			workoutDate: workout.date,
+			workoutId: workout.$jazz.id
 		});
+
+		// Add to exercise's reverse-lookup list
+		if (exercise.performances.$isLoaded) {
+			exercise.performances.$jazz.push(performance);
+		}
 
 		// Create a new performance group for the exercise
 		const newGroup = PerformanceGroup.create({

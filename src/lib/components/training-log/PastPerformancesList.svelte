@@ -6,57 +6,32 @@
 	import { now } from '@internationalized/date';
 	import { TIMEZONE } from '$lib/constants';
 	import PerformanceSetSummary from '$lib/components/training-log/PerformanceSetSummary.svelte';
-	import { IronkitAccount } from '$lib/jazz/schema';
-	import { AccountCoState } from 'jazz-tools/svelte';
+	import { Exercise } from '$lib/jazz/schema';
+	import { CoState } from 'jazz-tools/svelte';
+	import { Loader } from '@lucide/svelte';
 
 	let { exerciseId, currentWorkout }: { exerciseId: string; currentWorkout?: Maybe<Workout> } =
 		$props();
 
-	const account = new AccountCoState(IronkitAccount, {
+	const exerciseState = new CoState(Exercise, () => exerciseId, {
 		resolve: {
-			root: {
-				workouts: {
-					$each: {
-						performanceGroups: {
-							$each: {
-								performances: {
-									$each: {
-										exercise: true,
-										performanceSets: { $each: true }
-									}
-								}
-							}
-						}
-					}
+			performances: {
+				$each: {
+					performanceSets: { $each: true }
 				}
 			}
 		}
 	});
 
-	const root = $derived(account.current.$isLoaded ? account.current.root : null);
+	const exercise = $derived(exerciseState.current.$isLoaded ? exerciseState.current : null);
 
 	const performanceItems = $derived.by(() => {
-		if (!root) {
+		if (!exercise || !exercise.performances) {
 			return [];
 		}
 
-		const maxDate = now(TIMEZONE).toDate();
-
-		return root.workouts
-			.flatMap((workout) =>
-				workout.performanceGroups.flatMap((group) =>
-					group.performances
-						.filter(
-							(performance) =>
-								performance.exercise.$isLoaded &&
-								performance.exercise.$jazz.id === exerciseId &&
-								!(currentWorkout && workout.$jazz.id === currentWorkout.$jazz.id) &&
-								workout.date <= maxDate
-						)
-						.map((performance) => ({ performance, workout }))
-				)
-			)
-			.toSorted((a, b) => b.workout.date.getTime() - a.workout.date.getTime())
+		return exercise.performances
+			.toSorted((a, b) => (b.workoutDate?.getTime() ?? 0) - (a.workoutDate?.getTime() ?? 0))
 			.slice(0, 50);
 	});
 </script>
@@ -64,14 +39,14 @@
 {#if performanceItems.length}
 	<ScrollArea class="h-[50vh]">
 		<ul class="divide-border flex flex-col gap-4 divide-y pt-4 pb-7">
-			{#each performanceItems as { performance, workout } (performance.$jazz.id)}
+			{#each performanceItems as performance (performance.$jazz.id)}
 				{@const sets = performance.performanceSets.$isLoaded
 					? Array.from(performance.performanceSets).filter((s) => s.$isLoaded)
 					: []}
 				{#if sets.length}
 					<li class="flex flex-col gap-3 pb-4">
 						<div class="flex flex-col gap-1">
-							<h4 class="text-base font-semibold">{formatDate(workout.date)}</h4>
+							<h4 class="text-base font-semibold">{formatDate(performance.workoutDate)}</h4>
 							{#if performance.note}
 								<p class="text-muted-foreground text-sm">{performance.note}</p>
 							{/if}
@@ -88,12 +63,18 @@
 			{/each}
 		</ul>
 	</ScrollArea>
-{:else}
+{:else if exercise?.$isLoaded}
 	<div class="my-7">
 		<EmptyState title="No history yet">
 			{#snippet description()}
 				Log this exercise in a workout to start tracking your progress.
 			{/snippet}
 		</EmptyState>
+	</div>
+{:else}
+	<div
+		class="text-muted-foreground flex h-40 animate-pulse items-center justify-center text-center"
+	>
+		Loading history...
 	</div>
 {/if}

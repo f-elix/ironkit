@@ -4,7 +4,8 @@ import { Performance, PerformanceSet } from '$lib/jazz/schema';
 
 export const addExerciseToPerformanceGroup = (
 	performanceGroup: PerformanceGroup,
-	exercise: Exercise
+	exercise: Exercise,
+	workoutDate?: Date
 ) => {
 	if (!performanceGroup.performances.$isLoaded) {
 		return;
@@ -26,8 +27,15 @@ export const addExerciseToPerformanceGroup = (
 		exercise,
 		performanceSets: [initialSet],
 		groupOrder,
-		weightUnit: DEFAULT_WEIGHT_UNIT
+		weightUnit: DEFAULT_WEIGHT_UNIT,
+		workoutId: performanceGroup.workoutId,
+		workoutDate
 	});
 
 	performanceGroup.performances.$jazz.push(performance);
+
+	// Add to exercise's reverse-lookup list
+	if (exercise.performances.$isLoaded) {
+		exercise.performances.$jazz.push(performance);
+	}
 };

@@ -25,8 +25,21 @@
 <div class="flex flex-col gap-2">
 	<div class="flex items-baseline gap-2">
 		<ExerciseSelection
-			onExerciseAdded={(exercise) => {
-				performance.$jazz.set('exercise', exercise);
+			onExerciseAdded={(newExercise) => {
+				// Remove from old exercise's reverse-lookup list
+				if (performance.exercise.$isLoaded) {
+					const oldPerformances = performance.exercise.performances;
+					if (oldPerformances.$isLoaded) {
+						oldPerformances.$jazz.remove((p) => p.$jazz.id === performance.$jazz.id);
+					}
+				}
+
+				performance.$jazz.set('exercise', newExercise);
+
+				// Add to new exercise's reverse-lookup list
+				if (newExercise.performances.$isLoaded) {
+					newExercise.performances.$jazz.push(performance);
+				}
 			}}
 		>
 			{#snippet trigger()}
