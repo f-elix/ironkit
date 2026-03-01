@@ -55,6 +55,7 @@
 		if (!groupPendingDelete || !workout) {
 			return;
 		}
+		workout.performanceGroups.$jazz.remove((g) => g.$jazz.id === groupPendingDelete);
 		await deleteCoValues(PerformanceGroup, groupPendingDelete, {
 			resolve: {
 				performances: {

@@ -3,7 +3,7 @@
 	import TrashIcon from '@lucide/svelte/icons/trash-2';
 	import { Button, buttonVariants } from '$lib/shadcn/button';
 	import type { Exercise } from '$lib/jazz/types';
-	import { Exercise as ExerciseSchema } from '$lib/jazz/schema';
+	import { Exercise as ExerciseSchema, IronkitAccount } from '$lib/jazz/schema';
 	import { deleteCoValues } from 'jazz-tools';
 
 	let { exercise }: { exercise: Exercise } = $props();
@@ -11,7 +11,15 @@
 	let open = $state(false);
 
 	const onDelete = async () => {
+		const { root } = await IronkitAccount.getMe().$jazz.ensureLoaded({
+			resolve: {
+				root: {
+					exercises: true
+				}
+			}
+		});
 		const exerciseId = exercise.$jazz.id;
+		root.exercises.$jazz.remove((e) => e.$jazz.id === exerciseId);
 		await deleteCoValues(ExerciseSchema, exerciseId);
 		open = false;
 	};

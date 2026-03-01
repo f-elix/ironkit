@@ -20,6 +20,7 @@
 			root: {
 				workouts: {
 					$each: {
+						$onError: 'catch',
 						programRun: true,
 						programRunSession: true
 					}
@@ -59,8 +60,13 @@
 		if (!root) {
 			return [];
 		}
+		if (!root.workouts.$isLoaded) {
+			return [];
+		}
 
-		return root.workouts.toSorted((a, b) => b.date.getTime() - a.date.getTime());
+		return root.workouts
+			.filter((w) => w.$isLoaded)
+			.toSorted((a, b) => b.date.getTime() - a.date.getTime());
 	});
 
 	const activeRun = $derived.by(() => {
@@ -75,10 +81,47 @@
 		);
 	});
 
-	const deleteWorkout = (workoutId: string) => {
+	const deleteWorkout = async (workoutId: string) => {
 		if (!root) {
 			return;
 		}
+		const workout = await Workout.load(workoutId, {
+			resolve: true
+		});
+		if (!workout.$isLoaded) {
+			return;
+		}
+		const loadedWorkout = await workout.$jazz.ensureLoaded({
+			resolve: {
+				performanceGroups: {
+					$each: {
+						performances: {
+							$each: {
+								exercise: {
+									performances: true
+								}
+							}
+						}
+					}
+				}
+			}
+		});
+		const performances = loadedWorkout.performanceGroups.flatMap((g) => g.performances);
+
+		performances.forEach((p) => {
+			if (!p.$isLoaded) {
+				return;
+			}
+			if (!p.exercise.$isLoaded) {
+				return;
+			}
+			if (!p.exercise.performances.$isLoaded) {
+				return;
+			}
+			p.exercise.performances.$jazz.remove((e) => e.$jazz.id === p.exercise.$jazz.id);
+		});
+
+		root.workouts.$jazz.remove((w) => w.$jazz.id === workoutId);
 		deleteCoValues(Workout, workoutId, {
 			resolve: {
 				performanceGroups: {
@@ -98,7 +141,7 @@
 </script>
 
 {#snippet activeProgramCard()}
-	{#if activeRun}
+	{#if activeRun?.$isLoaded}
 		{#if activeRun.status === 'paused'}
 			<PausedProgramCard run={activeRun} />
 		{:else}

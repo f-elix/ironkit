@@ -51,6 +51,7 @@
 		if (!template || !selectedWorkoutId) {
 			return;
 		}
+		template.programWorkouts.$jazz.remove((w) => w.$jazz.id === selectedWorkoutId);
 		await deleteCoValues(ProgramWorkout, selectedWorkoutId, {
 			resolve: {
 				performanceGroups: {

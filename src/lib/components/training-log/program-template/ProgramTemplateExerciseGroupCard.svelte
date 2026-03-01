@@ -57,6 +57,7 @@
 	};
 
 	const removeExercise = async (performanceId: string) => {
+		group.performances.$jazz.remove((p) => p.$jazz.id === performanceId);
 		await deleteCoValues(Performance, performanceId);
 	};
 
