@@ -5,7 +5,7 @@
 	import Input from '$lib/shadcn/input/input.svelte';
 	import LargeRadioButtons from '$lib/components/ui/LargeRadioButtons.svelte';
 	import MuscleGroupSelection from '$lib/components/training-log/MuscleGroupSelection.svelte';
-	import type { Exercise, LoadedAccountRoot } from '$lib/jazz/types';
+	import type { Exercise } from '$lib/jazz/types';
 	import type { Snippet } from 'svelte';
 	import {
 		DEFAULT_EXERCISE_EXECUTION_TYPE,
@@ -24,7 +24,6 @@
 		triggerSize = 'default'
 	}: {
 		exercise?: Exercise;
-		exercises?: Exercise[];
 		trigger?: Snippet;
 		name?: string;
 		triggerSize?: 'default' | 'sm';
