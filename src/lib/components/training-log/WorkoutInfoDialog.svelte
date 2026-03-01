@@ -5,7 +5,7 @@
 	import { Textarea } from '$lib/shadcn/textarea';
 	import DatePicker from '$lib/components/ui/DatePicker.svelte';
 	import { CalendarDate, today } from '@internationalized/date';
-	import { DEFAULT_WORKOUT_TITLE, TIMEZONE } from '$lib/constants';
+	import { DEFAULT_WEIGHT_UNIT, DEFAULT_WORKOUT_TITLE, TIMEZONE } from '$lib/constants';
 	import Button from '$lib/shadcn/button/button.svelte';
 	import { goto } from '$app/navigation';
 	import Label from '$lib/shadcn/label/label.svelte';
@@ -62,7 +62,22 @@
 			: today(TIMEZONE)
 	);
 	let bodyweight = $derived(workout?.bodyweight);
-	let bodyweightUnit = $derived(workout?.bodyweightUnit ?? 'lbs');
+	let bodyweightUnit = $derived(workout?.bodyweightUnit ?? DEFAULT_WEIGHT_UNIT);
+
+	const reset = () => {
+		templateWorkout = undefined;
+		title = undefined;
+		notes = undefined;
+		date = today(TIMEZONE);
+		bodyweight = undefined;
+		bodyweightUnit = DEFAULT_WEIGHT_UNIT;
+	};
+
+	const onOpenChange = (open: boolean) => {
+		if (!open) {
+			reset();
+		}
+	};
 
 	const onSave = async (e: Event) => {
 		e.preventDefault();
@@ -70,11 +85,13 @@
 			return;
 		}
 		if (workout) {
-			workout.$jazz.set('title', title ?? DEFAULT_WORKOUT_TITLE);
-			workout.$jazz.set('notes', notes?.trim() ?? '');
-			workout.$jazz.set('date', date.toDate(TIMEZONE));
-			workout.$jazz.set('bodyweight', bodyweight || undefined);
-			workout.$jazz.set('bodyweightUnit', bodyweightUnit);
+			workout.$jazz.applyDiff({
+				title: title ?? DEFAULT_WORKOUT_TITLE,
+				notes: notes?.trim() ?? '',
+				date: date.toDate(TIMEZONE),
+				bodyweight: bodyweight || undefined,
+				bodyweightUnit
+			});
 			open = false;
 			return;
 		}
@@ -99,7 +116,7 @@
 	};
 </script>
 
-<Dialog.Root bind:open>
+<Dialog.Root bind:open {onOpenChange}>
 	<Dialog.Trigger>
 		{#snippet child({ props })}
 			{@render trigger({ props })}
