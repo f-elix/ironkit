@@ -26,11 +26,11 @@
 
 	const root = $derived(account.current.$isLoaded ? account.current.root : null);
 
-	const allExercises = $derived(root?.exercises ?? []);
+	const allExercises = $derived(root?.exercises.filter((exercise) => exercise.$isLoaded));
 
 	let search = $state('');
 
-	let exercises = $derived.by(() => {
+	const exercises = $derived.by(() => {
 		if (!allExercises) {
 			return [];
 		}
@@ -97,7 +97,7 @@
 										</ul>
 									</div>
 									<div class="flex gap-1">
-										<ExerciseInfoDialog {exercise}>
+										<ExerciseInfoDialog {exercise} exercises={allExercises}>
 											{#snippet trigger()}
 												<Dialog.Trigger
 													class={buttonVariants({
@@ -123,7 +123,7 @@
 		</div>
 		<!-- Desktop: Inline create button -->
 		<div class="mt-auto hidden pt-4 md:block">
-			<ExerciseInfoDialog>
+			<ExerciseInfoDialog exercises={allExercises}>
 				{#snippet trigger()}
 					<Trigger class={buttonVariants({ size: 'lg', class: 'w-full' })}>
 						<PlusIcon />
@@ -135,7 +135,7 @@
 
 		<!-- Mobile: Floating Action Button -->
 		<div class="fixed right-4 bottom-16 z-50 md:hidden">
-			<ExerciseInfoDialog>
+			<ExerciseInfoDialog exercises={allExercises}>
 				{#snippet trigger()}
 					<Dialog.Trigger>
 						{#snippet child({ props })}

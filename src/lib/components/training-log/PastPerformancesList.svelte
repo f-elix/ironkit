@@ -1,17 +1,12 @@
 <script lang="ts">
 	import { formatDate } from '$lib/ui/formatDate';
 	import { ScrollArea } from '$lib/shadcn/scroll-area';
-	import type { Workout } from '$lib/jazz/types';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
-	import { now } from '@internationalized/date';
-	import { TIMEZONE } from '$lib/constants';
 	import PerformanceSetSummary from '$lib/components/training-log/PerformanceSetSummary.svelte';
 	import { Exercise } from '$lib/jazz/schema';
 	import { CoState } from 'jazz-tools/svelte';
-	import { Loader } from '@lucide/svelte';
 
-	let { exerciseId, currentWorkout }: { exerciseId: string; currentWorkout?: Maybe<Workout> } =
-		$props();
+	let { exerciseId }: { exerciseId: string } = $props();
 
 	const exerciseState = new CoState(Exercise, () => exerciseId, {
 		resolve: {

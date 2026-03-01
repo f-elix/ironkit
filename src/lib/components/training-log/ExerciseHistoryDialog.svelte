@@ -5,9 +5,11 @@
 	import PastPerformancesList from '$lib/components/training-log/PastPerformancesList.svelte';
 
 	let { exerciseId }: { exerciseId: string } = $props();
+
+	let open = $state(false);
 </script>
 
-<Dialog.Root>
+<Dialog.Root bind:open>
 	<Dialog.Trigger
 		class={buttonVariants({ variant: 'secondary', size: 'icon', class: 'text-primary' })}
 		aria-label="View exercise history"
@@ -16,6 +18,8 @@
 	</Dialog.Trigger>
 	<Dialog.Content class="p-5 pb-0">
 		<Dialog.Title>Exercise history</Dialog.Title>
-		<PastPerformancesList {exerciseId} />
+		{#if open}
+			<PastPerformancesList {exerciseId} />
+		{/if}
 	</Dialog.Content>
 </Dialog.Root>

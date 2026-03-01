@@ -182,7 +182,7 @@ export const ProgramRunSession = co
 	})
 	.withPermissions(USER_OWNED_ENTITY_PERMISSIONS);
 
-const AccountRoot = co
+export const AccountRoot = co
 	.map({
 		weightConverter: WeightConverter,
 		coefficientCalculator: CoefficientCalculator,

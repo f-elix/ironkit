@@ -26,13 +26,13 @@
 	});
 
 	const root = $derived(account.current.$isLoaded ? account.current.root : null);
-	const exercises = $derived(root?.exercises ?? []);
+	const exercises = $derived(root?.exercises.filter((exercise) => exercise.$isLoaded));
 
 	let value = $state('');
 	let open = $state(false);
 
 	const onExerciseSelected = async (exerciseId: string) => {
-		const exercise = exercises.find((e) => e.$jazz.id === exerciseId);
+		const exercise = exercises?.find((e) => e.$jazz.id === exerciseId);
 		if (exercise) {
 			onExerciseAdded?.(exercise);
 		}
@@ -41,7 +41,7 @@
 	};
 </script>
 
-{#if exercises.length}
+{#if exercises?.length}
 	<Dialog.Root bind:open>
 		{@render trigger?.()}
 		<Dialog.Content class="p-4">
@@ -51,6 +51,7 @@
 					<Command.Empty class="flex w-full flex-col gap-6 pb-1">
 						<p class="text-muted-foreground text-sm">No exercises found</p>
 						<ExerciseInfoDialog
+							{exercises}
 							name={value}
 							onExerciseCreated={(newExerciseId) => {
 								onExerciseSelected(newExerciseId);
@@ -60,6 +61,7 @@
 					</Command.Empty>
 					<Command.Group class="pt-2">
 						<ExerciseInfoDialog
+							{exercises}
 							name={value}
 							triggerSize="sm"
 							onExerciseCreated={(newExerciseId) => {
@@ -92,6 +94,7 @@
 		{/snippet}
 		{#snippet button()}
 			<ExerciseInfoDialog
+				{exercises}
 				onExerciseCreated={(newExerciseId) => {
 					onExerciseSelected(newExerciseId);
 				}}

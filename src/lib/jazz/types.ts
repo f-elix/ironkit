@@ -6,11 +6,18 @@ import {
 	Exercise as ExerciseSchema,
 	PerformanceGroup as PerformanceGroupSchema,
 	Performance as PerformanceSchema,
-	PerformanceSet as PerformanceSetSchema
+	PerformanceSet as PerformanceSetSchema,
+	AccountRoot
 } from '$lib/jazz/schema';
 import { PERFORMANCE_GROUPS_RESOLUTION } from '$lib/jazz/workout';
 import type { co } from 'jazz-tools';
 
+export type LoadedAccountRoot = co.loaded<
+	typeof AccountRoot,
+	{
+		exercises: { $each: true };
+	}
+>;
 export type ProgramTemplate = co.loaded<typeof ProgramTemplateSchema>;
 export type ResolvedProgramTemplate = co.loaded<
 	typeof ProgramTemplateSchema,

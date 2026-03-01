@@ -5,7 +5,7 @@
 	import Input from '$lib/shadcn/input/input.svelte';
 	import LargeRadioButtons from '$lib/components/ui/LargeRadioButtons.svelte';
 	import MuscleGroupSelection from '$lib/components/training-log/MuscleGroupSelection.svelte';
-	import type { Exercise } from '$lib/jazz/types';
+	import type { Exercise, LoadedAccountRoot } from '$lib/jazz/types';
 	import type { Snippet } from 'svelte';
 	import {
 		DEFAULT_EXERCISE_EXECUTION_TYPE,
@@ -13,8 +13,8 @@
 		EXERCISE_EXECUTION_TYPES,
 		EXERCISE_LOAD_TYPES
 	} from '$lib/constants';
-	import { Exercise as ExerciseSchema, IronkitAccount } from '$lib/jazz/schema';
-	import { AccountCoState } from 'jazz-tools/svelte';
+	import { Exercise as ExerciseSchema } from '$lib/jazz/schema';
+	import { IronkitAccount } from '$lib/jazz/schema';
 
 	let {
 		exercise,
@@ -24,21 +24,12 @@
 		triggerSize = 'default'
 	}: {
 		exercise?: Exercise;
+		exercises?: Exercise[];
 		trigger?: Snippet;
 		name?: string;
 		triggerSize?: 'default' | 'sm';
 		onExerciseCreated?: (exerciseId: string) => void;
 	} = $props();
-
-	const account = new AccountCoState(IronkitAccount, {
-		resolve: {
-			root: {
-				exercises: { $each: true }
-			}
-		}
-	});
-
-	const root = $derived(account.current.$isLoaded ? account.current.root : null);
 
 	let open = $state(false);
 
@@ -51,10 +42,6 @@
 	let muscleGroups = $derived(exercise?.muscleGroups ?? []);
 
 	const onSave = async () => {
-		if (!root) {
-			return;
-		}
-
 		if (exercise) {
 			exercise.$jazz.set('name', exerciseName);
 			exercise.$jazz.set('executionType', executionType);
@@ -68,7 +55,14 @@
 				muscleGroups: muscleGroups,
 				performances: []
 			});
-			root.exercises.$jazz.push(newExercise);
+			const account = await IronkitAccount.getMe().$jazz.ensureLoaded({
+				resolve: {
+					root: {
+						exercises: true
+					}
+				}
+			});
+			account.root.exercises.$jazz.push(newExercise);
 			onExerciseCreated?.(newExercise.$jazz.id);
 		}
 		open = false;
