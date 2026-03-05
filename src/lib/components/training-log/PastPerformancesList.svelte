@@ -2,7 +2,7 @@
 	import { formatDate } from '$lib/ui/formatDate';
 	import { ScrollArea } from '$lib/shadcn/scroll-area';
 	import EmptyState from '$lib/components/ui/EmptyState.svelte';
-	import PerformanceSetSummary from '$lib/components/training-log/PerformanceSetSummary.svelte';
+	import PastPerformanceSets from '$lib/components/training-log/PastPerformanceSets.svelte';
 	import { Exercise } from '$lib/jazz/schema';
 	import { CoState } from 'jazz-tools/svelte';
 	import { today } from '@internationalized/date';
@@ -14,8 +14,7 @@
 		resolve: {
 			performances: {
 				$each: {
-					$onError: 'catch',
-					performanceSets: { $each: { $onError: 'catch' } }
+					$onError: 'catch'
 				}
 			}
 		}
@@ -40,7 +39,7 @@
 				return workoutDate.getTime() < todayDate.getTime();
 			})
 			.toSorted((a, b) => (b.workoutDate?.getTime() ?? 0) - (a.workoutDate?.getTime() ?? 0))
-			.slice(0, 50);
+			.slice(0, 10);
 	});
 </script>
 
@@ -48,26 +47,15 @@
 	<ScrollArea class="h-[50vh]">
 		<ul class="divide-border flex flex-col gap-4 divide-y pt-4 pb-7">
 			{#each performanceItems as performance (performance.$jazz.id)}
-				{@const sets = performance.performanceSets.$isLoaded
-					? Array.from(performance.performanceSets).filter((s) => s.$isLoaded)
-					: []}
-				{#if sets.length}
-					<li class="flex flex-col gap-3 pb-4">
-						<div class="flex flex-col gap-1">
-							<h4 class="text-base font-semibold">{formatDate(performance.workoutDate)}</h4>
-							{#if performance.note}
-								<p class="text-muted-foreground text-sm">{performance.note}</p>
-							{/if}
-						</div>
-						<ul class="flex flex-col gap-2">
-							{#each sets as set, i (set.$jazz.id)}
-								<li class="flex w-full items-baseline gap-2">
-									<PerformanceSetSummary {set} {performance} order={i + 1} />
-								</li>
-							{/each}
-						</ul>
-					</li>
-				{/if}
+				<li class="flex flex-col gap-3 pb-4">
+					<div class="flex flex-col gap-1">
+						<h4 class="text-base font-semibold">{formatDate(performance.workoutDate)}</h4>
+						{#if performance.note}
+							<p class="text-muted-foreground text-sm">{performance.note}</p>
+						{/if}
+					</div>
+					<PastPerformanceSets performanceId={performance.$jazz.id} />
+				</li>
 			{/each}
 		</ul>
 	</ScrollArea>
