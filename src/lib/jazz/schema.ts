@@ -243,27 +243,24 @@ export const IronkitAccount = co
 			return;
 		}
 
-		const { root } = await account.$jazz.ensureLoaded({
-			resolve: {
-				root: {
-					exercises: {
-						$each: {
-							performances: {
-								$each: {
-									$onError: 'catch',
-									performanceSets: { $each: { $onError: 'catch' } }
-								}
+		if (existingMigrationVersion < 1) {
+			const { root } = await account.$jazz.ensureLoaded({
+				resolve: {
+					root: {
+						exercises: {
+							$each: {
+								performances: { $each: true }
 							}
-						}
-					},
-					workouts: {
-						$each: {
-							performanceGroups: {
-								$each: {
-									performances: {
-										$each: {
-											exercise: {
-												performances: { $each: true }
+						},
+						workouts: {
+							$each: {
+								performanceGroups: {
+									$each: {
+										performances: {
+											$each: {
+												exercise: {
+													performances: { $each: true }
+												}
 											}
 										}
 									}
@@ -272,10 +269,8 @@ export const IronkitAccount = co
 						}
 					}
 				}
-			}
-		});
+			});
 
-		if (existingMigrationVersion < 1) {
 			// Migration v1: Backfill exercise.performances reverse-lookup lists
 			root.exercises.forEach((exercise) => {
 				if (!exercise.performances) {
@@ -305,8 +300,32 @@ export const IronkitAccount = co
 		}
 
 		if (existingMigrationVersion < 2) {
+			const { root } = await account.$jazz.ensureLoaded({
+				resolve: {
+					root: {
+						exercises: {
+							$each: {
+								$onError: 'catch',
+								performances: {
+									$each: {
+										$onError: 'catch',
+										performanceSets: { $each: { $onError: 'catch' } }
+									}
+								}
+							}
+						}
+					}
+				}
+			});
+
 			// Migration v2: Remove test performances from exercise history when all set reps are missing/zero
 			root.exercises.forEach((exercise) => {
+				if (!exercise.$isLoaded) {
+					return;
+				}
+				if (!exercise.performances) {
+					return;
+				}
 				if (!exercise.performances.$isLoaded) {
 					return;
 				}
@@ -334,5 +353,5 @@ export const IronkitAccount = co
 			});
 		}
 
-		root.$jazz.set('migrationVersion', CURRENT_MIGRATION_VERSION);
+		rootForVersionCheck.$jazz.set('migrationVersion', CURRENT_MIGRATION_VERSION);
 	});
