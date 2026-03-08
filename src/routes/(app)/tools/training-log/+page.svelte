@@ -106,22 +106,26 @@
 				}
 			}
 		});
-		const performances = loadedWorkout.performanceGroups.flatMap((g) => g.performances);
+		const performances = loadedWorkout.performanceGroups.flatMap((performanceGroup) =>
+			performanceGroup.performances
+		);
 
-		performances.forEach((p) => {
-			if (!p.$isLoaded) {
+		performances.forEach((performance) => {
+			if (!performance.$isLoaded) {
 				return;
 			}
-			if (!p.exercise.$isLoaded) {
+			if (!performance.exercise.$isLoaded) {
 				return;
 			}
-			if (!p.exercise.performances.$isLoaded) {
+			if (!performance.exercise.performances.$isLoaded) {
 				return;
 			}
-			p.exercise.performances.$jazz.remove((e) => e.$jazz.id === p.exercise.$jazz.id);
+			performance.exercise.performances.$jazz.remove(
+				(exercisePerformance) => exercisePerformance.$jazz.id === performance.$jazz.id
+			);
 		});
 
-		root.workouts.$jazz.remove((w) => w.$jazz.id === workoutId);
+		root.workouts.$jazz.remove((workoutItem) => workoutItem.$jazz.id === workoutId);
 		deleteCoValues(Workout, workoutId, {
 			resolve: {
 				performanceGroups: {

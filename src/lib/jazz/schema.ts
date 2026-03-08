@@ -198,7 +198,7 @@ export const AccountRoot = co
 		onInlineCreate: 'extendsContainer'
 	});
 
-const CURRENT_MIGRATION_VERSION = 1;
+const CURRENT_MIGRATION_VERSION = 2;
 
 export const IronkitAccount = co
 	.account({
@@ -235,21 +235,25 @@ export const IronkitAccount = co
 			return;
 		}
 
-		// Skip expensive migration if already at current version
 		const { root: rootForVersionCheck } = await account.$jazz.ensureLoaded({
 			resolve: { root: true }
 		});
-		if (rootForVersionCheck.migrationVersion === CURRENT_MIGRATION_VERSION) {
+		const existingMigrationVersion = rootForVersionCheck.migrationVersion ?? 0;
+		if (existingMigrationVersion >= CURRENT_MIGRATION_VERSION) {
 			return;
 		}
 
-		// Migration v1: Backfill exercise.performances reverse-lookup lists
 		const { root } = await account.$jazz.ensureLoaded({
 			resolve: {
 				root: {
 					exercises: {
 						$each: {
-							performances: { $each: true }
+							performances: {
+								$each: {
+									$onError: 'catch',
+									performanceSets: { $each: { $onError: 'catch' } }
+								}
+							}
 						}
 					},
 					workouts: {
@@ -271,33 +275,64 @@ export const IronkitAccount = co
 			}
 		});
 
-		// Initialize empty performances list on existing exercises
-		root.exercises.forEach((exercise) => {
-			if (!exercise.performances) {
-				exercise.$jazz.set('performances', []);
-			}
-		});
+		if (existingMigrationVersion < 1) {
+			// Migration v1: Backfill exercise.performances reverse-lookup lists
+			root.exercises.forEach((exercise) => {
+				if (!exercise.performances) {
+					exercise.$jazz.set('performances', []);
+				}
+			});
 
-		// Backfill workoutDate/workoutId and populate exercise.performances
-		root.workouts.forEach((workout) => {
-			workout.performanceGroups.forEach((group) => {
-				group.performances.forEach((performance) => {
-					if (!performance.workoutDate) {
-						performance.$jazz.set('workoutDate', workout.date);
-					}
-					if (!performance.workoutId) {
-						performance.$jazz.set('workoutId', workout.$jazz.id);
-					}
-					const exercisePerformances = performance.exercise.performances;
-					const alreadyInList = exercisePerformances.some(
-						(p) => p.$jazz.id === performance.$jazz.id
-					);
-					if (!alreadyInList) {
-						exercisePerformances.$jazz.push(performance);
-					}
+			root.workouts.forEach((workout) => {
+				workout.performanceGroups.forEach((performanceGroup) => {
+					performanceGroup.performances.forEach((performance) => {
+						if (!performance.workoutDate) {
+							performance.$jazz.set('workoutDate', workout.date);
+						}
+						if (!performance.workoutId) {
+							performance.$jazz.set('workoutId', workout.$jazz.id);
+						}
+						const exercisePerformances = performance.exercise.performances;
+						const isAlreadyInExerciseHistory = exercisePerformances.some(
+							(exercisePerformance) => exercisePerformance.$jazz.id === performance.$jazz.id
+						);
+						if (!isAlreadyInExerciseHistory) {
+							exercisePerformances.$jazz.push(performance);
+						}
+					});
 				});
 			});
-		});
+		}
+
+		if (existingMigrationVersion < 2) {
+			// Migration v2: Remove test performances from exercise history when all set reps are missing/zero
+			root.exercises.forEach((exercise) => {
+				if (!exercise.performances.$isLoaded) {
+					return;
+				}
+
+				exercise.performances.$jazz.remove((exercisePerformance) => {
+					if (!exercisePerformance.$isLoaded) {
+						return false;
+					}
+					if (!exercisePerformance.performanceSets.$isLoaded) {
+						return false;
+					}
+
+					const loadedPerformanceSets = exercisePerformance.performanceSets.filter(
+						(performanceSet) => performanceSet.$isLoaded
+					);
+					if (loadedPerformanceSets.length === 0) {
+						return false;
+					}
+
+					return loadedPerformanceSets.every((performanceSet) => {
+						const reps = performanceSet.reps;
+						return reps == null || reps === 0;
+					});
+				});
+			});
+		}
 
 		root.$jazz.set('migrationVersion', CURRENT_MIGRATION_VERSION);
 	});
