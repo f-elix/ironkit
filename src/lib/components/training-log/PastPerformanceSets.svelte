@@ -3,7 +3,7 @@
 	import { Performance } from '$lib/jazz/schema';
 	import { CoState } from 'jazz-tools/svelte';
 
-	let { performanceId }: { performanceId: string } = $props();
+	let { performanceId, bodyweight = 0 }: { performanceId: string; bodyweight: number } = $props();
 
 	const performanceState = new CoState(Performance, () => performanceId, {
 		resolve: {
