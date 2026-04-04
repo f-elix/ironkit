@@ -118,14 +118,14 @@
 		if (!selectedWorkout) {
 			return;
 		}
-		selectedWorkout.$jazz.set('label', value.trim());
+		selectedWorkout.$jazz.set('label', value);
 	};
 
 	const setNotes = (value: string) => {
 		if (!selectedWorkout) {
 			return;
 		}
-		selectedWorkout.$jazz.set('notes', value.trim());
+		selectedWorkout.$jazz.set('notes', value);
 	};
 </script>
 

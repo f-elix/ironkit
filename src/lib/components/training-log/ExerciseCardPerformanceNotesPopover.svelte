@@ -32,7 +32,7 @@
 					rows={3}
 					placeholder="Add note..."
 					bind:value={
-						() => note?.trim() ?? '',
+						() => note ?? '',
 						(v) => {
 							performance.$jazz.set('note', v);
 						}

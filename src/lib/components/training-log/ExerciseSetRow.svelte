@@ -172,7 +172,7 @@
 			class="min-h-[2rem] text-sm font-normal"
 			placeholder="Note (RIR, RPE, etc.)"
 			bind:value={
-				() => set.note?.trim() ?? '',
+				() => set.note ?? '',
 				(v) => {
 					set.$jazz.set('note', v);
 				}
