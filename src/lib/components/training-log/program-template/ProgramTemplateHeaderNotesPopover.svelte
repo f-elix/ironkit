@@ -19,7 +19,7 @@
 		if (!template) {
 			return;
 		}
-		template.$jazz.set('notes', value.trim());
+		template.$jazz.set('notes', value);
 	};
 </script>
 
