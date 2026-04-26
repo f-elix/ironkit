@@ -15,6 +15,7 @@
 	import { deleteCoValues } from 'jazz-tools';
 	import { DEFAULT_WEIGHT_UNIT } from '$lib/constants';
 	import type { Exercise } from '$lib/jazz/types';
+	import { addPerformanceToExerciseHistory } from '$lib/training-log/exercisePerformanceHistory';
 
 	let { workout }: { workout: WorkoutData } = $props();
 
@@ -61,7 +62,7 @@
 		expandedGroupIds = [];
 	};
 
-	const onExerciseAdded = (exercise: Exercise) => {
+	const onExerciseAdded = async (exercise: Exercise) => {
 		// Create initial performance set
 		const initialSet = PerformanceSet.create({
 			weight: undefined,
@@ -82,10 +83,7 @@
 			workoutId: workout.$jazz.id
 		});
 
-		// Add to exercise's reverse-lookup list
-		if (exercise.performances.$isLoaded) {
-			exercise.performances.$jazz.push(performance);
-		}
+		await addPerformanceToExerciseHistory(exercise, performance);
 
 		// Create a new performance group for the exercise
 		const newGroup = PerformanceGroup.create({

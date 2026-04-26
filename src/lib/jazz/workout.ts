@@ -8,6 +8,7 @@ import {
 	type WeightUnit
 } from '$lib/jazz/schema';
 import type { ResolvedWorkout } from '$lib/jazz/types';
+import { addPerformanceToExerciseHistory } from '$lib/training-log/exercisePerformanceHistory';
 import type { co } from 'jazz-tools';
 import { toast } from 'svelte-sonner';
 
@@ -79,24 +80,22 @@ const linkPerformanceGroupsToWorkout = (
 	});
 };
 
-const denormalizeWorkoutDataToPerformances = (
+const denormalizeWorkoutDataToPerformances = async (
 	performanceGroups: ReturnType<typeof createPerformanceGroupFromTemplate>[],
 	workoutDate: Date,
 	workoutId: string
 ) => {
-	performanceGroups.forEach((group) => {
-		group.performances.forEach((performance) => {
-			// Set denormalized workout data for efficient querying
-			performance.$jazz.set('workoutDate', workoutDate);
-			performance.$jazz.set('workoutId', workoutId);
+	await Promise.all(
+		performanceGroups.flatMap((group) => {
+			return group.performances.map(async (performance) => {
+				// Set denormalized workout data for efficient querying
+				performance.$jazz.set('workoutDate', workoutDate);
+				performance.$jazz.set('workoutId', workoutId);
 
-			// Add to exercise.performances for reverse index lookup
-			const exercise = performance.exercise;
-			if (exercise.performances.$isLoaded) {
-				exercise.performances.$jazz.push(performance);
-			}
-		});
-	});
+				await addPerformanceToExerciseHistory(performance.exercise, performance);
+			});
+		})
+	);
 };
 
 export const createWorkoutFromTemplate = async ({
@@ -132,11 +131,11 @@ export const createWorkoutFromTemplate = async ({
 		performanceGroups
 	});
 	linkPerformanceGroupsToWorkout(performanceGroups, newWorkout.$jazz.id);
-	denormalizeWorkoutDataToPerformances(performanceGroups, workoutDate, newWorkout.$jazz.id);
+	await denormalizeWorkoutDataToPerformances(performanceGroups, workoutDate, newWorkout.$jazz.id);
 	return newWorkout;
 };
 
-export const createWorkoutFromProgramWorkout = (programWorkout: ResolvedProgramWorkout) => {
+export const createWorkoutFromProgramWorkout = async (programWorkout: ResolvedProgramWorkout) => {
 	const performanceGroups = programWorkout.performanceGroups.map(
 		createPerformanceGroupFromTemplate
 	);
@@ -148,6 +147,6 @@ export const createWorkoutFromProgramWorkout = (programWorkout: ResolvedProgramW
 		performanceGroups
 	});
 	linkPerformanceGroupsToWorkout(performanceGroups, workout.$jazz.id);
-	denormalizeWorkoutDataToPerformances(performanceGroups, workoutDate, workout.$jazz.id);
+	await denormalizeWorkoutDataToPerformances(performanceGroups, workoutDate, workout.$jazz.id);
 	return workout;
 };

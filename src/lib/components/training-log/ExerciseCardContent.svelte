@@ -32,7 +32,7 @@
 	);
 
 	const onExerciseAdded = async (exercise: Exercise) => {
-		addExerciseToPerformanceGroup(performanceGroup, exercise);
+		await addExerciseToPerformanceGroup(performanceGroup, exercise);
 	};
 
 	const onLabelChange = async (event: Event) => {

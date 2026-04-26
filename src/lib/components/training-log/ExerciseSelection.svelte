@@ -20,7 +20,11 @@
 	const account = new AccountCoState(IronkitAccount, {
 		resolve: {
 			root: {
-				exercises: { $each: true }
+				exercises: {
+					$each: {
+						performances: true
+					}
+				}
 			}
 		}
 	});
@@ -51,7 +55,6 @@
 					<Command.Empty class="flex w-full flex-col gap-6 pb-1">
 						<p class="text-muted-foreground text-sm">No exercises found</p>
 						<ExerciseInfoDialog
-							{exercises}
 							name={value}
 							onExerciseCreated={(newExerciseId) => {
 								onExerciseSelected(newExerciseId);
@@ -61,7 +64,6 @@
 					</Command.Empty>
 					<Command.Group class="pt-2">
 						<ExerciseInfoDialog
-							{exercises}
 							name={value}
 							triggerSize="sm"
 							onExerciseCreated={(newExerciseId) => {
@@ -94,7 +96,6 @@
 		{/snippet}
 		{#snippet button()}
 			<ExerciseInfoDialog
-				{exercises}
 				onExerciseCreated={(newExerciseId) => {
 					onExerciseSelected(newExerciseId);
 				}}

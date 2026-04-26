@@ -198,7 +198,7 @@ export const AccountRoot = co
 		onInlineCreate: 'extendsContainer'
 	});
 
-const CURRENT_MIGRATION_VERSION = 2;
+const CURRENT_MIGRATION_VERSION = 3;
 
 export const IronkitAccount = co
 	.account({
@@ -348,6 +348,94 @@ export const IronkitAccount = co
 					return loadedPerformanceSets.every((performanceSet) => {
 						const reps = performanceSet.reps;
 						return reps == null || reps === 0;
+					});
+				});
+			});
+		}
+
+		if (existingMigrationVersion < 3) {
+			const { root } = await account.$jazz.ensureLoaded({
+				resolve: {
+					root: {
+						exercises: {
+							$each: {
+								$onError: 'catch',
+								performances: {
+									$each: {
+										$onError: 'catch',
+										exercise: true
+									}
+								}
+							}
+						},
+						workouts: {
+							$each: {
+								$onError: 'catch',
+								performanceGroups: {
+									$each: {
+										$onError: 'catch',
+										performances: {
+											$each: {
+												$onError: 'catch',
+												exercise: {
+													performances: true
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			});
+
+			// Migration v3: Rebuild exercise history reverse indexes after in-place exercise swaps
+			root.exercises.forEach((exercise) => {
+				if (!exercise.$isLoaded || !exercise.performances || !exercise.performances.$isLoaded) {
+					return;
+				}
+
+				exercise.performances.$jazz.remove((exercisePerformance) => {
+					if (!exercisePerformance.$isLoaded || !exercisePerformance.exercise.$isLoaded) {
+						return false;
+					}
+
+					return exercisePerformance.exercise.$jazz.id !== exercise.$jazz.id;
+				});
+			});
+
+			root.workouts.forEach((workout) => {
+				if (!workout.$isLoaded || !workout.performanceGroups.$isLoaded) {
+					return;
+				}
+
+				workout.performanceGroups.forEach((performanceGroup) => {
+					if (!performanceGroup.$isLoaded || !performanceGroup.performances.$isLoaded) {
+						return;
+					}
+
+					performanceGroup.performances.forEach((performance) => {
+						if (
+							!performance.$isLoaded ||
+							!performance.exercise.$isLoaded ||
+							!performance.exercise.performances ||
+							!performance.exercise.performances.$isLoaded
+						) {
+							return;
+						}
+
+						if (!performance.workoutDate) {
+							performance.$jazz.set('workoutDate', workout.date);
+						}
+						if (!performance.workoutId) {
+							performance.$jazz.set('workoutId', workout.$jazz.id);
+						}
+
+						performance.exercise.performances.$jazz.remove(
+							(exercisePerformance) => exercisePerformance.$jazz.id === performance.$jazz.id
+						);
+						performance.exercise.performances.$jazz.push(performance);
 					});
 				});
 			});

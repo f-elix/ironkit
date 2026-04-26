@@ -1,8 +1,9 @@
 import type { PerformanceGroup, Exercise } from '$lib/jazz/types';
 import { DEFAULT_WEIGHT_UNIT } from '$lib/constants';
 import { Performance, PerformanceSet } from '$lib/jazz/schema';
+import { addPerformanceToExerciseHistory } from '$lib/training-log/exercisePerformanceHistory';
 
-export const addExerciseToPerformanceGroup = (
+export const addExerciseToPerformanceGroup = async (
 	performanceGroup: PerformanceGroup,
 	exercise: Exercise,
 	workoutDate?: Date
@@ -33,9 +34,5 @@ export const addExerciseToPerformanceGroup = (
 	});
 
 	performanceGroup.performances.$jazz.push(performance);
-
-	// Add to exercise's reverse-lookup list
-	if (exercise.performances.$isLoaded) {
-		exercise.performances.$jazz.push(performance);
-	}
+	await addPerformanceToExerciseHistory(exercise, performance);
 };
