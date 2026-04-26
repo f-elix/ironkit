@@ -115,16 +115,17 @@
 			</span>
 			<div class="relative">
 				{#if loadType === 'bodyweight'}
-					<span class="text-muted-foreground absolute top-1/2 left-2 -translate-y-1/2 text-base"
-						>+</span
-					>
+					<span class="text-muted-foreground absolute top-1/2 left-2 -translate-y-1/2 text-base">
+						+
+					</span>
 				{/if}
 				<Input
 					type="text"
 					bind:value={
-						() => set.weight ?? '',
-						(v) => {
-							set.$jazz.set('weight', v || undefined);
+						() => set.weight?.toString() ?? '',
+						(v: string) => {
+							const number = parseFloat(v);
+							set.$jazz.set('weight', number || undefined);
 						}
 					}
 					placeholder="0"
