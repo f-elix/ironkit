@@ -48,6 +48,24 @@
 		setTimeout(() => (copied = false), 1500);
 	};
 
+	const isIntermediateDecimal = (value: string) =>
+		value.endsWith('.') || /\.\d*0$/.test(value);
+
+	const setWeightInput = (v: string) => {
+		if (isIntermediateDecimal(v)) {
+			return;
+		}
+
+		const number = parseFloat(v);
+		set.$jazz.set('weight', number || undefined);
+	};
+
+	const commitWeightInput = (event: FocusEvent) => {
+		const input = event.currentTarget as HTMLInputElement;
+		const number = parseFloat(input.value);
+		set.$jazz.set('weight', number || undefined);
+	};
+
 	const focusIfEmpty = (element: HTMLInputElement) => {
 		const isEmpty = untrack(() => !set.weight);
 		const hasPreviousSet = untrack(() => previousSet != null);
@@ -121,19 +139,14 @@
 				{/if}
 				<Input
 					type="text"
-					bind:value={
-						() => set.weight?.toString() ?? '',
-						(v: string) => {
-							const number = parseFloat(v);
-							set.$jazz.set('weight', number || undefined);
-						}
-					}
+					bind:value={() => set.weight?.toString() ?? '', setWeightInput}
 					placeholder="0"
 					class={cn(
 						'h-10 w-full text-center text-base font-semibold tabular-nums',
 						loadType === 'bodyweight' ? 'pl-6' : ''
 					)}
 					inputmode="decimal"
+					onblur={commitWeightInput}
 				/>
 			</div>
 		</Label>
