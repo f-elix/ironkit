@@ -48,18 +48,6 @@
 		setTimeout(() => (copied = false), 1500);
 	};
 
-	const isIntermediateDecimal = (value: string) =>
-		value.endsWith('.') || /\.\d*0$/.test(value);
-
-	const setWeightInput = (v: string) => {
-		if (isIntermediateDecimal(v)) {
-			return;
-		}
-
-		const number = parseFloat(v);
-		set.$jazz.set('weight', number || undefined);
-	};
-
 	const commitWeightInput = (event: FocusEvent) => {
 		const input = event.currentTarget as HTMLInputElement;
 		const number = parseFloat(input.value);
@@ -139,7 +127,11 @@
 				{/if}
 				<Input
 					type="text"
-					bind:value={() => set.weight?.toString() ?? '', setWeightInput}
+					value={set.weight?.toString() ?? ''}
+					oninput={(event) => {
+						const number = parseFloat(event.currentTarget.value);
+						set.$jazz.set('weight', number || undefined);
+					}}
 					placeholder="0"
 					class={cn(
 						'h-10 w-full text-center text-base font-semibold tabular-nums',
